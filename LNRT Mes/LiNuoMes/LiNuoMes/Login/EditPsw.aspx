@@ -50,7 +50,7 @@
              UserID = '<%=Session["UserID"] %>';
              $("#adminNo").val(UserID);
 
-         });         //保存表单
+         });                     //保存表单
          function AcceptClick() {
 
              var OldPsw = $("#oldpassword").val();

@@ -1166,6 +1166,9 @@ AS
             Mes2ErpMVTStatus = 0
         WHERE 
         MesWorkOrderVersion = 0 AND Mes2ErpMVTStatus =-1
+
+        UPDATE ERP_WO_Material_Transfer SET ErpMvtStatus = 0, MesMvtStatus = 1 WHERE ErpMvtStatus = 2;
+
     COMMIT TRANSACTION
 GO
 
@@ -1814,14 +1817,8 @@ AS
             END
             ELSE
             BEGIN
-                IF @MvtStat = 2
-                BEGIN
-                    UPDATE ERP_WO_Material_Transfer SET ErpMvtStatus = 0, MesMvtStatus = 1 WHERE ID = @MvtId;
-                END
-                ELSE
-                BEGIN
-                    UPDATE ERP_WO_Material_Transfer SET MesMvtStatus = 1 WHERE ID = @MvtId;
-                END
+                --此处的设定要和存储过程 [usp_Mfg_Wo_List_Mvt_Edit], 大约在行号:1170 配合起来完成,
+                UPDATE ERP_WO_Material_Transfer SET MesMvtStatus = 1 WHERE ID = @MvtId AND (MesMvtStatus = 0 OR MesMvtStatus = -1);
             END 
         COMMIT
         FETCH NEXT FROM RecMvt INTO @MvtId, @WoId, @MvtStat;

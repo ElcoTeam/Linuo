@@ -48,7 +48,7 @@
                 , height: "100%"
                 , page: "1"
                 , fallbackLink: "<p>Please install the PDF Reader First!</p>"
-        };
+        };    
 
         var myPDF = PDFObject.embed("./PmSpecFile/" + folderId+".pdf", "#example1", options);
 

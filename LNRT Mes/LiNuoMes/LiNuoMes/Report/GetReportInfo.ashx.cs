@@ -65,8 +65,6 @@ namespace LiNuoMes.Report
             if (Action == "EnergyConsumpReport")
             {
                 List<EnergyConsumpEntity> energyConsump = new List<EnergyConsumpEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
                 energyConsump = GetEnergyList(energyConsump);
                 context.Response.Write(jsc.Serialize(energyConsump));
             }
@@ -75,8 +73,6 @@ namespace LiNuoMes.Report
             if (Action == "GetEnergyChart")
             {
                 List<EnergyConsumpEntity> energyConsump = new List<EnergyConsumpEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
                 energyConsump = GetEnergyList(energyConsump);
                 Chart chart = new Chart();
                 List<string> catagory = new List<string>();
@@ -91,13 +87,103 @@ namespace LiNuoMes.Report
                 context.Response.Write(jsc.Serialize(chart));
             }
 
+            //设备保养总统计表
+            if (Action == "GetEquTotalReport")
+            {
+                List<EquManCountEntity> equmancount = new List<EquManCountEntity>();
+                equmancount = GetTotalMaintenceList(equmancount);
+                context.Response.Write(jsc.Serialize(equmancount));
+
+            }
+
+            //每日出勤统计
+            if (Action == "UserAttendenceReport")
+            { 
+                string strJson = "";
+                UserAttendence userAttendence = new UserAttendence();
+                userAttendence = GetAttendenceData(userAttendence);
+                strJson = "{\"page\":1,\"total\": 4 ,\"records\":4,\"rows\":[";
+                for (int j = 0; j < 4 ; j++)
+                {
+                    strJson += "{";
+                    strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                    strJson += "\"cell\":";
+                    strJson += "[";
+                    //strJson += "\"" + dt.Rows[j]["KindName"].ToString().Trim() + "\",";
+                    //strJson += "\"" + dt.Rows[j]["DeviceCode"].ToString().Trim() + "\",";
+                    //strJson += "\"" + dt.Rows[j]["CheckItem"].ToString().Trim() + "\",";
+                    //strJson += "\"" + dt.Rows[j]["ItemSpec"].ToString().Trim() + "\",";
+                    if(j==0)
+                    {
+                        for (int i = 0; i < userAttendence.AttendanceNum.Count()-1; i++)
+                        {
+                            strJson += "\"" + userAttendence.AttendanceNum[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + userAttendence.AttendanceNum[userAttendence.AttendanceNum.Count()-1].ToString() + "\"";
+                    }
+                    if (j == 1)
+                    {
+                        for (int i = 0; i < userAttendence.WorkHours.Count()-1; i++)
+                        {
+                            strJson += "\"" + userAttendence.WorkHours[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + userAttendence.WorkHours[userAttendence.WorkHours.Count() - 1].ToString().Trim() + "\"";
+                    }
+                    if (j == 2)
+                    {
+                        for (int i = 0; i < userAttendence.ActiveWorkHours.Count()-1; i++)
+                        {
+                            strJson += "\"" + userAttendence.ActiveWorkHours[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + userAttendence.AttendanceNum[userAttendence.ActiveWorkHours.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 3)
+                    {
+                        for (int i = 0; i < userAttendence.TotalAttendenceHours.Count()-1; i++)
+                        {
+                            strJson += "\"" + userAttendence.TotalAttendenceHours[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + userAttendence.TotalAttendenceHours[userAttendence.TotalAttendenceHours.Count() - 1].ToString().Trim() + "\"";
+                    }
+                    
+                    strJson += "]";
+                    strJson += "}";
+                    strJson += ",";
+                   
+                }
+                strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                strJson += "]}";
+                context.Response.Write(strJson);
+            }
+
+            //每月出勤人数报表
+            if (Action == "GetUserAttendenceChart")
+            {
+                UserAttendence userAttendence = new UserAttendence();
+                userAttendence = GetAttendenceData(userAttendence);
+                Chart chart = new Chart();
+
+                List<string> catagory = new List<string>();
+                List<double> datavalue = new List<double>();
+
+                for (int i = 1; i < userAttendence.AttendanceNum.Count(); i++ )
+                {
+                    catagory.Add(i.ToString());
+
+                    datavalue.Add(Convert.ToDouble(userAttendence.AttendanceNum[i] == "" ? "0" : userAttendence.AttendanceNum[i].ToString()));
+                }
+               
+                chart.catagory = catagory;
+                chart.datavalue = datavalue;
+                context.Response.Write(jsc.Serialize(chart));
+            }
 
             //人员产能
             if (Action == "PersonCapacityReport")
             {
-                List<PersonCapacityEntity> personCapacity = new List<PersonCapacityEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                PersonCapacityEntity personCapacity = new PersonCapacityEntity();
+                personCapacity = GetPersonCapaticyData(personCapacity);
+                context.Response.Write(jsc.Serialize(personCapacity));
             }
 
             //每日生产完成率
@@ -197,6 +283,11 @@ namespace LiNuoMes.Report
             return ret;
         }
 
+        /// <summary>
+        /// 设别报警
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
         public List<EquAlarmEntity> GetEquAlarmList(List<EquAlarmEntity> dataEntity)
         {
             DataTable dt = new DataTable();
@@ -256,7 +347,11 @@ namespace LiNuoMes.Report
             return dataEntity;
         }
 
-
+        /// <summary>
+        /// 物料拉动
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
         public List<MaterialPullEntity> GetMaterialPullList(List<MaterialPullEntity> dataEntity)
         {
             DataTable dt = new DataTable();
@@ -332,6 +427,11 @@ namespace LiNuoMes.Report
             return dataEntity;
         }
 
+        /// <summary>
+        /// 能源统计
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
         public List<EnergyConsumpEntity> GetEnergyList(List<EnergyConsumpEntity> dataEntity)
         {
             DataTable dt = new DataTable();
@@ -386,5 +486,160 @@ namespace LiNuoMes.Report
             return dataEntity;
         }
 
+        /// <summary>
+        /// 每月出勤
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public UserAttendence GetAttendenceData(UserAttendence user)
+        {
+            string date = RequstString("DATE");
+            string str = "";
+            string selectstr = "";
+            DataTable dt = new DataTable();
+            DataTable selectdt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                str = "select day(dateadd(mm,1,'" + date + "-01')-day('" + date + "-01')) as daynum";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                selectstr = "select DATEPART(day,Date) as DATE,AttendenceNum,WorkHours,TotalAttendenceHours,ActiveWorkHours from UserM_AttendeceMan where convert(char(7),Date,120)='" + date.Trim() + "'";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = selectstr;
+                SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);
+                Datapter.Fill(selectdt);
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    dt.Columns.Add("DATE", typeof(System.String));
+                    dt.Columns.Add("AttendenceNum", typeof(System.String));
+                    dt.Columns.Add("WorkHours", typeof(System.String));
+                    dt.Columns.Add("TotalAttendenceHours", typeof(System.String));
+                    dt.Columns.Add("ActiveWorkHours", typeof(System.String));
+                    if (Convert.ToInt32(dt.Rows[0]["daynum"]) > 0)
+                    {
+                        int daynum = Convert.ToInt16(dt.Rows[0]["daynum"].ToString());
+
+                        for (int i = 1; i <= daynum; i++)
+                        {
+                            dt.Rows.Add(daynum, i.ToString(), "", "", "", "");
+                        }
+                        for (int j = 1; j < dt.Rows.Count; j++)
+                        {
+                            if (selectdt.Rows.Count > 0)
+                            {
+                                string filter = "convert(DATE,'System.String') ='" + dt.Rows[j]["DATE"] + "'";
+                                int count = selectdt.Select(filter).Count();
+                                if (count > 0)
+                                {
+                                    DataRow dr = selectdt.Select("DATE='" + dt.Rows[j]["DATE"].ToString() + "'")[0];
+                                    dt.Rows[j]["AttendenceNum"] = dr["AttendenceNum"].ToString();
+                                    dt.Rows[j]["WorkHours"] = dr["WorkHours"].ToString();
+                                    dt.Rows[j]["TotalAttendenceHours"] = dr["TotalAttendenceHours"].ToString();
+                                    dt.Rows[j]["ActiveWorkHours"] = dr["ActiveWorkHours"].ToString();
+                                }
+                            }
+                        }
+                    }
+                }
+                dt.Rows.RemoveAt(0);
+                List<string> AttendenceNum = new List<string>();
+                List<string> WorkHours = new List<string>();
+                List<string> TotalAttendenceHours = new List<string>();
+                List<string> ActiveWorkHours = new List<string>();
+
+                AttendenceNum.Add("出勤人数");
+                WorkHours.Add("当日工作时间");
+                TotalAttendenceHours.Add("出勤时间");
+                ActiveWorkHours.Add("有效生产时间");
+
+                for (int j = 0; j < dt.Rows.Count; j++)
+                {
+                    AttendenceNum.Add(dt.Rows[j]["AttendenceNum"].ToString());
+                    WorkHours.Add(dt.Rows[j]["WorkHours"].ToString());
+                    TotalAttendenceHours.Add(dt.Rows[j]["TotalAttendenceHours"].ToString());
+                    ActiveWorkHours.Add(dt.Rows[j]["ActiveWorkHours"].ToString());
+                }
+
+
+                user.AttendanceNum = AttendenceNum;
+                user.WorkHours = WorkHours;
+                user.TotalAttendenceHours = TotalAttendenceHours;
+                user.ActiveWorkHours = ActiveWorkHours;
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 设备保养总统计
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<EquManCountEntity> GetTotalMaintenceList(List<EquManCountEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+
+            string currentdate = RequstString("currentdate");
+            string endDate = RequstString("endDate");
+            
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_EquMaintenceTotalReport";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@currentdate", currentdate);
+                sqlPara[1] = new SqlParameter("@endDate", endDate);
+               
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+
+                Datapter.Fill(dt);
+
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        EquManCountEntity itemList = new EquManCountEntity();
+                        //itemList.Number = (i + 1).ToString();
+                        itemList.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        itemList.FirstLevelCount = dt.Rows[i]["FirstLevelCount"].ToString();
+                        itemList.SecondLevelCount = dt.Rows[i]["SecondLevelCount"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        /// <summary>
+        /// 人员产能
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public PersonCapacityEntity GetPersonCapaticyData(PersonCapacityEntity user)
+        {
+            string date = RequstString("DATE");
+            string str = "";
+            string selectstr = "";
+            DataTable dt = new DataTable();
+            DataTable selectdt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                
+            }
+            return user;
+        }
     }
 }

@@ -65,33 +65,31 @@
                 height: $('#areascontent').height() *0.7,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
+                    { label: '保养规范编号', name: 'PmSpecCode', hidden: true },
                     {
-                        label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 150, align: 'left'
+                        label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 150, align: 'left', sortable: false
                     },
-                    { label: '保养类别', name: 'PmType', index: 'PmType', width: 100, align: 'left' },
-                    { label: '保养类型', name: 'PmLevel', index: 'PmLevel', width: 100, align: 'left' },
-                    { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 150, align: 'left' },
-                    { label: '保养规范名称', name: 'PmSpecName', index: 'PmSpecName', width: 200, align: 'left' },
-                    { label: '保养规范', name: 'PmSpecFile',hidden: true },
-                    { label: '保养计划名称', name: 'PmPlanName', index: 'PmPlanName', width: 250, align: 'left' },
+                    { label: '保养类别', name: 'PmType', index: 'PmType', width: 100, align: 'left', sortable: false },
+                    { label: '保养类型', name: 'PmLevel', index: 'PmLevel', width: 100, align: 'left', sortable: false },
+                    { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 150, align: 'left', sortable: false },
+                    { label: '保养规范名称', name: 'PmSpecName', index: 'PmSpecName', width: 250, align: 'left', sortable: false },
+                    { label: '保养计划名称', name: 'PmPlanName', index: 'PmPlanName', width: 250, align: 'left', sortable: false },
                     {
-                        label: '计划内次数', name: 'PmPlanCount', index: 'PmPlanCount', width: 100, align: 'left',
+                        label: '计划内次数', name: 'PmPlanCount', index: 'PmPlanCount', width: 100, align: 'left', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                            if (rowObject[2] == '计划内保养')
-                            {
+                            if (rowObject[3] == '计划内保养') {
                                 return '第' + cellvalue + '次';
                             }
-                            else
-                            {
+                            else {
                                 return '';
                             }
                         }
                     },
-                    { label: '执行情况', name: 'PmStatus', index: 'PmStatus', width: 100, align: 'left'},
-                    { label: '计划保养日期', name: 'PmPlanDate', index: 'PmPlanDate', width: 150, align: 'left' },
-                    { label: '实际开始时间', name: 'PmStartDate', index: 'PmStartDate', width: 150, align: 'left' },
-                    { label: '实际完成时间', name: 'PmFinishDate', index: 'PmFinishDate', width: 150, align: 'left' },
-                    { label: '保养人', name: 'PmOper', index: 'PmOper', width: 100, align: 'left' },
+                    { label: '执行情况', name: 'PmStatus', index: 'PmStatus', width: 100, align: 'left', sortable: false },
+                    { label: '计划保养日期', name: 'PmPlanDate', index: 'PmPlanDate', width: 150, align: 'left', sortable: false },
+
+                    { label: '保养人', name: 'PmOper', index: 'PmOper', width: 100, align: 'left', sortable: false },
+                    { label: '处理时间', name: 'UpdateTime', index: 'UpdateTime', width: 250, align: 'left', sortable: false },
                 ],
                 viewrecords: true,
                 rowNum: "10000",
@@ -119,11 +117,21 @@
                 var PmPlanName= $("#PmPlanName").val(); 
                 var PmStartDate= $("#PmStartDate").val(); 
                 var PmFinishDate = $("#PmFinishDate").val();
-                var PmFinishDateStart = $("#PmFinishDateStart").val();
-                var PmFinishDateEnd = $("#PmFinishDateEnd").val();
+                //var PmFinishDateStart = $("#PmFinishDateStart").val();
+                //var PmFinishDateEnd = $("#PmFinishDateEnd").val();
 
                 $gridTable.jqGrid('setGridParam', {
-                    postData: { ProcessName: processName, DeviceName: deviceName, PmType: PmType, PmLevel: PmLevel, Status: Status, PmSpecName: PmSpecName, PmPlanName: PmPlanName, PmStartDate: PmStartDate, PmFinishDate: PmFinishDate, PmFinishDateStart: PmFinishDateStart, PmFinishDateEnd: PmFinishDateEnd }, page: 1
+                    postData: {
+                        ProcessName: processName,
+                        DeviceName: deviceName,
+                        PmType: PmType,
+                        PmLevel: PmLevel,
+                        Status: Status,
+                        PmSpecName: PmSpecName,
+                        PmPlanName: PmPlanName,
+                        PmStartDate: PmStartDate,
+                        PmFinishDate: PmFinishDate
+                    }, page: 1
                 }).trigger('reloadGrid');
 
             });
@@ -136,7 +144,14 @@
 
             //保养次数统计
             $("#btn_Statistics").click(function () {
-
+                dialogOpen({
+                    id: "Form",
+                    title: '设备保养总统计表',
+                    url: '../Report/EquTotalReport.aspx',
+                    width: "750px",
+                    height: "500px",
+                    btn: null
+                });
             });
 
         }
@@ -259,21 +274,12 @@
                                           <input id="PmStartDate"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PmFinishDate\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
                                           <input id="PmFinishDate"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PmStartDate\')}'})" class="Wdate timeselect" /> 
                                     </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">完成起止日期：</th>
-                                    <td class="formValue" colspan="3">
-                                          <input id="PmFinishDateStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PmFinishDateEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                          <input id="PmFinishDateEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PmFinishDateStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
                                     <td class="formValue">
-                                          <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
+                                          <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                                          <a id="btn_Statistics" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;保养次数统计</a>                                                
                                     </td>
-                                     <td class="formValue">
-                                          <a id="btn_Statistics" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;保养次数统计</a>                        
-                                    </td>
+                                    
                                 </tr>
-                                
                             </table>
                         </div>
                     </div>

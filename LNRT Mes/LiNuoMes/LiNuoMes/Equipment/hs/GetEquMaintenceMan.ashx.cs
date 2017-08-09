@@ -77,7 +77,7 @@ namespace LiNuoMes.Equipment.hs
                     strJson += "\"" + dt.Rows[j]["PmLevel"].ToString().Trim() + "\",";
                     strJson += "\"" + dt.Rows[j]["DeviceName"].ToString().Trim() + "\",";
                     //strJson += "\"" + dt.Rows[j]["PmSpecName"].ToString().Trim() + "\",";
-                    strJson += "\"" + dt.Rows[j]["PmSpecFile"].ToString().Trim() + "\",";
+                    strJson += "\"" + dt.Rows[j]["PmSpecName"].ToString().Trim() + "\",";
                     strJson += "\"" + dt.Rows[j]["PmPlanName"].ToString().Trim() + "\",";
                     strJson += "\"" + dt.Rows[j]["PmPlanCount"].ToString().Trim() + "\",";
                     strJson += "\"" + dt.Rows[j]["PmStatus"].ToString().Trim() + "\",";

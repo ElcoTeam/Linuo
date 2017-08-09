@@ -35,6 +35,7 @@
     <script src="../My97DatePicker/WdatePicker.js"></script>
     <script src="../Content/scripts/plugins/printTable/jquery.printTable.js"></script>
     <script src="ExportGridToExcel.js"></script>
+    <script src="../js/highchart.js" type="text/javascript"></script>
 
     <script>
 
@@ -44,12 +45,12 @@
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
-            $('#areascontent').height($(window).height()-106);
+            $('#areascontent').height($(window).height()-100);
             var areaheight = $("#areascontent").height();
             $(window).resize(function (e) {
                 window.setTimeout(function () {
                     $('#gridTable').setGridWidth(($('.gridPanel').width()));
-                    $('#areascontent').height($(window).height()-106);
+                    $('#areascontent').height($(window).height()-100);
                 }, 200);
             });
 
@@ -63,25 +64,105 @@
             var $gridTable = $('#gridTable');
             var panelwidth = $('.gridPanel').width();
             $gridTable.jqGrid({
-                url: "../UserManage/hs/GetAttendenceInfo.ashx",
+                url: "../Report/GetReportInfo.ashx",
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() *0.6,
+                height: $('#areascontent').height() *0.2,
                 colModel: [
-                    
-                    { label: '日期', name: 'Date', index: 'Date', width: panelwidth*0.15, align: 'center' },
-                    {
-                        label: '出勤人数', name: 'AttendanceNum', index: 'AttendanceNum', width: panelwidth * 0.2, align: 'center'
-                    },
-                    {
-                        label: '当日工作时间', name: 'WorkHours', index: 'WorkHours', width: panelwidth * 0.2, align: 'center'
-                    },
-                    {
-                        label: '出勤时间', name: 'TotalAttendenceHours', index: 'TotalAttendenceHours', width: panelwidth * 0.2, align: 'center'
-                    },
-                    {
-                        label: '有效生产时间', name: 'ActiveWorkHours', index: 'ActiveWorkHours', width: panelwidth * 0.2, align: 'center'
-                    },
+                      { label: '日期', name: '0', index: '0', width: panelwidth * 0.06, align: 'left', sortable: false },
+                      {
+                          label: '1', name: '1', index: '1', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '2', name: '2', index: '2', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '3', name: '3', index: '3', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '4', name: '4', index: '4', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '5', name: '5', index: '5', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '6', name: '6', index: '6', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '7', name: '7', index: '7', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '8', name: '8', index: '8', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '9', name: '9', index: '9', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '10', name: '10', index: '10', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '11', name: '11', index: '11', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '12', name: '12', index: '12', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '13', name: '13', index: '13', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '14', name: '14', index: '14', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '15', name: '15', index: '15', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '16', name: '16', index: '16', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '17', name: '17', index: '17', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '18', name: '18', index: '18', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '19', name: '19', index: '19', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '20', name: '20', index: '20', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '21', name: '21', index: '21', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '22', name: '22', index: '22', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '23', name: '23', index: '23', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '24', name: '24', index: '24', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '25', name: '25', index: '25', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '26', name: '26', index: '26', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '27', name: '27', index: '27', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '28', name: '28', index: '28', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '29', name: '29', index: '29', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '30', name: '30', index: '30', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '31', name: '31', index: '31', width: panelwidth * 0.03, align: 'left'
+                      },
                 ],
                 viewrecords: true,
                 rowNum: "10000",
@@ -94,6 +175,7 @@
                 },
                 gridComplete: function () {
                     //$("#" + this.id).setSelection(selectedRowIndex, false);
+                   
                 }
             });
 
@@ -103,9 +185,44 @@
                 $gridTable.jqGrid('setGridParam', {
                     datatype: 'json',
                     postData: {
+                        Action: "UserAttendenceReport",
                         DATE: date
                     }
                 }).trigger('reloadGrid');
+
+               
+                $.ajax({
+                    url: "GetReportInfo.ashx",
+                    data: {
+                        Action: "GetUserAttendenceChart",
+                        DATE: date
+                    },
+                    type: "post",
+                    datatype: "json",
+                    success: function (data) {
+                        var datalength = JSON.parse(data).catagory.length;
+                        //console.log(JSON.parse(data).catagory.length)
+                        //if (datalength < 31)
+                        //{
+                            for (var i = datalength; i < 31; i++)
+                            {
+                                $gridTable.hideCol(""+(i+1)+"").trigger("reloadGrid");
+                            }
+                              
+                        //}
+                        //else
+                        //{
+                            for (var i = 28; i < datalength; i++) {
+                                $gridTable.showCol("" + (i + 1) + "").trigger("reloadGrid");
+                            }
+                       // }
+                        //chart.series[0].setData[data.Date];
+                        paint(JSON.parse(data));
+                    },
+                    error: function (msg) {
+                        dialogMsg("数据访问异常", -1);
+                    }
+                });
             });
 
             //查询回车
@@ -118,6 +235,60 @@
             //    alert(111);
             //    $('#spn_Search').trigger("click");
             //});
+        }
+
+        function paint(serice) {
+            //var datavalue = JSON.parse(serice).datavalue;
+            var charts = new Highcharts.chart('container', {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: '每月出勤统计图'
+                },
+                //subtitle: {
+                //    text: 'Source: WorldClimate.com'
+                //},
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    title: {
+                        text: '出勤人数'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value;
+                        }
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: true          // 开启数据标签
+                        }
+                        //enableMouseTracking: false // 关闭鼠标跟踪，对应的提示框、点击事件会失效
+                    },
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '每日出勤人数',
+                    data: serice.datavalue
+                }]
+            });
+            //charts.series[0].data=JSON.parse(serice).datavalue;
+            charts.xAxis[0].setCategories(serice.catagory);
+
         }
 
         function fnDate() {
@@ -227,6 +398,13 @@
                       <table id="gridTable"></table>                      
                   </div>
               </div>
+         </div>
+
+         <div class="center-Panel">
+                <div class="panel-Title">统计信息折线图</div>
+                 <div id="container" style="width: 100%; height: 400px; text-align:center;  margin: 0 auto">
+           
+                 </div>
          </div>
     </div>
 

@@ -216,11 +216,21 @@
                 var PmPlanName= $("#PmPlanName").val(); 
                 var PmStartDate= $("#PmStartDate").val(); 
                 var PmFinishDate = $("#PmFinishDate").val();
-                var PmFinishDateStart = $("#PmFinishDateStart").val();
-                var PmFinishDateEnd = $("#PmFinishDateEnd").val();
+                //var PmFinishDateStart = $("#PmFinishDateStart").val();
+                //var PmFinishDateEnd = $("#PmFinishDateEnd").val();
 
                 $gridTable.jqGrid('setGridParam', {
-                    postData: { ProcessName: processName, DeviceName: deviceName, PmType: PmType, PmLevel: PmLevel, Status: Status, PmSpecName: PmSpecName, PmPlanName: PmPlanName, PmStartDate: PmStartDate, PmFinishDate: PmFinishDate, PmFinishDateStart: PmFinishDateStart, PmFinishDateEnd: PmFinishDateEnd }, page: 1
+                    postData: {
+                        ProcessName: processName,
+                        DeviceName: deviceName,
+                        PmType: PmType,
+                        PmLevel: PmLevel,
+                        Status: Status,
+                        PmSpecName: PmSpecName,
+                        PmPlanName: PmPlanName,
+                        PmStartDate: PmStartDate,
+                        PmFinishDate: PmFinishDate
+                    }, page: 1
                 }).trigger('reloadGrid');
 
             });

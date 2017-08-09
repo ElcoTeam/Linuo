@@ -151,6 +151,7 @@ namespace LiNuoMes.Report
             cellStyle.RightBorderColor = NPOI.HSSF.Util.HSSFColor.BLACK.index;
             cellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.THIN;
             cellStyle.TopBorderColor = NPOI.HSSF.Util.HSSFColor.BLACK.index;
+            
             #endregion
 
             // 表数据    
@@ -160,18 +161,20 @@ namespace LiNuoMes.Report
                     DataRow drlast = dt.Rows[k];
                     NPOI.SS.UserModel.IRow rowlast = hssfSheet.CreateRow(k + 2);
                     rowlast.Height = 30 * 20;
+                
                     for (int i = 0; i < dt.Columns.Count; i++)
                     {
                         rowlast.CreateCell(i).SetCellValue(drlast[i].ToString());
                         rowlast.GetCell(i).CellStyle = cellStyle;
+                       
                     }   
             }
 
             // 表数据    
-            for (int k = 0; k < dt.Rows.Count; k++)
-            {
-                hssfSheet.AutoSizeColumn(k);
-            }
+            //for (int k = 0; k < dt.Rows.Count; k++)
+            //{
+            //    hssfSheet.AutoSizeColumn(k);
+            //}
 
             //获取当前列的宽度，然后对比本列的长度，取最大值
             for (int columnNum = 0; columnNum <= dt.Columns.Count; columnNum++)
@@ -206,6 +209,7 @@ namespace LiNuoMes.Report
             hssfSheet.PrintSetup.NoColor = true;
             hssfSheet.PrintSetup.Landscape = true;
             hssfSheet.PrintSetup.PaperSize = (short)PaperSize.A4;
+
             //是否自适应界面
             hssfSheet.FitToPage = true;
 

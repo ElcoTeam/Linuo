@@ -1,6 +1,7 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MonthCompletionRate.aspx.cs" Inherits="LiNuoMes.Report.MonthCompletionRate" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="PersonCapacityNewReport.aspx.cs" Inherits="LiNuoMes.Report.PersonCapacityNewReport" %>
 
 <!DOCTYPE html>
+
 <html>
 <head>
 <title>力诺瑞特平板集热器</title>
@@ -34,9 +35,9 @@
     <script src="../My97DatePicker/WdatePicker.js"></script>
     <script src="../Content/scripts/plugins/printTable/jquery.printTable.js"></script>
     <script src="ExportGridToExcel.js"></script>
+    <script src="../js/highchart.js" type="text/javascript"></script>
 
     <script>
-
         $(function () {
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
@@ -49,10 +50,9 @@
                     $('#areascontent').height($(window).height()-100);
                 }, 200);
             });
-
+            
             InitPage();
             fnDate();
-            
         });
 
         //加载表格
@@ -62,28 +62,107 @@
             var panelwidth = $('.gridPanel').width();
             $gridTable.jqGrid({
                 url: "GetReportInfo.ashx",
-                postData: { Action: "MonthCompletionRateReport" },
+                postData: { Action: "PersonCapacityReport" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() *0.6,
+                height: $('#areascontent').height() *0.2,
                 colModel: [
-                    { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
-                    { label: '日期', name: 'Date', index: 'Date', width: panelwidth*0.15, align: 'center' },
-                    {
-                        label: '预算产量', name: 'BudgetedQty', index: 'BudgetedQty', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '完成产量', name: 'FinishQty', index: 'FinishQty', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '预算完成率', name: 'BudgetedCompletionRate', index: 'BudgetedCompletionRate', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '设计产量', name: 'DesignYield', index: 'DesignYield', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '产能发挥率', name: 'CapacityRate', index: 'CapacityRate', width: panelwidth * 0.15, align: 'center'
-                    }, 
+                      {
+                          label: '日期', name: '0', index: '0', width: panelwidth * 0.06, align: 'left', sortable: false
+                      },
+                      {
+                          label: '1', name: '1', index: '1', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '2', name: '2', index: '2', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '3', name: '3', index: '3', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '4', name: '4', index: '4', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '5', name: '5', index: '5', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '6', name: '6', index: '6', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '7', name: '7', index: '7', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '8', name: '8', index: '8', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '9', name: '9', index: '9', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '10', name: '10', index: '10', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '11', name: '11', index: '11', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '12', name: '12', index: '12', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '13', name: '13', index: '13', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '14', name: '14', index: '14', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '15', name: '15', index: '15', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '16', name: '16', index: '16', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '17', name: '17', index: '17', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '18', name: '18', index: '18', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '19', name: '19', index: '19', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '20', name: '20', index: '20', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '21', name: '21', index: '21', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '22', name: '22', index: '22', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '23', name: '23', index: '23', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '24', name: '24', index: '24', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '25', name: '25', index: '25', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '26', name: '26', index: '26', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '27', name: '27', index: '27', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '28', name: '28', index: '28', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '29', name: '29', index: '29', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '30', name: '30', index: '30', width: panelwidth * 0.03, align: 'left'
+                      },
+                      {
+                          label: '31', name: '31', index: '31', width: panelwidth * 0.03, align: 'left'
+                      },
                 ],
                 viewrecords: true,
                 rowNum: "10000",
@@ -101,26 +180,15 @@
 
             //查询事件
             $("#spn_Search").click(function () {  
-
-                  $gridTable.jqGrid('setGridParam', {
-                      datatype: 'json',
-                      postData: {
-                          YEAR: $("#YEAR").val()
-                      }
-                  }).trigger('reloadGrid');
-              
+                var date = $("#DATE").val();
+                $gridTable.jqGrid('setGridParam', {
+                    datatype: 'json',
+                    postData: {
+                        Action: "PersonCapacityReport",
+                        DATE: date
+                    }
+                }).trigger('reloadGrid');
             });
-
-            //查询回车
-            //$('#ItemName').bind('keypress', function (event) {
-            //    if (event.keyCode == "13") {
-            //        $('#spn_Search').trigger("click");
-            //    }
-            //});
-            //$('#DATE').bind('onpicking', function (event) {
-            //    alert(111);
-            //    $('#spn_Search').trigger("click");
-            //});
         }
 
         function fnDate() {
@@ -142,21 +210,17 @@
                     time = xhr.getResponseHeader("Date");
                     //console.log(xhr.getAllResponseHeaders())
                     curDate = new Date(time);
-                   
-                    $('#YEAR').val(curDate.getFullYear());
-                   
-                    var year = $("#YEAR").val();
-                    
-                    $("#title").html(year + '年' + '月度生产完成率报表');
+                    var seperator1 = "-";
+                    var month = curDate.getMonth() + 1;
+                    var strDate = curDate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    var currentdate = curDate.getFullYear() + seperator1 + month
+                    $('#DATE').val(currentdate);
                 }
             }
 
-        }
-
-        function settitle()
-        {
-            var year = $("#YEAR").val();            
-            $("#title").html(year + '年' + '月度生产完成率报表');
         }
 
         //打印
@@ -170,9 +234,8 @@
 
         //导出
         function btn_export(event) {
-
-            var title = $("#title").html();
-            ExportJQGridDataToExcel('#gridTable', title);
+            
+            ExportJQGridDataToExcel('#gridTable','人员产能报表');
         }
 
     </script>
@@ -195,7 +258,7 @@
                         <div class="panel-heading">
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">月度生产完成率报表</strong></th>
+                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">人员产能报表</strong></th>
                                     <td></td>
                                 </tr>
                             </table>
@@ -204,8 +267,8 @@
                             <table id="form1" class="form" border="0">
                                 <tr>
                                     <th class="formTitle" >查询日期：</th>
-                                    <td class="formValue" colspan="2" >
-                                        <input  id="YEAR" type="text"  class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'yyyy',onpicked:settitle})" readonly/>&nbsp;年&nbsp;
+                                    <td class="formValue" >
+                                        <input id="DATE" type="text" class="Wdate  form-control"  onfocus="WdatePicker({dateFmt:'yyyy-MM',onpicked:setsearch})"/> 
                                     </td>
                                     <td class="formValue">                                     
                                         <a id="spn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
@@ -228,24 +291,22 @@
          <div class="ui-report" style="margin-top:0.5%; overflow: hidden; ">
               <div class="gridPanel" id="gridPanel">
                   <div class="printArea">
-                      <div class="grid-title"> 
-                          <h2 style="text-align:center;" id="title"></h2> 
-                     </div> 
                       <table id="gridTable"></table>                      
                   </div>
               </div>
          </div>
+
+         <div class="center-Panel">
+                <div class="panel-Title">统计信息折线图</div>
+                 <div id="container" style="width: 100%; height: 400px; text-align:center;  margin: 0 auto">
+           
+                 </div>
+         </div>
     </div>
-    <style>
-         .timeselect {
-            width: 200px;
-            height: 35px;
-            font-size: 25px;
-            padding-left: 10px;
-         }
-    </style>
+    
 </body>
 </html>
+
 
 
 

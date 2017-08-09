@@ -6,11 +6,11 @@ using System.Web;
 namespace LiNuoMes.Model
 {
     public class PersonCapacityEntity
-    {
-        public string Number { set; get; }
-        public string Date { set; get; }
-        public string Yield { set; get; }
-        public string PersonNum { set; get; }
-        public string PerCapacity { set; get; }
+    {    
+        public List<string> Yield { get; set; }
+
+        public List<string> PersonNum { get; set; }
+
+        public List<string> PerCapacity { get; set; }
     }
 }

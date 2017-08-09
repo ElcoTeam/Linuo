@@ -142,7 +142,6 @@
                     type: "post",
                     datatype: "json",
                     success: function (data) {
-                        
                         //chart.series[0].setData[data.Date];
                         paint(data);
                     },

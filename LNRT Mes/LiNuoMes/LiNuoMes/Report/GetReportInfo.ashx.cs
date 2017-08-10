@@ -197,9 +197,8 @@ namespace LiNuoMes.Report
             //月度生产完成率
             if (Action == "MonthCompletionRateReport")
             {
-                List<MonthCompletionRateEntity> monthCompletionRate = new List<MonthCompletionRateEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                MonthCompletionRateEntity monthCompletionRate = new MonthCompletionRateEntity();
+                
             }
 
             //产品直通率

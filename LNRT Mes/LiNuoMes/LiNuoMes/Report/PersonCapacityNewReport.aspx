@@ -57,7 +57,7 @@
 
         //加载表格
         function InitPage() {
-            var selectedRowIndex = 0;
+            var selectedRowIndex = 0;v
             var $gridTable = $('#gridTable');
             var panelwidth = $('.gridPanel').width();
             $gridTable.jqGrid({

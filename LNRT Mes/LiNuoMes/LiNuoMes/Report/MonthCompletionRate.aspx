@@ -34,6 +34,7 @@
     <script src="../My97DatePicker/WdatePicker.js"></script>
     <script src="../Content/scripts/plugins/printTable/jquery.printTable.js"></script>
     <script src="ExportGridToExcel.js"></script>
+    <script src="../js/highchart.js" type="text/javascript"></script>
 
     <script>
 
@@ -65,25 +66,51 @@
                 postData: { Action: "MonthCompletionRateReport" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() *0.6,
+                height: $('#areascontent').height() *0.4,
                 colModel: [
-                    { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
-                    { label: '日期', name: 'Date', index: 'Date', width: panelwidth*0.15, align: 'center' },
-                    {
-                        label: '预算产量', name: 'BudgetedQty', index: 'BudgetedQty', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '完成产量', name: 'FinishQty', index: 'FinishQty', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '预算完成率', name: 'BudgetedCompletionRate', index: 'BudgetedCompletionRate', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '设计产量', name: 'DesignYield', index: 'DesignYield', width: panelwidth * 0.15, align: 'center'
-                    },
-                    {
-                        label: '产能发挥率', name: 'CapacityRate', index: 'CapacityRate', width: panelwidth * 0.15, align: 'center'
-                    }, 
+                      {
+                          label: '月份', name: '0', index: '0', width: panelwidth * 0.08, align: 'left', sortable: false
+                      },
+                      {
+                          label: '1月', name: '1', index: '1', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '2月', name: '2', index: '2', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '3月', name: '3', index: '3', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '4月', name: '4', index: '4', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '5月', name: '5', index: '5', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '6月', name: '6', index: '6', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '7月', name: '7', index: '7', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '8月', name: '8', index: '8', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '9月', name: '9', index: '9', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '10月', name: '10', index: '10', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '11月', name: '11', index: '11', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '12月', name: '12', index: '12', width: panelwidth * 0.07, align: 'left'
+                      },
+                      {
+                          label: '汇总', name: '13', index: '13', width: panelwidth * 0.07, align: 'left'
+                      },
+                    
                 ],
                 viewrecords: true,
                 rowNum: "10000",
@@ -218,6 +245,7 @@
             </div>
         </div>
         <div class="titlePanel">
+            
         <div class="toolbar">
             <div class="btn-group">
                 <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
@@ -235,15 +263,14 @@
                   </div>
               </div>
          </div>
+          <div class="center-Panel">
+                <div class="panel-Title">统计信息柱状图</div>
+                 <div id="container" style="width: 100%; height: 400px; text-align:center;  margin: 0 auto">
+           
+                 </div>
+         </div>
     </div>
-    <style>
-         .timeselect {
-            width: 200px;
-            height: 35px;
-            font-size: 25px;
-            padding-left: 10px;
-         }
-    </style>
+  
 </body>
 </html>
 

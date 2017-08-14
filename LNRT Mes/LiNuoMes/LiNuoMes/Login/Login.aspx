@@ -12,7 +12,7 @@
 <script src="../Content/scripts/plugins/dialog/dialog.js"></script>
 <script src="../Content/scripts/utils/learun-ui.js"></script>
 <script src="../Content/scripts/utils/learun-form.js"></script><script src="../js/Validform_v5.3.2_min.js"></script>
-
+    
 <script>
     $(function () {
         $(".i-text").focus(function () {

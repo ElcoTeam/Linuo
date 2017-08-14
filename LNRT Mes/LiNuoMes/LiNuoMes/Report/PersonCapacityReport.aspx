@@ -53,6 +53,13 @@
             
             InitPage();
             fnDate();
+
+            $("#startTime").bind("click",function(){
+                WdatePicker({doubleCalendar:true,startDate:'%y-{%M-1}-%d',dateFmt:'yyyy-MM-dd',autoPickDate:true,maxDate:'#F{$dp.$D(\'endTime\')||\'%y-%M-%d\'}',onpicked:function(){endTime.click();}});
+            });
+            $("#endTime").bind("click",function(){
+                WdatePicker({doubleCalendar:true,startDate:'%y-{%M-1}-%d',minDate:'#F{$dp.$D(\'startTime\')}',maxDate:'%y-%M-%d',dateFmt:'yyyy-MM-dd',autoPickDate:true});
+            });
         });
 
         //加载表格
@@ -229,6 +236,8 @@
                                     <td class="formValue" colspan="2" >
                                         <input  id="YEAR" type="text"  class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'yyyy',onpicked:selectyear,onclearing:setyear,oncleared:clearedyear})" readonly/>&nbsp;年&nbsp;
                                         <input  id="MONTH" type="text" class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'MM',oncleared:clearedmonth})" readonly/> &nbsp;月&nbsp;
+                                        <input type="text" id="startTime" placeholder="起始日期"/> - 
+                                        <input type="text" id="endTime" placeholder="结束日期"/>
                                     </td>
                                     <td class="formValue">                                     
                                         <a id="spn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  

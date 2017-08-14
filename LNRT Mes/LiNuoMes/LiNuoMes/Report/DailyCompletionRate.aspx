@@ -1,4 +1,5 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="DailyCompletionRate.aspx.cs" Inherits="LiNuoMes.Report.DailyCompletionRate" %>
+﻿
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="DailyCompletionRate.aspx.cs" Inherits="LiNuoMes.Report.DailyCompletionRate" %>
 
 <!DOCTYPE html>
 
@@ -261,7 +262,6 @@
               </div>
          </div>
     </div>
-    
 </body>
 </html>
 

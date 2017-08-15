@@ -235,6 +235,101 @@ CREATE TABLE [dbo].[MFG_WO_MTL_Pull] (
     [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:待响应; 1:待确认; 2:已完成
 );
 
+--产线下线工序类型表
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Process') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Process;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Process] (
+    [ID]                 INT             NOT NULL,                        -- (系统自动生成)
+    [DisplayValue]       NVARCHAR  (50)  NOT NULL                         --显示内容
+);
+
+INSERT INTO MFG_WIP_Data_Abnormal_Process (ID, DisplayValue)
+VALUES
+(1, N'铜排气密性检测'),
+(2, N'板芯气密性检测'),
+(3, N'板芯装配'),
+(4, N'终检(预装压条)');
+
+--产线下线产品阶段表
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Product') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Product;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Product] (
+    [ID]                 INT             NOT NULL,                        -- (系统自动生成)
+    [DisplayValue]       NVARCHAR  (50)  NOT NULL                         --显示内容
+);
+
+INSERT INTO MFG_WIP_Data_Abnormal_Product (ID, DisplayValue)
+VALUES
+(1, N'铜排'),
+(2, N'板芯'),
+(3, N'外框'),
+(4, N'半成品'),
+(5, N'成品(终检)');
+
+
+--产线下线工序、产品阶段许可表
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Proc_Prod') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Proc_Prod;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Proc_Prod] (
+    [abProcessID]        INT             NOT NULL,                       --下线工序ID
+    [abProductID]        INT             NOT NULL                        --下线产品阶段ID
+);
+
+INSERT INTO MFG_WIP_Data_Abnormal_Proc_Prod (abProcessID, abProductID)
+VALUES
+(1, 1),
+(2, 2),
+(3, 2),
+(3, 3),
+(3, 4),
+(4, 5);
+
+--产线下线产品原因模板表
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Reason_Template') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Reason_Template;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Reason_Template] (
+    [ID]                 INT             NOT NULL,                    -- (系统自动生成)
+    [abProductID]        INT             NOT NULL DEFAULT(0),             --下线产品阶段ID
+    [DisplayValue]       VARCHAR  (50)   NOT NULL                         --显示内容
+);
+
+INSERT INTO MFG_WIP_Data_Abnormal_Reason_Template (ID, abProductID, DisplayValue)
+VALUES
+(101, 1, N'黄铜接头'),
+(102, 1, N'锁口焊接'),
+(103, 1, N'集管折弯'),
+(104, 1, N'焊点(集管排管)'),
+(199, 1, N'其它'),
+
+(201, 2, N'黄铜接头'),
+(202, 2, N'锁口焊接'),
+(203, 2, N'集管折弯'),
+(204, 2, N'焊点(集管排管)'),
+(205, 2, N'吸热板焊穿'),
+(206, 2, N'排管焊穿'),
+(207, 2, N'吸热板划伤、碰伤'),
+(299, 2, N'其它'),
+
+(301, 3, N'型材划伤、硌伤'),
+(302, 3, N'背板折伤'),
+(303, 3, N'四角硌伤'),
+(304, 3, N'四角间隙过大'),
+(305, 3, N'边框装错'),
+(399, 3, N'其它'),
+
+(401, 4, N'吸热板划伤、碰伤'),
+(402, 4, N'黄铜接头断裂'),
+(499, 4, N'其它'),
+
+(501, 5, N'涂胶断续'),
+(502, 5, N'玻璃划伤'),
+(503, 5, N'玻璃掉落'),
+(504, 5, N'玻璃碎裂'),
+(505, 5, N'压条报废'),
+(506, 5, N'边框四角间隙过大'),
+(599, 5, N'其它');
+
+
 --产线下线数据记录表, 每一个RFID对应一个条下线记录(相同RFID可能会有多条记录, 因为可能存在重复下线的可能)
 IF OBJECT_ID('MFG_WIP_Data_Abnormal') is not null
 DROP TABLE MFG_WIP_Data_Abnormal;
@@ -247,7 +342,9 @@ CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal] (
     [AbnormalType]       INT             NOT NULL DEFAULT (1),            --下线类型: 1:补修; 2:报废; 3:未完工
     [AbnormalTime]       DATETIME        NOT NULL DEFAULT GETDATE(),      --下线时间
     [AbnormalUser]       NVARCHAR (50)   NOT NULL,                        --下线用户
-    [AbnormalReason]     NVARCHAR (200)  NOT NULL,                        --下线原因
+    [AbnormalReason]     NVARCHAR (200)  NOT NULL,                        --下线原因, 此字段目前不会被使用到了, 因为项目需求发生巨大变化.
+    [AbnormalProcess]    INT             NOT NULL DEFAULT (0),            --下线工序
+    [AbnormalProduct]    INT             NOT NULL DEFAULT (0),            --下线产品阶段
     [SubPlanStatus]      INT             NOT NULL DEFAULT (0),            --创建下线补单状态: 0:未创建; 1:已创建;
     [RepairStatus]       INT             NOT NULL DEFAULT (0),            --补修状态: 0:待补修; 1:补修中; 2:已完成;
     [RepairTime]         DATETIME            NULL,                        --补修时间
@@ -255,6 +352,16 @@ CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal] (
     [RepairComment]      NVARCHAR (200)      NULL,                        --补修说明
     [UpdateTime]         DATETIME        NOT NULL DEFAULT GETDATE(),      --更新时间
     [UpdateUser]         NVARCHAR (50)   NOT NULL                         --更新用户
+);
+
+--产线下线产品原因记录表
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Reason') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Reason;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Reason] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [AbnormalID]         INT             NOT NULL DEFAULT (0),            --MFG_WIP_Data_Abnormal表的ID
+    [TemplateID]         INT             NOT NULL,                        --下线产品阶段ID
+    [RecordValue]        INT             NOT NULL DEFAULT(0)              --出现产品下线原因数量
 );
 
 --产线下线物料数据维护表, 每一种物料对应一条记录

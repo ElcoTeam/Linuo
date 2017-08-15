@@ -236,14 +236,14 @@ CREATE TABLE [dbo].[MFG_WO_MTL_Pull] (
 );
 
 --产线下线工序类型表
-IF OBJECT_ID('MFG_WIP_Data_Abnormal_Process') is not null
-DROP TABLE MFG_WIP_Data_Abnormal_Process;
-CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Process] (
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Point') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Point;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Point] (
     [ID]                 INT             NOT NULL,                        -- (系统自动生成)
     [DisplayValue]       NVARCHAR  (50)  NOT NULL                         --显示内容
 );
 
-INSERT INTO MFG_WIP_Data_Abnormal_Process (ID, DisplayValue)
+INSERT INTO MFG_WIP_Data_Abnormal_Point (ID, DisplayValue)
 VALUES
 (1, N'铜排气密性检测'),
 (2, N'板芯气密性检测'),
@@ -268,14 +268,14 @@ VALUES
 
 
 --产线下线工序、产品阶段许可表
-IF OBJECT_ID('MFG_WIP_Data_Abnormal_Proc_Prod') is not null
-DROP TABLE MFG_WIP_Data_Abnormal_Proc_Prod;
-CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Proc_Prod] (
-    [abProcessID]        INT             NOT NULL,                       --下线工序ID
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Point_Product') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Point_Product;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Point_Product] (
+    [abPointID]          INT             NOT NULL,                       --下线工序ID
     [abProductID]        INT             NOT NULL                        --下线产品阶段ID
 );
 
-INSERT INTO MFG_WIP_Data_Abnormal_Proc_Prod (abProcessID, abProductID)
+INSERT INTO MFG_WIP_Data_Abnormal_Point_Product (abPointID, abProductID)
 VALUES
 (1, 1),
 (2, 2),
@@ -339,12 +339,11 @@ CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal] (
     [WorkOrderNumber]    VARCHAR  (50)   NOT NULL,                        --订单编码
     [WorkOrderVersion]   INT             NOT NULL DEFAULT (0),            --订单版本: 目的是为了区分开来补单的补单, 0:正常订单; >0: 其余补单顺次+1
     [AbnormalPoint]      INT             NOT NULL DEFAULT (3),            --下线点编号: 只允许指定的三个下线工序: 1.火焰焊后的气密性检测后;2.激光焊接后的气密性检测后;3.质检后(具体名称待定)
+    [AbnormalProduct]    INT             NOT NULL DEFAULT (0),            --下线产品阶段
     [AbnormalType]       INT             NOT NULL DEFAULT (1),            --下线类型: 1:补修; 2:报废; 3:未完工
     [AbnormalTime]       DATETIME        NOT NULL DEFAULT GETDATE(),      --下线时间
     [AbnormalUser]       NVARCHAR (50)   NOT NULL,                        --下线用户
     [AbnormalReason]     NVARCHAR (200)  NOT NULL,                        --下线原因, 此字段目前不会被使用到了, 因为项目需求发生巨大变化.
-    [AbnormalProcess]    INT             NOT NULL DEFAULT (0),            --下线工序
-    [AbnormalProduct]    INT             NOT NULL DEFAULT (0),            --下线产品阶段
     [SubPlanStatus]      INT             NOT NULL DEFAULT (0),            --创建下线补单状态: 0:未创建; 1:已创建;
     [RepairStatus]       INT             NOT NULL DEFAULT (0),            --补修状态: 0:待补修; 1:补修中; 2:已完成;
     [RepairTime]         DATETIME            NULL,                        --补修时间

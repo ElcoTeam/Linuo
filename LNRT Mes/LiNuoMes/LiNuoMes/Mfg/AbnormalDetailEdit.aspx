@@ -54,11 +54,13 @@
          var OPaction = "";
 
          $(function () {
+                
                 $('input').iCheck({
                     checkboxClass: 'icheckbox_square',
-                    radioClass: 'iradio_square',
                     increaseArea: '20%'
                 });
+
+                initAbPointContent();
 
                 $("#AbnormalType2").on('ifToggled', function (event) {
                     if ($("#AbnormalType2").is(':checked')) {
@@ -141,7 +143,6 @@
          }
 
          function InitDataItems(data) {
-
              if (data.AbnormalType == "2") {
                  $("#AbnormalType2").iCheck("check");
              }
@@ -164,12 +165,118 @@
              $("#RFID").val(data.RFID);
              $("#WorkOrderNumber").val(data.WorkOrderNumber);
              $("#GoodsCode").val(data.GoodsCode);
-             $("#AbnormalPoint").val(data.AbnormalPoint);
+             $("input:radio[name='AbnormalPoint'][value='" + data.AbnormalPoint + "']").attr('checked', true);
              $("#AbnormalTime").val(data.AbnormalTime);
              $("#AbnormalUser").val(data.AbnormalUser);
              $("#AbnormalReason").val(data.AbnormalReason);
          }
         
+         function initAbPointContent() {
+             $.ajax({
+                 url: "GetSetMfg.ashx",
+                 data: {
+                     "Action": "MFG_WIP_DATA_ABNORMAL_POINT"
+                 },
+                 type: "post",
+                 async: false,
+                 datatype: "json",
+                 success: function (data) {
+                     data = JSON.parse(data);
+                     var strListContent = "";
+                     for (i in data) {
+                         strListContent +=
+                               '<input EDITFLG="true" type="radio" name="AbnormalPoint" value ="' + data[i].ID + '" id="AbnormalPoint' + data[i].ID + '" class="form-control"/>'
+                             + '<label for="AbnormalPoint' + data[i].ID + '" class="rTitle">' + data[i].DisplayValue + '</label>';
+                     }
+                     $("#tdAbnormalPoint").html(strListContent);
+
+                     $("input:radio[name='AbnormalPoint']").iCheck({
+                         radioClass: 'iradio_square',
+                         increaseArea: '20%'
+                     });    
+                     
+                     $("input:radio[name='AbnormalPoint']").on("ifToggled", function (event) {
+                            $("#tdAbnormalReason").html("");
+                            var nPoint = $("input:radio[name='AbnormalPoint']:checked").val();
+                            initAbProuctContent(nPoint);                     
+                     });
+
+
+                 },
+                 error: function (msg) {
+                     alert(msg.responseText);
+                 }
+             });
+         }
+
+         function initAbProuctContent(nPoint) {
+             $.ajax({
+                 url: "GetSetMfg.ashx",
+                 data: {
+                     "Action": "MFG_WIP_DATA_ABNORMAL_PRODUCT",
+                     "ABPOINTID": nPoint
+                 },
+                 type: "post",
+                 async: false,
+                 datatype: "json",
+                 success: function (data) {
+                     data = JSON.parse(data);
+                     var strListContent = "";
+                     for (i in data) {
+                         strListContent +=
+                               '<input EDITFLG="true" type="radio" name="AbnormalProduct" value ="' + data[i].ID + '" id="AbnormalProduct' + data[i].ID + '" class="form-control"/>'
+                             + '<label for="AbnormalProduct' + data[i].ID + '" class="pTitle">' + data[i].DisplayValue + '</label>';
+                     }
+                     $("#tdAbnormalProduct").html(strListContent);
+                   
+                     $("input:radio[name='AbnormalProduct']").iCheck({
+                        radioClass: 'iradio_square',
+                        increaseArea: '20%'
+                     });
+
+                     $("input:radio[name='AbnormalProduct']").on("ifToggled", function (event) {
+                            var nProduct = $("input:radio[name='AbnormalProduct']:checked").val();
+                            initAbReasonContent(nProduct);                     
+                     });
+
+                     if (data.length == 1) {
+                         $('#AbnormalProduct' + data[0].ID).iCheck("check");
+                         $('#AbnormalProduct' + data[0].ID).trigger("ifToggled");
+                     }
+                 },
+                 error: function (msg) {
+                     alert(msg.responseText);
+                 }
+             });
+         }
+
+         function initAbReasonContent(nProduct) {
+             $.ajax({
+                 url: "GetSetMfg.ashx",
+                 data: {
+                     "Action": "MFG_WIP_DATA_ABNORMAL_REASON",
+                     "ABPRODUCT": nProduct,
+                     "AbId": AbId
+                 },
+                 type: "post",
+                 async: false,
+                 datatype: "json",
+                 success: function (data) {
+                     data = JSON.parse(data);
+                     var strListContent = "";
+                     for (i in data) {
+                         strListContent +=
+                            '<li class="liTitle">' + data[i].DisplayValue + '<input type="text" EDITFLG="true" id="AbnormalReason' + data[i].TemplateID + '"  style="width:30px" value="' + data[i].RecordValue + '"/>处</li>';
+                     }
+                     $("#tdAbnormalReason").html(strListContent);
+                 },
+                 error: function (msg) {
+                     alert(msg.responseText);
+                 }
+             });
+         }
+
+
          function AcceptClick(grid) {
              
              if (OPtype == "CHECK")
@@ -179,7 +286,7 @@
              }
 
              var RFID = $("#RFID").val().toUpperCase().trim();
-             var AbnormalPoint = $("#AbnormalPoint").val();
+             var AbnormalPoint = $("input[name='AbnormalPoint']:checked").val(); 
              var AbnormalTime  = $("#AbnormalTime").val().trim();
              var AbnormalUser  = $("#AbnormalUser").val().trim();
              var AbnormalReason = $("#AbnormalReason").val().trim();
@@ -262,7 +369,7 @@
 
     </script>
     <div style="margin-left: 10px; margin-top: 10px; margin-right: 10px;">
-            <table class="form" style="margin-top:0px;"  border="0">
+            <table class="form" style="margin-top:2px; padding:5px"  border="0"  >
                 <tr>
                     <td class="formTitle">MES码:</td>
                     <td colspan="3">
@@ -281,26 +388,9 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="formTitle">下线工序:</td>
-                    <td>
-                        <select class="form-control" id="AbnormalPoint">
-                            <option value ="1">下线点1</option>
-                            <option value ="2">下线点2</option>
-                            <option value ="3">下线点3</option>
-                        </select>
-                    </td>
-                    <td class="formTitle">下线类型:</td>
-                    <td>
-                        <input EDITFLG="true" type="checkbox" id="AbnormalType2" value="2">
-                        <label for="AbnormalType2" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >报废</label>
-                        <input EDITFLG="true" type="checkbox" id="AbnormalType3" value="3" >
-                        <label for="AbnormalType3" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >未完工</label>
-                   </td>
-                </tr>
-                <tr>
                     <td class="formTitle">下线时间:</td>
                     <td>
-                        <input EDITFLG="true" type="text" id="AbnormalTime" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:ss', readOnly:true})" class="Wdate timeselect"/>
+                        <input EDITFLG="true" type="text" id="AbnormalTime" style="width:180px" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm', readOnly:true})" class="Wdate timeselect"/>
                     </td>
                     <td class="formTitle">下线人员:</td>
                     <td>
@@ -308,20 +398,66 @@
                     </td>
                  </tr>
                 <tr>
-                    <td class="formTitle" style="vertical-align:top">下线原因:</td>
+                <tr>
+                    <td class="formTitle">下线类型:</td>
                     <td colspan="3">
-                        <textarea EDITFLG="true" id="AbnormalReason"  style="height: 160px;width:552px"></textarea>
+                        <input EDITFLG="true" type="checkbox" id="AbnormalType2" value="2">
+                        <label for="AbnormalType2" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >报废</label>
+                        <input EDITFLG="true" type="checkbox" id="AbnormalType3" value="3" >
+                        <label for="AbnormalType3" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >未完工</label>
+                   </td>
+                </tr>
+                    <td class="formTitle">下线工序:</td>
+                    <td colspan="3" id="tdAbnormalPoint"></td>
+                </tr>
+                <tr>
+                    <td class="formTitle">下线产品:</td>
+                    <td colspan="3" id="tdAbnormalProduct"></td>
+                </tr>
+                <tr>
+                    <td class="formTitle" style="vertical-align:top; text-align:left">下线原因:</td>
+                    <td colspan="3" >
+                        <ul id="tdAbnormalReason"></ul>
                     </td>
                 </tr>
                
             </table>
     </div>
    <style>
+     table td{padding:2px;}
     .formTitle {
         width:60px;
         font-size:9pt;
         padding:5px!important;
     }
+
+    .rTitle {
+        width:110px;
+        font-size:9pt;
+        font-weight:normal;
+        color:blueviolet; 
+        text-align:left;
+        padding:5px!important;
+    }
+
+    .pTitle {
+        width:68px;
+        font-size:9pt;
+        font-weight:normal;
+        color:blueviolet; 
+        text-align:left;
+        padding:5px!important;
+    }
+
+    .liTitle {
+        width:250px;
+        font-size:9pt;
+        padding-left:5px;
+        padding-bottom:5px;
+        font-weight:normal;
+        text-align:left;
+    }
+
     .formValue  {
         width:160px;
         font-size:9pt;

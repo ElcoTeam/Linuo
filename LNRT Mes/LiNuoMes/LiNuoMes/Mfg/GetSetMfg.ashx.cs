@@ -84,6 +84,27 @@ namespace LiNuoMes.Mfg
                 dataEntity = getWipAbnormalList(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
             }
+            else if (Action == "MFG_WIP_DATA_ABNORMAL_POINT")
+            {
+                List<WipAbnormalPoint> dataEntity;
+                dataEntity = new List<WipAbnormalPoint>();
+                dataEntity = getWipAbnormalPointList(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            else if (Action == "MFG_WIP_DATA_ABNORMAL_PRODUCT")
+            {
+                List<WipAbnormalProduct> dataEntity;
+                dataEntity = new List<WipAbnormalProduct>();
+                dataEntity = getWipAbnormalProductList(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            else if (Action == "MFG_WIP_DATA_ABNORMAL_REASON")
+            {
+                List<WipAbnormalReason> dataEntity;
+                dataEntity = new List<WipAbnormalReason>();
+                dataEntity = getWipAbnormalReasonList(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
             else if (Action == "MFG_WIP_DATA_ABNORMAL_MTL")
             {
                 List<WipAbnormalMtlEntity> dataEntity;
@@ -499,6 +520,88 @@ namespace LiNuoMes.Mfg
                         itemList.AbnormalUser = dt.Rows[i]["AbnormalUser"].ToString();
                         itemList.AbnormalTime = dt.Rows[i]["AbnormalTime"].ToString();
                         itemList.SubPlanStatus = dt.Rows[i]["SubPlanStatus"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public List<WipAbnormalPoint> getWipAbnormalPointList(List<WipAbnormalPoint> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandText = " SELECT * FROM MFG_WIP_Data_Abnormal_Point ORDER BY ID ";
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        WipAbnormalPoint itemList = new WipAbnormalPoint();
+                        itemList.ID = dt.Rows[i]["ID"].ToString();
+                        itemList.DisplayValue = dt.Rows[i]["DisplayValue"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public List<WipAbnormalProduct> getWipAbnormalProductList(List<WipAbnormalProduct> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                String abPointID = RequstString("ABPOINTID");
+                if (abPointID == "") abPointID = "0";
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandText = "exec usp_Mfg_Wip_Data_Abnormal_Product_List " + abPointID;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        WipAbnormalProduct itemList = new WipAbnormalProduct();
+                        itemList.ID = dt.Rows[i]["ID"].ToString();
+                        itemList.DisplayValue = dt.Rows[i]["DisplayValue"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public List<WipAbnormalReason> getWipAbnormalReasonList(List<WipAbnormalReason> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                String abProduct = RequstString("ABPRODUCT");
+                String AbId = RequstString("AbId");
+                if (AbId == "") AbId = "0";
+                if (abProduct == "") abProduct = "0";
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandText = "exec usp_Mfg_Wip_Data_Abnormal_Reason_List " + AbId + ", " + abProduct ;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        WipAbnormalReason itemList = new WipAbnormalReason();
+                        itemList.TemplateID = dt.Rows[i]["TemplateID"].ToString();
+                        itemList.DisplayValue = dt.Rows[i]["DisplayValue"].ToString();
+                        itemList.RecordValue = dt.Rows[i]["RecordValue"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }
@@ -1291,6 +1394,25 @@ namespace LiNuoMes.Mfg
         public string Phantom      { set; get; }
         public string Bulk         { set; get; }
         public string Backflush    { set; get; }
+    }
+
+    public class WipAbnormalPoint
+    {
+        public string ID              { set; get; }
+        public string DisplayValue    { set; get; }
+    }
+
+    public class WipAbnormalProduct
+    {
+        public string ID              { set; get; }
+        public string DisplayValue    { set; get; }
+    }
+
+    public class WipAbnormalReason
+    {
+        public string TemplateID      { set; get; }
+        public string DisplayValue    { set; get; }
+        public string RecordValue     { set; get; }
     }
 
     public class WipAbnormalEntity

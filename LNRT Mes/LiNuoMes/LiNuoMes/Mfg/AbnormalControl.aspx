@@ -174,9 +174,10 @@
                     {
                         label: '下线工序', name: 'AbnormalPoint', index: 'AbnormalPoint', width: panelwidth * 0.06, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                            return  cellvalue == "1" ? "下线点1"
-                                  : cellvalue == "2" ? "下线点2"
-                                  : cellvalue == "3" ? "下线点3"
+                            return  cellvalue == "1" ? "铜排气密性检测"
+                                  : cellvalue == "2" ? "板芯气密性检测"
+                                  : cellvalue == "3" ? "板芯装配"
+                                  : cellvalue == "4" ? "终检（预装压条）"
                                   : "";
                         }
                     },
@@ -242,7 +243,7 @@
             var sTitle = "";
             var sUrl = "";
             var sWidth = "640px";
-            var sHeight = "400px"
+            var sHeight = "600px"
             
             if(dlgType == 'ABN'){
                 if (OPtype == "CHECK") {

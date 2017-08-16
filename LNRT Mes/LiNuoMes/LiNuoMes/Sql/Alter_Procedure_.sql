@@ -180,6 +180,32 @@ ORDER BY InturnNumber
 
 GO
 
+--取得异常下线的产品阶段清单
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Product_List]
+     @abPointID       AS INT         = 0
+AS
+    SELECT PR.* 
+    FROM 
+    MFG_WIP_Data_Abnormal_Product PR,
+    MFG_WIP_Data_Abnormal_Point_Product PM
+    where PR.ID = PM.abProductID
+    AND PM.abPointID = @abPointID
+GO
+
+--取得异常下线的下线原因清单
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Reason_List]
+     @AbId            AS INT  = 0
+    ,@abProduct       AS INT  = 0
+AS
+    SELECT 
+         TT.DisplayValue DisplayValue
+        ,TT.ID TemplateID
+        ,AB.RecordValue RecordValue
+    FROM MFG_WIP_Data_Abnormal_Reason_Template TT
+    LEFT JOIN MFG_WIP_Data_Abnormal_Reason AB ON TT.ID = AB.TemplateID AND AB.AbnormalID = @AbId
+    WHERE TT.AbProductID = @abProduct
+GO
+
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_SummayQty]
       @WorkOrderNumber        AS VARCHAR(50) = ''
      ,@WorkOrderVersion       AS INT         = -1

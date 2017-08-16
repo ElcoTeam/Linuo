@@ -49,6 +49,13 @@ namespace LiNuoMes.Mfg
                 dataEntity = getPmPlanListObj(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
             }
+            else if (Action == "SAP_ERR_INFORMATION")
+            {
+                List<SapErrInfoEntity> dataEntity;
+                dataEntity = new List<SapErrInfoEntity>();
+                dataEntity = getSapErrInfoListObj(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
             else if (Action == "MFG_WO_MTL_LIST")
             {
                 List<WoMtlEntity> dataEntity;
@@ -159,6 +166,13 @@ namespace LiNuoMes.Mfg
                 result = saveWoRocDataInDB(dataEntity, result);
                 context.Response.Write(jsc.Serialize(result));
             }
+            else if (Action == "MFG_WO_LIST_ROC_REDO")
+            {
+                WoEntity dataEntity = new WoEntity();
+                ResultMsg result = new ResultMsg();
+                result = saveWoRocRedoDataInDB(dataEntity, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MFG_WIP_DATA_ABNORMAL_EDIT" || Action == "MFG_WIP_DATA_ABNORMAL_ADD")
             {
                 WipAbnormalEntity dataEntity = new WipAbnormalEntity();
@@ -223,6 +237,37 @@ namespace LiNuoMes.Mfg
                         itemList.PmFirstDate  = dt.Rows[i]["PmFirstDate"].ToString();
                         itemList.PmFinishDate = dt.Rows[i]["PmFinishDate"].ToString();
                         itemList.PmTimeUsage  = dt.Rows[i]["PmTimeUsage"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public List<SapErrInfoEntity> getSapErrInfoListObj(List<SapErrInfoEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                String RFCName = RequstString("RFCName");
+                String StdCode = RequstString("StdCode");
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandText = "exec usp_Sap_Error_Information '" + RFCName + "','" + StdCode + "' ";
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        SapErrInfoEntity itemList = new SapErrInfoEntity();
+                        itemList.ID = (i + 1).ToString();
+                        itemList.InTime  = dt.Rows[i]["InTime"].ToString();
+                        itemList.StdCode = dt.Rows[i]["StdCode"].ToString();
+                        itemList.ErrRow  = dt.Rows[i]["ErrRow"].ToString();
+                        itemList.ErrType = dt.Rows[i]["ErrType"].ToString();
+                        itemList.ErrMessage = dt.Rows[i]["ErrMessage"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }
@@ -858,6 +903,73 @@ namespace LiNuoMes.Mfg
             return result;
         }
 
+        public ResultMsg saveWoRocRedoDataInDB(WoEntity dataEntity, ResultMsg result)
+        {
+            dataEntity.ID = RequstString("WoId");
+            dataEntity.ROCQty = RequstString("ROCQty");
+
+            if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
+            if (dataEntity.ROCQty.Length == 0) dataEntity.ROCQty = "0";
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+
+                    SqlParameter[] sqlPara = new SqlParameter[4];
+
+                    sqlPara[0] = new SqlParameter("@WOID", Convert.ToInt32(dataEntity.ID));
+                    sqlPara[1] = new SqlParameter("@UserName",  UserName);
+                    sqlPara[2] = new SqlParameter("@CatchError", 0);
+                    sqlPara[3] = new SqlParameter("@RtnMsg", "");
+
+                    sqlPara[2].Direction = ParameterDirection.Output;
+                    sqlPara[3].Direction = ParameterDirection.Output;
+                    sqlPara[3].Size = 100;
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mfg_Wo_List_Roc_Redo";
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+
+                    cmd.ExecuteNonQuery();
+
+                    if (sqlPara[2].Value.ToString() != "0")
+                    {
+                        transaction.Rollback();
+                        result.result = "failed";
+                        result.msg = sqlPara[3].Value.ToString();
+                        cmd.Dispose();
+                        return result;
+                    }
+                    else
+                    {
+                        transaction.Commit();
+                        result.result = "success";
+                        result.msg = "保存数据成功!";
+                        cmd.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+
+            return result;
+        }
+
         public ResultMsg saveWipAbnormalDataInDB(WipAbnormalEntity dataEntity, ResultMsg result)
         {
             dataEntity.ID             = RequstString("AbId");
@@ -1346,6 +1458,16 @@ namespace LiNuoMes.Mfg
         public string PmFirstDate  { set; get; }
         public string PmFinishDate { set; get; }
         public string PmTimeUsage  { set; get; }
+    }
+
+    public class SapErrInfoEntity
+    {
+        public string ID         { set; get; }
+        public string InTime     { set; get; }
+        public string StdCode    { set; get; }
+        public string ErrRow     { set; get; }
+        public string ErrType    { set; get; }
+        public string ErrMessage { set; get; }
     }
 
     public class WoEntity

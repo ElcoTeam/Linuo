@@ -266,7 +266,7 @@
                      var strListContent = "";
                      for (i in data) {
                          strListContent +=
-                            '<li class="liTitle">' + data[i].DisplayValue + '<input type="text" EDITFLG="true" id="AbnormalReason' + data[i].TemplateID + '"  style="width:30px" value="' + data[i].RecordValue + '"/>处</li>';
+                            '<li class="liTitle">' + data[i].DisplayValue + ': <input type="text" EDITFLG="true" id="AbnormalReason' + data[i].TemplateID + '"  style="width:30px" value="' + data[i].RecordValue + '"/>处</li>';
                      }
                      $("#tdAbnormalReason").html(strListContent);
                  },

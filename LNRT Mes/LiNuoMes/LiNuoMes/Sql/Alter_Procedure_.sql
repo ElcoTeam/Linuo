@@ -1,3 +1,22 @@
+
+--取得SAP出错回馈信息
+ALTER PROCEDURE  [dbo].[usp_Sap_Error_Information]
+      @RFCName        AS VARCHAR(50) = '' 
+     ,@StdCode        AS VARCHAR(50) = '' 
+AS
+    SELECT
+          [InTime]  InTime  
+         ,[StdCode] StdCode 
+         ,[Row]     ErrRow 
+         ,[Type]    ErrType 
+         ,[Message] ErrMessage 
+    FROM SapErrorInformation
+    WHERE
+        [RFCName] = @RFCName
+    AND [StdCode] = @StdCode  
+    ORDER BY [InTime] DESC, [Row]
+GO
+
 --取得当日生产排程计划
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_get_today]
 AS
@@ -114,7 +133,7 @@ AS
         ,MesPlanQty PlanQty
         ,MesFinishQty FinishQty
         ,Mes2ErpCfmQty Mes2ErpCfmQty
-        ,MesFinishQty - Mes2ErpCfmQty ROCQty
+        ,(ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty ROCQty
         ,CASE Mes2ErpCfmStatus
              WHEN  3 THEN '过账完成'     -- 此时显示按钮或者"过账完成"
              WHEN  2 THEN '过账失败!'
@@ -125,9 +144,10 @@ AS
          END AS ROCMsg
         ,CASE            
              WHEN     ( Mes2ErpCfmStatus = 3 OR Mes2ErpCfmStatus = -1 ) 
-                  AND ( MesFinishQty - Mes2ErpCfmQty > 0 )
-                  THEN 'true'
-             ELSE      'false'
+                  AND ((ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty > 0 )
+                  THEN 'DOROC'
+             WHEN Mes2ErpCfmStatus = 2 THEN 'REDO'
+             ELSE      'SHOWTIP'
          END AS EnableROC
     FROM MFG_WO_List
     WHERE
@@ -137,7 +157,7 @@ AS
     )
     AND 
     (   -- 初始化条件下, 以完成产量和已过账差值作为判断条件
-            ( MesFinishQty - Mes2ErpCfmQty > 0 AND @WorkOrderNumber = '' AND @PlanDate = '' )
+            ( (ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty > 0 AND @WorkOrderNumber = '' AND @PlanDate = '' )
         OR  ( @WorkOrderNumber <> '' OR @PlanDate <> '' )
     )
     ORDER BY InturnNumber
@@ -1171,6 +1191,55 @@ AS
 
     COMMIT TRANSACTION
 GO
+
+--生产排程:订单完工过账重试
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Roc_Redo]
+     @WOID               AS INT                  --Mfg_WO_LIST更改ID
+    ,@UserName           AS NVARCHAR(50)         --报完工人员
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+
+    IF (SELECT COUNT(1) FROM MFG_WO_List WHERE ID=@WOID) = 0
+    BEGIN
+        SET @CatchError = @CatchError + 1
+        SET @RtnMsg     = '您要报完工的订单并不存在, 请刷新后重试! [WOID:' + CONVERT(VARCHAR(10), @WOID) + ']!'
+        RETURN
+    END
+
+    DECLARE @MesStatus AS INT;
+    SELECT @MesStatus = MAX(MesStatus) FROM MFG_WO_List WHERE ID=@WOID;
+
+    IF @MesStatus <> 3 AND @MesStatus <> 2
+    BEGIN
+        SET @CatchError = @CatchError + 1
+        SET @RtnMsg     = '您要修改的订单当前状态不是:已完成或生产进行中, 请核对订单状态! [WOID:' + CONVERT(VARCHAR(10), @WOID) + ']!'
+        RETURN
+    END
+
+    BEGIN TRANSACTION
+        UPDATE ERP_WO_REPORT_COMPLETE 
+        SET 
+             MesModifyTime = GETDATE()
+            ,ErpCfmStatus  = 0
+            ,MesCfmStatus  = 0
+        WHERE WOID = @WOID 
+          AND ErpCfmStatus = 2
+
+        UPDATE MFG_WO_List SET
+             Mes2ErpCfmStatus = 0
+        WHERE ID = @WOID;
+
+        --在全局状态表中加入更新到SAP的标志
+        UPDATE Mes_Config 
+        SET 
+            ERP_ORDER_CONFIRM = '1';
+
+    COMMIT TRANSACTION
+GO
+
 
 --订单计件物料扣除, 确认当日生产排程
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Mvt_Edit]

@@ -62,13 +62,14 @@
         });
 
         //加载表格
-        function InitPage() {
+         function InitPage() {
+            var strBtnStyle = "cursor:pointer;margin-left:5px;font-weight:700;padding:.2em .6em .3em;font-size:14px;";
             var $gridTable = $('#gridTable');
             $gridTable.jqGrid({
                 url: "GetSetMfg.ashx",
                 postData: { Action: "MFG_WO_LIST_ROC" },
                 datatype: "json",
-                height: $('#areascontent').height() * 0.60,
+                height: $('#areascontent').height() - 180,
                 width: $('#areascontent').width,
                 rowNum: -1,
                 jsonReader: {
@@ -79,22 +80,21 @@
                     { label: 'ID', name: 'ID', hidden: true },
                     { label: 'EnableROC', name: 'EnableROC', hidden: true, sortable: false },
                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 80, align: 'center', sortable: false },
-                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 80, align: 'center', sortable: false },
                     { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 160, align: 'center', sortable: false },
                     {
-                        label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 140, align: 'center', sortable: false,
+                        label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 100, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return  cellvalue == "0" ? "正常订单"
                                   : cellvalue == "1" ? "下线补单"
                                   : "";
                         }
                     },
-                    { label: '排程日期', name: 'PlanStartTime', index: 'PlanStartTime', width: 220, align: 'center', sortable: false },
-                    { label: '订单数量', name: 'PlanQty', index: 'PlanQty', width: 140, align: 'center', sortable: false },
-                    { label: '完成数量', name: 'FinishQty', index: 'FinishQty', width: 140, align: 'center', sortable: false },
-                    { label: '已过账数量', name: 'Mes2ErpCfmQty', index: 'Mes2ErpCfmQty', width: 160, align: 'center', sortable: false },
+                    { label: '排程日期', name: 'PlanStartTime', index: 'PlanStartTime', width: 140, align: 'center', sortable: false },
+                    { label: '订单数量', name: 'PlanQty', index: 'PlanQty', width: 100, align: 'center', sortable: false },
+                    { label: '完成数量', name: 'FinishQty', index: 'FinishQty', width: 100, align: 'center', sortable: false },
+                    { label: '已过账数量', name: 'Mes2ErpCfmQty', index: 'Mes2ErpCfmQty', width: 100, align: 'center', sortable: false },
                     {
-                        label: '要过账数量', name: 'ROCQty', index: 'ROCQty', width: 180, align: 'center', sortable: false,
+                        label: '待过账数量', name: 'ROCQty', index: 'ROCQty', width: 100, align: 'center', sortable: false,
                         editable: true,
                         editrules: {
                             number: true,
@@ -105,15 +105,22 @@
                         }
                     },
                     {
-                        label: '操 作', name: 'opcell', index: 'opcell', width: 200, align: 'center', sortable: false,
+                        label: '操 作', name: 'opcell', index: 'opcell', width: 300, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                                if (rowObject.EnableROC=='true') {
-                                    return '<span onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"label label-success\" style=\"cursor: pointer;  \" ><i class="fa fa-exchange" ></i>过账</span>';
-                                }
-                                else {
-                                    return rowObject.ROCMsg;
-                                }
+                            var msg;
+                            if (rowObject.EnableROC == 'DOROC') {
+                                msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>过账</button>';
                             }
+                            else if (rowObject.EnableROC == 'REDO') {
+                                msg = rowObject.ROCMsg;
+                                msg += '<button onclick=\"showdlg(   \'' + rowObject.WorkOrderNumber + '\')\" class=\"btn btn-info\"     style=\"' + strBtnStyle + '"><i class="fa fa-list-ul" ></i>查看原因</button>';
+                                msg += '<button onclick=\"onBtnRedo( \'' + rowObject.ID              + '\')\" class=\"btn btn-primary\"  style=\"' + strBtnStyle + '"><i class="fa fa-retweet" ></i>重试一次</button>';
+                            }
+                            else {
+                                msg = rowObject.ROCMsg;
+                            }
+                            return msg;
+                        }
                     },
                 ],
                 shrinkToFit: true,
@@ -122,14 +129,14 @@
                 gridview: true,
                 onSelectRow: function (rowid){},
                 beforeSelectRow: function (rowid) {
-                    if (rowid && rowid != selectedRowIndex) {
-                        if ($("#gridTable").getRowData(selectedRowIndex).EnableROC=='true') {
-                    //        $("#gridTable").saveRow(selectedRowIndex);
-                        }
-                    }
-                    if ($("#gridTable").getRowData(rowid).EnableROC == 'true') {
-                    //    $("#gridTable").editRow(rowid, true);
-                    }
+                //  if (rowid && rowid != selectedRowIndex) {
+                //      if ($("#gridTable").getRowData(selectedRowIndex).EnableROC == 'DOROC') {
+                //  //        $("#gridTable").saveRow(selectedRowIndex);
+                //      }
+                //  }
+                //  if ($("#gridTable").getRowData(rowid).EnableROC == 'DOROC') {
+                //  //    $("#gridTable").editRow(rowid, true);
+                //  }
                     selectedRowIndex = rowid;
                     return false;
                 },
@@ -137,7 +144,7 @@
                     var ids = $("#gridTable").jqGrid().getDataIDs();
                     for (var i = ids.length - 1; i >= 0 ; i--) {
                         var rowData = $("#gridTable").getRowData(ids[i]);
-                        if (rowData.EnableROC=='true') {
+                        if (rowData.EnableROC == 'DOROC') {
                             $("#gridTable").editRow(ids[i], true);
                         }
                     }
@@ -218,6 +225,62 @@
                 },
                 complete: function () {
                     Loading(false);
+                }
+            });
+        }
+
+        function onBtnRedo(id) {
+            selectedRowIndex = id;
+            $.ajax({
+                url: "GetSetMfg.ashx",
+                data: {
+                    "Action": "MFG_WO_LIST_ROC_REDO",
+                    "WoId": selectedRowIndex,
+                },
+                async: true,
+                type: "post",
+                datatype: "json",
+                success: function (data) {
+                    Loading(false);
+                    data = JSON.parse(data);
+                    if (data.result == "success") {
+                        $('#gridTable').trigger("reloadGrid");
+                    }
+                    else if (data.result == "failed") {
+                        dialogMsg(data.msg, -1);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    Loading(false);
+                    dialogMsg(errorThrown, -1);
+                },
+                beforeSend: function () {
+                    Loading(true, "正在保存数据");
+                },
+                complete: function () {
+                    Loading(false);
+                }
+            });
+        }
+
+        function showdlg(StdCode) {
+            if (StdCode == undefined) {
+                StdCode = "0";
+            }
+
+            var sTitle = "查看错误原因";
+            var sUrl = "SapErrorInformation.aspx";
+            var sWidth = "700px";
+            var sHeight = "500px";
+
+            dialogOpen({
+                id: "Form",
+                title: sTitle,
+                url: sUrl + "?RFCName=" + "ZMES_ORDER_CONFIRM" + "&StdCode=" + StdCode,
+                width: sWidth,
+                height: sHeight,
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
                 }
             });
         }

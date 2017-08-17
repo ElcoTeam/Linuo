@@ -70,7 +70,7 @@
                  colModel: [
                      { label: '序号', name:'ID',ndex: 'ID', width: 40, align: 'center', sortable: false },
                      { label: '时间', name: 'InTime', index: 'InTime', width: 180, align: 'center',  sortable: false },
-                     { label: '功能字', name: 'StdCode', index: 'StdCode', width: 160, align: 'center', sortable: false },
+                     { label: '功能字', name: 'StdCode', index: 'StdCode', width: 140, align: 'center', sortable: false },
                      { label: '行号', name: 'ErrRow', index: 'ErrRow',   width: 40, align: 'center',  sortable: false },
                      { label: '类型', name: 'ErrType', index: 'ErrType', width: 40, align: 'center', sortable: false },
                      { label: '提示信息', name: 'ErrMessage', index: 'ErrMessage', width: 280, align: 'left', sortable: false }

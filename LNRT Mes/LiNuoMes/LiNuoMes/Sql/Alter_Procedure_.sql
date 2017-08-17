@@ -5,16 +5,20 @@ ALTER PROCEDURE  [dbo].[usp_Sap_Error_Information]
      ,@StdCode        AS VARCHAR(50) = '' 
 AS
     SELECT
-          [InTime]  InTime  
-         ,[StdCode] StdCode 
-         ,[Row]     ErrRow 
-         ,[Type]    ErrType 
-         ,[Message] ErrMessage 
+            [InTime]  InTime  
+            ,[StdCode] StdCode 
+            ,[Row]     ErrRow 
+            ,[Type]    ErrType 
+            ,[Message] ErrMessage 
     FROM SapErrorInformation
     WHERE
         [RFCName] = @RFCName
-    AND [StdCode] = @StdCode  
-    ORDER BY [InTime] DESC, [Row]
+    AND
+    ( 
+        ( @StdCode = StdCode)
+    OR  ( @StdCode = '' AND InTime > GETDATE()-1 ) 
+    )
+    ORDER BY [InTime] DESC, ErrRow
 GO
 
 --取得当日生产排程计划
@@ -34,6 +38,7 @@ AS
         ,MesFinishQty FinishQty
         ,MesStartPoint StartPoint
         ,MesStatus Status
+        ,Mes2ErpMVTStatus Mes2ErpMVTStatus
     FROM MFG_WO_List
     WHERE
         CONVERT(DATE, ErpPlanStartTime) = CONVERT(DATE, GETDATE())

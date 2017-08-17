@@ -126,8 +126,8 @@ GO
 
 --取得需要进行完工过账的生产排程计划
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Roc]
-      @WorkOrderNumber        AS VARCHAR(50)
-     ,@PlanDate               AS VARCHAR(50)
+      @WorkOrderNumber        AS VARCHAR(50) = ''
+     ,@PlanDate               AS VARCHAR(50) = ''
 AS
     SELECT
          ID
@@ -162,7 +162,10 @@ AS
     )
     AND 
     (   -- 初始化条件下, 以完成产量和已过账差值作为判断条件
-            ( (ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty > 0 AND @WorkOrderNumber = '' AND @PlanDate = '' )
+            ( 
+              ((ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty > 0 OR Mes2ErpCfmStatus <> 3
+              ) AND @WorkOrderNumber = '' AND @PlanDate = ''
+            )
         OR  ( @WorkOrderNumber <> '' OR @PlanDate <> '' )
     )
     ORDER BY InturnNumber

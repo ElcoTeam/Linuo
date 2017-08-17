@@ -1910,7 +1910,7 @@ AS
     WHILE @@FETCH_STATUS = 0
     BEGIN
         BEGIN TRAN 
-            UPDATE MFG_WO_List SET Mes2ErpCfmStatus = @MvtStat WHERE ID = @WoId
+            UPDATE MFG_WO_List SET Mes2ErpMVTStatus = @MvtStat WHERE ID = @WoId
             IF @MvtStat = 3
             BEGIN 
                 UPDATE ERP_WO_Material_Transfer SET MesMvtStatus = 3 WHERE ID = @MvtId;

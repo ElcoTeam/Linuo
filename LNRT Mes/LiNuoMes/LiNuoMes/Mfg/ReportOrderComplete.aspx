@@ -336,14 +336,14 @@
                                 <tr>
                                     <th class="formTitle" style="text-align:right">订单编号：</th>
                                     <td class="formValue" >
-                                        <input type="text" class="form-control" id="WorkOrderNumber" placeholder="订单编号">
+                                        <input type="text" class="form-control" id="WorkOrderNumber" style="width:220px" placeholder="订单编号">
                                     </td>                                
-                                    <td class="formTitle" style="text-align:right">排程日期：</td>
+                                    <td class="formTitle" style="text-align:right;">排程日期：</td>
                                     <td class="formValue" >
-                                        <input type="text" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd', readOnly:true, highLineWeekDay:true, isShowClear:true})" class="Wdate timeselect"  id="PlanDate" placeholder="排程日期">
+                                        <input type="text" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd', readOnly:true, highLineWeekDay:true, isShowClear:true})" class="Wdate timeselect"  style="width:220px" id="PlanDate" placeholder="排程日期">
                                     </td>
                                     <td class="formValue" style="text-align:right">                                           
-                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
+                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询 / 刷新</a>  
                                      </td>
                                 </tr>
                             </table>
@@ -366,7 +366,7 @@
             font-size:15px; 
          }
         .editable {
-               font-size:15px!important;
+                font-size:15px!important;
                 font-weight:normal; 
                 line-height:1.1;
                 text-align:center;      
@@ -383,7 +383,7 @@
            }
            .aa{
                width:10px;
-               height:30px;
+               height:20px;
            }
            #form1{
                margin-left:0px;
@@ -391,13 +391,13 @@
        } 
        @media screen and (min-width: 1400px) { 
           .formTitle {
-              font-size:30px;
-              width:260px;
+              font-size:20px;
+              width:100px;
           } 
           .form-control {
-               font-size:30px;
-               width:300px;
-               height:45px;
+               font-size:20px;
+               width:200px;
+               height:35px;
            }
            #form1{
                margin: 0px 0px 0px 0px;

@@ -56,7 +56,7 @@
             });
 
             InitPage();
-
+            initAbPointContent();
 
             $('#AbnormalPoint,#AbnormalType').change(function () {
                  $('#btn_Search').trigger("click");
@@ -286,6 +286,29 @@
             });
         }
 
+        function initAbPointContent() {
+            $.ajax({
+                url: "GetSetMfg.ashx",
+                data: {
+                    "Action": "MFG_WIP_DATA_ABNORMAL_POINT"
+                },
+                type: "post",
+                async: false,
+                datatype: "json",
+                success: function (data) {
+                    data = JSON.parse(data);
+                    var strListContent  = '';
+                    for (i in data) {
+                        strListContent += '<option value ="' + data[i].ID + '">' + data[i].DisplayValue + '</option>';
+                    }
+                    $("#AbnormalPoint").append(strListContent);
+                },
+                error: function (msg) {
+                    alert(msg.responseText);
+                }
+            });
+        }
+
         Date.prototype.format = function(format){
             var o = {
                 "M+" : this.getMonth()+1, //month
@@ -365,10 +388,7 @@
                                     <td class="formTitle" style="width:180px;font-weight:bold;text-align:right">下线工序:</td>                                    
                                     <td class="formValue">
                                         <select class="form-control" id="AbnormalPoint">
-                                            <option value ="">请选择...</option>
-                                            <option value ="1">下线点1</option>
-                                            <option value ="2">下线点2</option>
-                                            <option value ="3">下线点3</option>
+                                            <option value = "">请选择...</option>
                                         </select>
                                     </td>  
                                 </tr>
@@ -388,8 +408,8 @@
                                 <tr>                                  
                                     <td class="formTitle" style="width:180px;font-weight:bold;text-align:right">下线时间:</td>                                    
                                     <td colspan="2">
-                                        <input type="text" id="FromTime" style="width:200px" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm', readOnly:true, highLineWeekDay:true, isShowClear:false})" class="Wdate timeselect" placeholder="下线起始时间">至
-                                        <input type="text" id="ToTime"   style="width:200px" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm', readOnly:true, highLineWeekDay:true, isShowClear:false})" class="Wdate timeselect" placeholder="下线结束时间">
+                                        <input type="text" id="FromTime" style="width:240px" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm', readOnly:true, highLineWeekDay:true, isShowClear:false})" class="Wdate timeselect" placeholder="下线起始时间">至
+                                        <input type="text" id="ToTime"   style="width:240px" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm', readOnly:true, highLineWeekDay:true, isShowClear:false})" class="Wdate timeselect" placeholder="下线结束时间">
                                     </td>                                    
                                     <td class="formValue" style="text-align:right" colspan="1">                                           
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>查询</a>

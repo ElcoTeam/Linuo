@@ -419,7 +419,8 @@ namespace LiNuoMes.Mfg
                         itemList.WorkOrderType = dt.Rows[i]["WorkOrderType"].ToString();
                         itemList.FinishQty = dt.Rows[i]["FinishQty"].ToString();
                         itemList.StartPoint = dt.Rows[i]["StartPoint"].ToString();
-                        itemList.Status = dt.Rows[i]["Status"].ToString();                      
+                        itemList.Status = dt.Rows[i]["Status"].ToString();
+                        itemList.Mes2ErpMVTStatus = dt.Rows[i]["Mes2ErpMVTStatus"].ToString();                      
                         dataEntity.Add(itemList);
                     }
                 }
@@ -1499,6 +1500,7 @@ namespace LiNuoMes.Mfg
         public string ROCQty           { set; get; }
         public string ROCMsg           { set; get; }
         public string Mes2ErpCfmQty    { set; get; }
+        public string Mes2ErpMVTStatus { set; get; }
     }
 
     public class WoMtlEntity

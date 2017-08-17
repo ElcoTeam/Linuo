@@ -35,6 +35,7 @@
     <script src="../js/iziModal.min.js"></script>
     <script src="../BaseConfig/GetSetBaseConfig.js"></script>
     <script>
+         var timerID;
          var selectedRowIndex0 = 0;
          var selectedRowIndex1 = 0;
          $(function () {
@@ -58,6 +59,9 @@
        //    InitPage1();  //因为布局原因, 决定把当日保养计划隐藏不显示 [2017-07-31]
 
              InitButtons();
+             refreshSapStatus();
+             timerID = window.setInterval(refreshSapStatus, 30 * 1000);
+
         });
 
         function InitButtons() {
@@ -66,6 +70,10 @@
             $("#btn_Refresh").bind("click", onRefresh);
             $("#btn_Confirm").bind("click", onConfirm);
             $("#btn_Add").bind("click", onWoAdd);
+            $("#btn_SAPInfo").bind("click", function ()
+            {
+                showSapErrorInfo("");
+            });
             
             g_getSetParam("PlayPause",        "", "READ", togglePausePlay);
             g_getSetParam("ERP_ORDER_DETAIL", "", "READ", toggleERPWO);
@@ -121,8 +129,22 @@
                 $("#btn_Refresh").show();
                 $("#btn_Confirm").hide();
             }
+            refreshSapStatus();
         }
 
+        function toggleSapErrorInfo(ERPWOFlag) {
+            if (ERPWOFlag == '4') {
+                $("#btn_SAPInfo").show();
+            }
+            else 
+            {
+                $("#btn_SAPInfo").hide();
+            }
+        }
+
+        function refreshSapStatus() {
+            g_getSetParam("ERP_GOODSMVT_CREATE", "", "READ", toggleSapErrorInfo);
+        }
         function onWoAdd(event) {
             window.location.href = "./SubPlanControl.aspx";
         }
@@ -196,10 +218,13 @@
                         }
                     },
                     {
-                        label: '查 看', width: 180, align: 'center', sortable: false,
+                        label: '查 看', width: 240, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                            var str = '<button onclick=\"showdlg(\'CHECK\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-eye"    ></i>查看   </button>'
-                                    + '<button onclick=\"showdlg(\'MTLLIST\',\'' + rowObject.ID + '\')\" class=\"btn btn-info\"    style=\"' + strBtnStyle + '"><i class="fa fa-list-ol"></i>物料清单</button>';
+                            var str  = '<button onclick=\"showdlg(\'CHECK\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-eye"    ></i>查看   </button>'
+                                str += '<button onclick=\"showdlg(\'MTLLIST\',\'' + rowObject.ID + '\')\" class=\"btn btn-info\"    style=\"' + strBtnStyle + '"><i class="fa fa-list-ol"></i>物料清单</button>';
+                            if (rowObject.Mes2ErpMVTStatus == "2") {
+                                str += '<button onclick=\"showSapErrorInfo(   \'' + rowObject.WorkOrderNumber + '\')\" class=\"btn btn-danger\"    style=\"' + strBtnStyle + '"><i class="fa fa-info-circle"></i>扣料</button>'
+                            }
                             return str;
                         }
                     },
@@ -323,6 +348,26 @@
                 complete: function () {
                 }
             }); 
+        }
+
+        function showSapErrorInfo(StdCode) {
+            var sTitle = "当日订单确认失败原因";
+            var sUrl = "SapErrorInformation.aspx";
+            var sWidth = "800px";
+            var sHeight = "600px";
+            if (StdCode == undefined) {
+                StdCode = "";
+            }
+            dialogOpen({
+                id: "Form",
+                title: sTitle,
+                url: sUrl + "?RFCName=" + "ERP_GOODSMVT_CREATE" + "&StdCode=" + StdCode,
+                width: sWidth,
+                height: sHeight,
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
         }
         
         //编辑信息
@@ -449,6 +494,7 @@
                                         <a id="btn_Refresh" myObj class="btn btn-primary"  hidden><i class="fa fa-refresh"></i>&nbsp;刷新当日生产订单</a>
                                         <a id="btn_Confirm" myObj class="btn btn-primary"  hidden><i class="fa fa-check"></i>&nbsp;确认当日生产排程</a>
                                         <a id="btn_Add"     myObj class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;新建补单</a>
+                                        <a id="btn_SAPInfo"       class="btn btn-default"  hidden><i class="fa fa-list-ul"></i>&nbsp;确认当日生产排程失败! 查看原因</a>
                                     </td>
                                 </tr>
                             </table>

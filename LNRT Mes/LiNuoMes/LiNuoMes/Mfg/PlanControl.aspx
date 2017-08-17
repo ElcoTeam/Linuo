@@ -353,8 +353,8 @@
         function showSapErrorInfo(StdCode) {
             var sTitle = "当日订单确认失败原因";
             var sUrl = "SapErrorInformation.aspx";
-            var sWidth = "800px";
-            var sHeight = "600px";
+            var sWidth = "1024px";
+            var sHeight = "768px";
             if (StdCode == undefined) {
                 StdCode = "";
             }

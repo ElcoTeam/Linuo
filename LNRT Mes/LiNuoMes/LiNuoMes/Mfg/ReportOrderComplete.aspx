@@ -270,8 +270,8 @@
 
             var sTitle = "查看错误原因";
             var sUrl = "SapErrorInformation.aspx";
-            var sWidth = "800px";
-            var sHeight = "600px";
+            var sWidth = "1024px";
+            var sHeight = "768px";
 
             dialogOpen({
                 id: "Form",

@@ -5,18 +5,18 @@ ALTER PROCEDURE  [dbo].[usp_Sap_Error_Information]
      ,@StdCode        AS VARCHAR(50) = '' 
 AS
     SELECT
-            [InTime]  InTime  
-            ,[StdCode] StdCode 
-            ,[Row]     ErrRow 
-            ,[Type]    ErrType 
-            ,[Message] ErrMessage 
+         [InTime]  InTime  
+        ,[StdCode] StdCode 
+        ,[Row]     ErrRow 
+        ,[Type]    ErrType 
+        ,[Message] ErrMessage 
     FROM SapErrorInformation
     WHERE
         [RFCName] = @RFCName
     AND
     ( 
         ( @StdCode = StdCode)
-    OR  ( @StdCode = '' AND InTime > GETDATE()-1 ) 
+    OR  ( @StdCode = '' AND InTime > GETDATE() - 2 ) 
     )
     ORDER BY [InTime] DESC, ErrRow
 GO
@@ -475,6 +475,7 @@ AS
          AB.ID                 ID
         ,AB.RFID               RFID
         ,AB.AbnormalPoint      AbnormalPoint
+        ,AP.DisplayValue       AbnormalDisplayValue
         ,AB.AbnormalType       AbnormalType
         ,AB.AbnormalTime       AbnormalTime
         ,AB.AbnormalUser       AbnormalUser
@@ -484,9 +485,11 @@ AS
     FROM
          MFG_WIP_Data_Abnormal AB
         ,MFG_WO_List WO
+        ,MFG_WIP_Data_Abnormal_Point AP
     WHERE
            AB.WorkOrderNumber     = WO.ErpWorkOrderNumber
        AND AB.WorkOrderVersion    = WO.MesWorkOrderVersion
+       AND AB.AbnormalPoint       = AP.ID
        AND (WO.ErpWorkOrderNumber = @WorkOrderNumber             OR @WorkOrderNumber = '')
        AND (WO.ErpGoodsCode       = @GoodsCode                   OR @GoodsCode       = '')
        AND (AB.RFID               = @RFID                        OR @RFID            = '')
@@ -535,14 +538,15 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Rfid_getLast]
      ,@AbnormalPoint      AS VARCHAR  (50) OUTPUT
 AS
     DECLARE @MAXID INT;
+
     SELECT
         @MAXID = MAX(ID),
         @AbnormalPoint =
                 CASE
-                    WHEN COUNT(1) <= 5                    THEN 1
-                    WHEN COUNT(1)  > 5 AND COUNT(1) <= 12 THEN 2
-                    WHEN COUNT(1)  > 12                   THEN 3
-                    ELSE                                       1
+                    WHEN COUNT(1) <= 3                    THEN 3
+                    WHEN COUNT(1)  > 3 AND COUNT(1) <= 5  THEN 3
+                    WHEN COUNT(1)  > 5                    THEN 3
+                    ELSE                                       3
                 END
     FROM MFG_WIP_Data_RFID
     WHERE
@@ -575,10 +579,10 @@ AS
              AB.ID                 ID
             ,AB.RFID               RFID
             ,AB.AbnormalPoint      AbnormalPoint
+            ,AB.AbnormalProduct    AbnormalProduct
             ,AB.AbnormalType       AbnormalType
             ,AB.AbnormalTime       AbnormalTime
             ,AB.AbnormalUser       AbnormalUser
-            ,AB.AbnormalReason     AbnormalReason
             ,WO.ErpGoodsCode       GoodsCode
             ,WO.ErpWorkOrderNumber WorkOrderNumber
         FROM
@@ -603,6 +607,7 @@ AS
              0                 ID
             ,@RFID             RFID
             ,@AbnormalPoint    AbnormalPoint
+            ,0                 AbnormalProduct
             ,1                 AbnormalType
             ,GETDATE()         AbnormalTime
             ,@UserName         AbnormalUser
@@ -614,13 +619,14 @@ GO
 
 --新建下线记录信息
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Add]
-     @AbId               AS VARCHAR  (50)
+     @AbId               AS INT
     ,@RFID               AS NVARCHAR (50)
     ,@AbnormalType       AS VARCHAR  (5)
     ,@AbnormalTime       AS VARCHAR  (50)
     ,@AbnormalUser       AS NVARCHAR (50)
-    ,@AbnormalReason     AS NVARCHAR (200)
+    ,@AbnormalProduct    AS INT
     ,@UpdateUser         AS NVARCHAR (50)
+    ,@AbIdOperate        AS INT           OUTPUT --返回刚刚产生的新的ID值, 便于后期录入下线原因
     ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
     ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
 AS
@@ -679,8 +685,8 @@ AS
     --插入新的待补修记录
     INSERT INTO 
     MFG_WIP_Data_Abnormal
-           ( RFID , AbnormalPoint , AbnormalType , AbnormalTime , AbnormalUser , AbnormalReason , WorkOrderNumber , WorkOrderVersion , UpdateUser )
-    VALUES (@RFID ,@AbnormalPoint ,@AbnormalType ,@AbnormalTime ,@AbnormalUser ,@AbnormalReason ,@WorkOrderNumber ,@WorkOrderVersion ,@UpdateUser);
+           ( RFID , AbnormalPoint , AbnormalType , AbnormalTime , AbnormalUser , AbnormalProduct , WorkOrderNumber , WorkOrderVersion , UpdateUser )
+    VALUES (@RFID ,@AbnormalPoint ,@AbnormalType ,@AbnormalTime ,@AbnormalUser ,@AbnormalProduct ,@WorkOrderNumber ,@WorkOrderVersion ,@UpdateUser);
 
     --更新订单的报废, 未完工数量
     EXEC [usp_Mfg_Wo_List_ABN_Qty_Update] @WorkOrderNumber, @WorkOrderVersion;
@@ -691,25 +697,28 @@ AS
   --IF @ExistCount = 0 
     BEGIN
         SELECT @AbId = SCOPE_IDENTITY();
+        SELECT @AbIdOperate = @AbId;
         EXEC usp_Mfg_Wip_Data_Abnormal_Mtl_Insert @AbID
     END
 GO
 
 --更新下线记录信息
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Edit]
-     @AbId               AS VARCHAR  (50)
+     @AbId               AS INT
     ,@RFID               AS NVARCHAR (50)
     ,@AbnormalType       AS VARCHAR  (5)
     ,@AbnormalTime       AS VARCHAR  (50)
     ,@AbnormalUser       AS NVARCHAR (50)
-    ,@AbnormalReason     AS NVARCHAR (200)
+    ,@AbnormalProduct    AS INT
     ,@UpdateUser         AS NVARCHAR (50)
+    ,@AbIdOperate        AS INT           OUTPUT --返回刚刚操作的Abnormal ID
     ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
     ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
 AS
     SET @CatchError = 0
     SET @RtnMsg     = ''
 
+    SET @AbIdOperate = @AbId;  --词句是为了和ADD新的下线记录具有相同的操作语句而采取的数据回传.
 
     DECLARE @AbIdCount INT;
     SELECT @AbIdCount = COUNT(1) 
@@ -722,7 +731,7 @@ AS
     IF @AbIdCount = 0 
     BEGIN
         SET @CatchError = 1;
-        SET @RtnMsg = '系统未发现此可以更新的数据!';
+        SET @RtnMsg = '系统未发现此可以更新的数据!'; 
         RETURN;
     END 
 
@@ -748,7 +757,7 @@ AS
          AbnormalType   = @AbnormalType
         ,AbnormalTime   = @AbnormalTime
         ,AbnormalUser   = @AbnormalUser
-        ,AbnormalReason = @AbnormalReason
+        ,AbnormalProduct= @AbnormalProduct
         ,UpdateUser     = @Updateuser
         ,UpdateTime     = GETDATE()
     WHERE

@@ -2530,7 +2530,8 @@ AS
          SET MesFinishQty = @FinishQty
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
-         AND MesWorkOrderVersion = @WorkOrderVersion;
+         AND MesWorkOrderVersion = @WorkOrderVersion
+         AND MesStatus           <>3 ;
      END
         
      --结束工单
@@ -2541,7 +2542,8 @@ AS
          SET MesStatus = 3
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
-         AND MesWorkOrderVersion = @WorkOrderVersion;
+         AND MesWorkOrderVersion = @WorkOrderVersion
+         AND MesStatus           <>3 ;
 
          --把工序表里面所有涉及此订单的记录全部重置(因为, 有的物料拉动工序可能会没有计件产出的情况.)
          UPDATE Mes_Process_List

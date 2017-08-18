@@ -324,8 +324,6 @@ namespace LiNuoMes.BaseConfig
             }
             else if (Action == "MES_PLC_CONFIG_EDIT")
             {
-                List<PLCParameUPD> paramlist = new List<PLCParameUPD>();
-
                 PLCParameUPD[] dataEntity;
                 dataEntity = jsc.Deserialize<PLCParameUPD[]>(RequstString("ListJson"));
                 ResultMsg result = new ResultMsg();

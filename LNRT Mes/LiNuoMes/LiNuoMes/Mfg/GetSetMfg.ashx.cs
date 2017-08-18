@@ -383,7 +383,7 @@ namespace LiNuoMes.Mfg
                         dataEntity.AbnormalType = dt.Rows[0]["AbnormalType"].ToString();
                         dataEntity.AbnormalTime = dt.Rows[0]["AbnormalTime"].ToString();
                         dataEntity.AbnormalUser = dt.Rows[0]["AbnormalUser"].ToString();
-                        dataEntity.AbnormalReason = dt.Rows[0]["AbnormalReason"].ToString();
+                        dataEntity.AbnormalProduct = dt.Rows[0]["AbnormalProduct"].ToString();
                     }
                 }
             }
@@ -562,6 +562,7 @@ namespace LiNuoMes.Mfg
                         itemList.RFID = dt.Rows[i]["RFID"].ToString();
                         itemList.GoodsCode = dt.Rows[i]["GoodsCode"].ToString();
                         itemList.AbnormalPoint = dt.Rows[i]["AbnormalPoint"].ToString();
+                        itemList.AbnormalDisplayValue = dt.Rows[i]["AbnormalDisplayValue"].ToString();
                         itemList.AbnormalType = dt.Rows[i]["AbnormalType"].ToString();
                         itemList.AbnormalUser = dt.Rows[i]["AbnormalUser"].ToString();
                         itemList.AbnormalTime = dt.Rows[i]["AbnormalTime"].ToString();
@@ -973,19 +974,22 @@ namespace LiNuoMes.Mfg
 
         public ResultMsg saveWipAbnormalDataInDB(WipAbnormalEntity dataEntity, ResultMsg result)
         {
+            WipAbnormalReason[] abReason;
+            abReason = jsc.Deserialize<WipAbnormalReason[]>(RequstString("AbnormalReasonJson"));
+
             dataEntity.ID             = RequstString("AbId");
             dataEntity.RFID           = RequstString("RFID");
             dataEntity.AbnormalType   = RequstString("AbnormalType");
             dataEntity.AbnormalTime   = RequstString("AbnormalTime");
             dataEntity.AbnormalUser   = RequstString("AbnormalUser");
-            dataEntity.AbnormalReason = RequstString("AbnormalReason");
+            dataEntity.AbnormalProduct = RequstString("AbnormalProduct");
 
             if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
             if (dataEntity.RFID.Length == 0) dataEntity.RFID = "";
             if (dataEntity.AbnormalType.Length == 0) dataEntity.AbnormalType = "1";
             if (dataEntity.AbnormalTime.Length == 0) dataEntity.AbnormalTime = DateTime.Now.ToLocalTime().ToString(); ;
             if (dataEntity.AbnormalUser.Length == 0) dataEntity.AbnormalUser = UserName;
-            if (dataEntity.AbnormalReason.Length == 0) dataEntity.AbnormalReason = "";
+            if (dataEntity.AbnormalProduct.Length == 0) dataEntity.AbnormalProduct = "0";
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -998,21 +1002,23 @@ namespace LiNuoMes.Mfg
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
 
-                    SqlParameter[] sqlPara = new SqlParameter[9];
+                    SqlParameter[] sqlPara = new SqlParameter[10];
 
                     sqlPara[0] = new SqlParameter("@AbID", Convert.ToInt32(dataEntity.ID));
                     sqlPara[1] = new SqlParameter("@RFID", dataEntity.RFID);
                     sqlPara[2] = new SqlParameter("@AbnormalType", dataEntity.AbnormalType);
                     sqlPara[3] = new SqlParameter("@AbnormalTime", dataEntity.AbnormalTime);
                     sqlPara[4] = new SqlParameter("@AbnormalUser", dataEntity.AbnormalUser);
-                    sqlPara[5] = new SqlParameter("@AbnormalReason", dataEntity.AbnormalReason);
+                    sqlPara[5] = new SqlParameter("@AbnormalProduct", Convert.ToInt32(dataEntity.AbnormalProduct));
                     sqlPara[6] = new SqlParameter("@UpdateUser", UserName);
-                    sqlPara[7] = new SqlParameter("@CatchError", 0);
-                    sqlPara[8] = new SqlParameter("@RtnMsg", "");
+                    sqlPara[7] = new SqlParameter("@AbIdOperate", 0);
+                    sqlPara[8] = new SqlParameter("@CatchError", 0);
+                    sqlPara[9] = new SqlParameter("@RtnMsg", "");
 
                     sqlPara[7].Direction = ParameterDirection.Output;
                     sqlPara[8].Direction = ParameterDirection.Output;
-                    sqlPara[8].Size = 100;
+                    sqlPara[9].Direction = ParameterDirection.Output;
+                    sqlPara[9].Size = 100;
 
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -1032,16 +1038,28 @@ namespace LiNuoMes.Mfg
 
                     cmd.ExecuteNonQuery();
 
-                    if (sqlPara[7].Value.ToString() != "0")
+                    if (sqlPara[8].Value.ToString() != "0")
                     {
                         transaction.Rollback();
                         result.result = "failed";
-                        result.msg = sqlPara[8].Value.ToString();
+                        result.msg = sqlPara[9].Value.ToString();
                         cmd.Dispose();
                         return result;
                     }
                     else
                     {
+                        string abId = sqlPara[7].Value.ToString();
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.Clear();
+                        cmd.CommandText = "DELETE FROM MFG_WIP_Data_Abnormal_Reason WHERE AbnormalID = " + abId;
+                        for (int i = 0; i < abReason.Length; i++)
+                        {
+                            if (abReason[i].RecordValue != "0")
+                            {
+                                cmd.CommandText += String.Format(" INSERT INTO MFG_WIP_Data_Abnormal_Reason (AbnormalID, TemplateID, RecordValue) VALUES({0},{1},{2})", abId, abReason[i].TemplateID, abReason[i].RecordValue);
+                            }
+                        }
+                        cmd.ExecuteNonQuery();
                         transaction.Commit();
                         result.result = "success";
                         result.msg = "保存数据成功!";
@@ -1548,11 +1566,12 @@ namespace LiNuoMes.Mfg
         public string WorkOrderVersion{ set; get; }
         public string GoodsCode       { set; get; }
         public string AbnormalPoint   { set; get; }
+        public string AbnormalProduct { set; get; }
         public string AbnormalType    { set; get; }
         public string AbnormalTime    { set; get; }
         public string AbnormalUser    { set; get; }
-        public string AbnormalReason  { set; get; }
         public string SubPlanStatus   { set; get; }
+        public string AbnormalDisplayValue { set; get; }
     }
 
     public class WipAbnormalMtlEntity

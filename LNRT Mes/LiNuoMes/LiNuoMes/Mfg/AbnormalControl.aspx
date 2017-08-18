@@ -171,16 +171,7 @@
                     { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: panelwidth * 0.09, align: 'center', sortable: false },
                     { label: 'MES码', name: 'RFID', index: 'RFID', width: panelwidth * 0.09, align: 'center', sortable: false },
                     { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: panelwidth * 0.17, align: 'center', sortable: false },
-                    {
-                        label: '下线工序', name: 'AbnormalPoint', index: 'AbnormalPoint', width: panelwidth * 0.06, align: 'center', sortable: false,
-                        formatter: function (cellvalue, options, rowObject) {
-                            return  cellvalue == "1" ? "铜排气密性检测"
-                                  : cellvalue == "2" ? "板芯气密性检测"
-                                  : cellvalue == "3" ? "板芯装配"
-                                  : cellvalue == "4" ? "终检（预装压条）"
-                                  : "";
-                        }
-                    },
+                    { label: '下线工序', name: 'AbnormalDisplayValue', index: 'AbnormalDisplayValue', width: panelwidth * 0.06, align: 'center', sortable: false },
                     {
                         label: '下线类型', name: 'AbnormalType', index: 'AbnormalType', width: panelwidth * 0.06, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {

@@ -52,6 +52,7 @@
          var RFID = "";
          var OPtype   = "";
          var OPaction = "";
+         var ReasonArray = new Array();
 
          $(function () {
                 
@@ -105,12 +106,6 @@
                     OPaction = "MFG_WIP_DATA_ABNORMAL_ADD";
                 }
 
-                $(":input").attr("disabled", true);
-
-                if (OPtype != "CHECK") {
-                    $("[EDITFLG]").attr("disabled", false);
-                }
-
                 if (OPtype == "EDIT") {
                     $("#RFID").attr("disabled", true);
                 }
@@ -118,8 +113,19 @@
                 if (OPtype != "ADD") {
                     InitialPage();
                 }
-
+                
+                setPermmit();
+                
          });
+
+         function setPermmit() {
+
+            $(":input").attr("disabled", true);
+
+            if (OPtype != "CHECK") {
+                $("[EDITFLG]").attr("disabled", false);
+            }
+         }
          
          function InitialPage() {
 
@@ -165,10 +171,10 @@
              $("#RFID").val(data.RFID);
              $("#WorkOrderNumber").val(data.WorkOrderNumber);
              $("#GoodsCode").val(data.GoodsCode);
-             $("input:radio[name='AbnormalPoint'][value='" + data.AbnormalPoint + "']").attr('checked', true);
              $("#AbnormalTime").val(data.AbnormalTime);
              $("#AbnormalUser").val(data.AbnormalUser);
-             $("#AbnormalReason").val(data.AbnormalReason);
+             $("input:radio[name='AbnormalPoint'][value='"   + data.AbnormalPoint   + "']").iCheck("check");
+             $("input:radio[name='AbnormalProduct'][value='" + data.AbnormalProduct + "']").iCheck("check");
          }
         
          function initAbPointContent() {
@@ -195,13 +201,14 @@
                          increaseArea: '20%'
                      });    
                      
+
                      $("input:radio[name='AbnormalPoint']").on("ifToggled", function (event) {
                             $("#tdAbnormalReason").html("");
                             var nPoint = $("input:radio[name='AbnormalPoint']:checked").val();
                             initAbProuctContent(nPoint);                     
                      });
 
-
+                     setPermmit();
                  },
                  error: function (msg) {
                      alert(msg.responseText);
@@ -241,8 +248,10 @@
 
                      if (data.length == 1) {
                          $('#AbnormalProduct' + data[0].ID).iCheck("check");
-                         $('#AbnormalProduct' + data[0].ID).trigger("ifToggled");
+                      // $('#AbnormalProduct' + data[0].ID).trigger("ifToggled");  //实践证明, 此语句可以不写, iCheck可以自动触发.
                      }
+
+                     setPermmit();
                  },
                  error: function (msg) {
                      alert(msg.responseText);
@@ -264,11 +273,15 @@
                  success: function (data) {
                      data = JSON.parse(data);
                      var strListContent = "";
+                     ReasonArray.length = 0;
+                     ReasonArray = data;
                      for (i in data) {
-                         strListContent +=
-                            '<li class="liTitle">' + data[i].DisplayValue + ': <input type="text" EDITFLG="true" id="AbnormalReason' + data[i].TemplateID + '"  style="width:30px" value="' + data[i].RecordValue + '"/>处</li>';
+                         strListContent += '<li class="liTitle">' + data[i].DisplayValue + ': <input type="text" EDITFLG="true" id="AbnormalReason' + data[i].TemplateID + '"  style="width:30px" value="' + data[i].RecordValue + '"/>处</li>';
                      }
                      $("#tdAbnormalReason").html(strListContent);
+
+                     setPermmit();
+
                  },
                  error: function (msg) {
                      alert(msg.responseText);
@@ -276,6 +289,30 @@
              });
          }
 
+         function getAbnormalReasonJson() {
+             var iCount = 0;
+             for (i = 0; i < ReasonArray.length; i++) {
+                 var obj = $('#AbnormalReason' + ReasonArray[i].TemplateID);
+                 var data = obj.val();
+                 data = data.trim();
+                 obj.val(data);
+
+                 if (data.length > 0) {
+                     data = parseInt(data);
+                     if (isNaN(data)) {
+                         dialogMsg("请录入数字型数据!", -1);
+                         obj.focus();
+                         return -1;
+                     }
+                     ReasonArray[i].RecordValue = data;
+                     iCount++;
+                 }
+                 else {
+                     ReasonArray[i].RecordValue = 0;
+                 }
+             }
+             return iCount;
+         }
 
          function AcceptClick(grid) {
              
@@ -286,10 +323,20 @@
              }
 
              var RFID = $("#RFID").val().toUpperCase().trim();
-             var AbnormalPoint = $("input[name='AbnormalPoint']:checked").val(); 
-             var AbnormalTime  = $("#AbnormalTime").val().trim();
-             var AbnormalUser  = $("#AbnormalUser").val().trim();
-             var AbnormalReason = $("#AbnormalReason").val().trim();
+             var AbnormalPoint   = $("input[name='AbnormalPoint']:checked").val();
+             var AbnormalProduct = $("input[name='AbnormalProduct']:checked").val();
+             var AbnormalTime    = $("#AbnormalTime").val().trim();
+             var AbnormalUser    = $("#AbnormalUser").val().trim();
+
+             var JsonCount = getAbnormalReasonJson();
+
+             if (JsonCount  == 0) {
+                 dialogMsg("请录入下线原因!", -1);
+                 return;
+             }
+             else if (JsonCount < 0) {
+                 return;
+             }
 
              $("#RFID").val(RFID);
 
@@ -315,23 +362,18 @@
                  return;
              }
 
-             if (AbnormalReason.length == 0) {
-                 dialogMsg("请录入下线原因!", -1);
-                 $("#AbnormalReason").focus();
-                 return;
-             }
-
              $.ajax({
                  url: "GetSetMfg.ashx",
                  data: {
-                     "Action"        : OPaction,
-                     "AbId"          : AbId,
-                     "RFID"          : RFID,
-                     "AbnormalPoint" : AbnormalPoint,
-                     "AbnormalType"  : AbnormalType,
-                     "AbnormalTime"  : AbnormalTime,
-                     "AbnormalUser"  : AbnormalUser,
-                     "AbnormalReason": AbnormalReason
+                     "Action"            : OPaction,
+                     "AbId"              : AbId,
+                     "RFID"              : RFID,
+                     "AbnormalPoint"     : AbnormalPoint,
+                     "AbnormalProduct"   : AbnormalProduct,
+                     "AbnormalType"      : AbnormalType,
+                     "AbnormalTime"      : AbnormalTime,
+                     "AbnormalUser"      : AbnormalUser,
+                     "AbnormalReasonJson": JSON.stringify(ReasonArray)
                  },
                  async: true,
                  type: "post",

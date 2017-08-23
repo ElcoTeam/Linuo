@@ -213,6 +213,7 @@
                                   }
                                   str += '<button myObj                   onclick=\"showdlg(\'EDIT\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '\"><i class="fa fa-edit"   ></i>修改</button>';
                                   str += '<button myObj ' + strEnable + ' onclick=\"onDelete(          \'' + rowObject.ID + '\')\" class=\"btn btn-danger\"  style=\"' + strBtnStyle + '\"><i class="fa fa-trash-o"></i>删除</button>';
+                                //计划此处加入 单个订单 的确认按钮
                             }
                             return str;
                         }

@@ -84,6 +84,20 @@ namespace LiNuoMes.Mfg
                 dataEntity = getWoSubPlanList(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
             }
+            else if (Action == "MFG_WIP_BKF_ITEM_LIST")
+            {
+                List<WipBkfItemEntity> dataEntity;
+                dataEntity = new List<WipBkfItemEntity>();
+                dataEntity = getWipBkfItemList(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            else if (Action == "MFG_WIP_BKF_ITEM_DETAIL")
+            {
+                WipBkfItemEntity dataEntity;
+                dataEntity = new WipBkfItemEntity();
+                dataEntity = getWipBkfItemDetail(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
             else if (Action == "MFG_WIP_DATA_ABNORMAL")
             {
                 List<WipAbnormalEntity> dataEntity;
@@ -515,6 +529,65 @@ namespace LiNuoMes.Mfg
                     }
                 }
             }
+            return dataEntity;
+        }
+
+        public List<WipBkfItemEntity> getWipBkfItemList(List<WipBkfItemEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Mfg_Wip_Bkf_Item_List";
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        WipBkfItemEntity itemList = new WipBkfItemEntity();
+                        itemList.InturnNumber = (i + 1).ToString();
+                        itemList.ID         = dt.Rows[i]["ID"].ToString();
+                        itemList.ItemNumber = dt.Rows[i]["ItemNumber"].ToString();
+                        itemList.ItemDsca   = dt.Rows[i]["ItemDsca"].ToString();
+                        itemList.UOM        = dt.Rows[i]["UOM"].ToString();
+                        itemList.CreateUser = dt.Rows[i]["CreateUser"].ToString();
+                        itemList.CreateTime = dt.Rows[i]["CreateTime"].ToString();
+                        itemList.ModifyUser = dt.Rows[i]["ModifyUser"].ToString();
+                        itemList.ModifyTime = dt.Rows[i]["ModifyTime"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public WipBkfItemEntity getWipBkfItemDetail(WipBkfItemEntity dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                string ItemId = RequstString("ItemId");
+                if (ItemId == "") ItemId = "0";
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "usp_Mfg_Wip_Bkf_Item_Detail " + ItemId;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    dataEntity.ID = dt.Rows[0]["ID"].ToString();
+                    dataEntity.ItemNumber = dt.Rows[0]["ItemNumber"].ToString();
+                    dataEntity.ItemDsca = dt.Rows[0]["ItemDsca"].ToString();
+                    dataEntity.UOM = dt.Rows[0]["UOM"].ToString();
+                }
+            }
+
             return dataEntity;
         }
 
@@ -982,6 +1055,7 @@ namespace LiNuoMes.Mfg
             dataEntity.AbnormalType   = RequstString("AbnormalType");
             dataEntity.AbnormalTime   = RequstString("AbnormalTime");
             dataEntity.AbnormalUser   = RequstString("AbnormalUser");
+            dataEntity.AbnormalPoint  = RequstString("AbnormalPoint");
             dataEntity.AbnormalProduct = RequstString("AbnormalProduct");
 
             if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
@@ -989,6 +1063,7 @@ namespace LiNuoMes.Mfg
             if (dataEntity.AbnormalType.Length == 0) dataEntity.AbnormalType = "1";
             if (dataEntity.AbnormalTime.Length == 0) dataEntity.AbnormalTime = DateTime.Now.ToLocalTime().ToString(); ;
             if (dataEntity.AbnormalUser.Length == 0) dataEntity.AbnormalUser = UserName;
+            if (dataEntity.AbnormalPoint.Length == 0) dataEntity.AbnormalPoint = "0";
             if (dataEntity.AbnormalProduct.Length == 0) dataEntity.AbnormalProduct = "0";
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
@@ -1002,23 +1077,24 @@ namespace LiNuoMes.Mfg
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
 
-                    SqlParameter[] sqlPara = new SqlParameter[10];
+                    SqlParameter[] sqlPara = new SqlParameter[11];
 
                     sqlPara[0] = new SqlParameter("@AbID", Convert.ToInt32(dataEntity.ID));
                     sqlPara[1] = new SqlParameter("@RFID", dataEntity.RFID);
                     sqlPara[2] = new SqlParameter("@AbnormalType", dataEntity.AbnormalType);
                     sqlPara[3] = new SqlParameter("@AbnormalTime", dataEntity.AbnormalTime);
                     sqlPara[4] = new SqlParameter("@AbnormalUser", dataEntity.AbnormalUser);
-                    sqlPara[5] = new SqlParameter("@AbnormalProduct", Convert.ToInt32(dataEntity.AbnormalProduct));
-                    sqlPara[6] = new SqlParameter("@UpdateUser", UserName);
-                    sqlPara[7] = new SqlParameter("@AbIdOperate", 0);
-                    sqlPara[8] = new SqlParameter("@CatchError", 0);
-                    sqlPara[9] = new SqlParameter("@RtnMsg", "");
+                    sqlPara[5] = new SqlParameter("@AbnormalPoint", Convert.ToInt32(dataEntity.AbnormalPoint));
+                    sqlPara[6] = new SqlParameter("@AbnormalProduct", Convert.ToInt32(dataEntity.AbnormalProduct));
+                    sqlPara[7] = new SqlParameter("@UpdateUser", UserName);
+                    sqlPara[8] = new SqlParameter("@AbIdOperate", 0);
+                    sqlPara[9] = new SqlParameter("@CatchError", 0);
+                    sqlPara[10] = new SqlParameter("@RtnMsg", "");
 
-                    sqlPara[7].Direction = ParameterDirection.Output;
                     sqlPara[8].Direction = ParameterDirection.Output;
                     sqlPara[9].Direction = ParameterDirection.Output;
-                    sqlPara[9].Size = 100;
+                    sqlPara[10].Direction = ParameterDirection.Output;
+                    sqlPara[10].Size = 100;
 
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -1038,17 +1114,17 @@ namespace LiNuoMes.Mfg
 
                     cmd.ExecuteNonQuery();
 
-                    if (sqlPara[8].Value.ToString() != "0")
+                    if (sqlPara[9].Value.ToString() != "0")
                     {
                         transaction.Rollback();
                         result.result = "failed";
-                        result.msg = sqlPara[9].Value.ToString();
+                        result.msg = sqlPara[10].Value.ToString();
                         cmd.Dispose();
                         return result;
                     }
                     else
                     {
-                        string abId = sqlPara[7].Value.ToString();
+                        string abId = sqlPara[8].Value.ToString();
                         cmd.CommandType = CommandType.Text;
                         cmd.Parameters.Clear();
                         cmd.CommandText = "DELETE FROM MFG_WIP_Data_Abnormal_Reason WHERE AbnormalID = " + abId;
@@ -1586,6 +1662,19 @@ namespace LiNuoMes.Mfg
         public string LeftQty      { set; get; }
         public string RequireQty   { set; get; }
         public string InventoryQty { set; get; }
+    }
+
+    public class WipBkfItemEntity
+    {
+        public string ID           { set; get; }
+        public string InturnNumber { set; get; }
+        public string ItemNumber   { set; get; }
+        public string ItemDsca     { set; get; }
+        public string UOM          { set; get; }
+        public string CreateUser   { set; get; }
+        public string CreateTime   { set; get; }
+        public string ModifyUser   { set; get; }
+        public string ModifyTime   { set; get; }
     }
 
     public class ResultMsg

@@ -13,7 +13,7 @@
     
     <script src="../Content/scripts/jquery-1.11.1.min.js"></script>
     <script src="../Content/scripts/bootstrap/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../js/m.js" charset="gbk"></script>
+    
     <script src="../js/pdfobject.js" type="text/javascript"></script>
     <link href="../Content/scripts/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <script src="../Content/scripts/plugins/jquery-ui/jquery-ui.min.js"></script>
@@ -47,7 +47,12 @@
     </style>
 </head>
 <body>
-     <script>         var actionname = request('actionname');         var equid = request('equid');         var OPaction = "";                 $(function () {
+     <script>
+         var actionname = request('actionname');
+         var equid = request('equid');
+         var OPaction = "";
+        
+         $(function () {
              var id = '<%=Session["UserName"] %>';
              $("#DealWithOper").val(id);
 
@@ -115,7 +120,9 @@
                      }
                  });
              }
-         });                  //保存表单
+         });
+         
+         //保存表单
          function AcceptClick(grid) {
              var ProcessName = $("#ProcessName").val().trim();
              var DeviceName = $("#DeviceName").val().trim();
@@ -167,11 +174,15 @@
                      Loading(false);
                  }
              });
-         }         function request(name) {
+         }
+
+         function request(name) {
              var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
              var r = window.location.search.substr(1).match(reg);
              if (r != null) return unescape(r[2]); return null;
-         }    </script>
+         }
+
+    </script>
     <div style="margin-left: 10px; margin-top: 20px; margin-right: 30px;">
             <table class="form" id="ruleinfo" style="margin-top:10px;">
                  <tr>

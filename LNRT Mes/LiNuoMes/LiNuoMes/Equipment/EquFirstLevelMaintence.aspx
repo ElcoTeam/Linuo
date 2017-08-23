@@ -38,7 +38,7 @@
     <link href="../Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
     <%--<link href="../Content/scripts/plugins/tree/tree.css" rel="stylesheet" />--%>
     <%--<link href="/Content/scripts/plugins/datetime/pikaday.css" rel="stylesheet"/>--%>
-    <link href="../Content/styles/learun-ui.css?v=xGgPBYcCVZtMx26lXm_bETZOl5nvwnNwIiq-fpPtywo1" rel="stylesheet" />
+    <link href="../Content/styles/learun-ui.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="../css/iziModal.css">
     <script src="../Content/scripts/plugins/layout/jquery.layout.js"></script>
     <script src="../Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
@@ -62,12 +62,20 @@
 
 </head>
 
-     <script>         var manuId = request('manuId');         var actionname = request('actionname');         var wicode = request('wicode');         $(function () {
+     <script>
+
+         var manuId = request('manuId');
+         var actionname = request('actionname');
+         var wicode = request('wicode');
+
+         $(function () {
              var id = '<%=Session["UserName"] %>';
              $("#PmOper").val(id);
              InitialPage();
             
-         });         //初始化页面         function InitialPage() {
+         });
+         //初始化页面
+         function InitialPage() {
              //layout布局
              $('#layout').layout({
                  applyDemoStyles: true,
@@ -78,7 +86,8 @@
                  onresize: function () {
                      $(window).resize()
                  }
-             });
+             });
+
              $(".center-Panel").height($(window).height() - 40)
              $(".west-Panel").height($(window).height());
 
@@ -140,7 +149,9 @@
                  }
              }).keyup();
 
-         }         //保存表单
+         }
+
+         //保存表单
          function AcceptClick(grid) {
              var userIds = [];
              //var productcatagory = [];
@@ -198,11 +209,16 @@
                      Loading(false);
                  }
              });
-         }         function request(name) {
+         }
+
+
+         function request(name) {
              var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
              var r = window.location.search.substr(1).match(reg);
              if (r != null) return unescape(r[2]); return null;
-         }         //查看操作规范文档
+         }
+
+         //查看操作规范文档
          function btn_look(objID) {
             
              if (objID == "") {
@@ -220,7 +236,9 @@
                  btn: null
              });
              
-         }            </script>
+         }
+        
+    </script>
 <body>
    
     <div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
@@ -256,7 +274,8 @@
             </div>
         </div>
     </div>
-   </div>   <style>
+   </div>
+   <style>
     .form .formValue
     {
         padding-left: 5px;

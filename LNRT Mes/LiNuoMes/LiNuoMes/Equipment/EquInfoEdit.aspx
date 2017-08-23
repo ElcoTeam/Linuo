@@ -23,7 +23,7 @@
    <%-- <link href="../css/learun-ui.css" rel="stylesheet" />--%>
     <link href="../Content/adminLTE/css/index.css" rel="stylesheet" />
     <link href="../Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
-    <link rel="Shortcut icon" href="http://www.jq22.com/favicon.ico" />
+    <link rel="Shortcut icon" href="../images/favicon.ico" />
     <link href="../Content/styles/learun-ui.css" rel="stylesheet" />
     <link href="../css/my.css" rel="stylesheet" media="screen">
     <script src="../Content/scripts/plugins/layout/jquery.layout.js"></script>

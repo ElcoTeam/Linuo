@@ -19,10 +19,10 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" />
     <link href="../Content/styles/font-awesome.min.css" rel="stylesheet" />
-    <%--<link href="../css/learun-ui.css" rel="stylesheet" />--%>
+    
     <link href="../Content/adminLTE/css/index.css" rel="stylesheet" />
     <link href="../Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
-    <link rel="Shortcut icon" href="http://www.jq22.com/favicon.ico" />
+    <link rel="Shortcut icon" href="../images/favicon.ico" />
     <link href="../Content/styles/learun-ui.css?v=xGgPBYcCVZtMx26lXm_bETZOl5nvwnNwIiq-fpPtywo1" rel="stylesheet" />
     <link href="../css/my.css" rel="stylesheet" media="screen">
     <script src="../Content/scripts/plugins/layout/jquery.layout.js"></script>
@@ -46,9 +46,15 @@
     </style>
 </head>
 <body>
-     <script>         var OPaction = "";         $(function () {
+     <script>
+         var OPaction = "";
+
+         $(function () {
              GetMonthBudget();
-         });         //得到当月预算产量         function GetMonthBudget()
+         });
+
+         //得到当月预算产量
+         function GetMonthBudget()
          {
              $.ajax({
                  url: "../Report/GetReportInfo.ashx",
@@ -79,7 +85,9 @@
                      dialogMsg(errorThrown, -1);
                  }
              });
-         }         //保存表单
+         }
+
+         //保存表单
          function AcceptClick(grid) {
 
              var MonthBudget = $("#MonthBudget").val().trim();
@@ -120,11 +128,16 @@
                      Loading(false);
                  }
              });
-         }         function request(name) {
+         }
+
+         function request(name) {
              var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
              var r = window.location.search.substr(1).match(reg);
              if (r != null) return unescape(r[2]); return null;
-         }        var currentmonth=function () {
+         }
+
+
+        var currentmonth=function () {
             var date = new Date();
             var seperator1 = "-";
             
@@ -138,7 +151,9 @@
             }
             var currentdate = date.getFullYear() + seperator1 + month ;
             return currentdate;
-         }    </script>
+         }
+
+    </script>
     <div style="margin-left: 10px; margin-top: 20px; margin-right: 30px;">
            <table class="form" id="ruleinfo" style="margin-top:10px;">
                 <tr>

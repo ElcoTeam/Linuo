@@ -20,10 +20,10 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" />
     <link href="../Content/styles/font-awesome.min.css" rel="stylesheet" />
-    <%--<link href="../css/learun-ui.css" rel="stylesheet" />--%>
+    
     <link href="../Content/adminLTE/css/index.css" rel="stylesheet" />
     <link href="../Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
-    <link rel="Shortcut icon" href="http://www.jq22.com/favicon.ico" />
+    <link rel="Shortcut icon" href="../images/favicon.ico" />
     <link href="../Content/styles/learun-ui.css?v=xGgPBYcCVZtMx26lXm_bETZOl5nvwnNwIiq-fpPtywo1" rel="stylesheet" />
     <link href="../css/my.css" rel="stylesheet" media="screen">
     <script src="../Content/scripts/plugins/layout/jquery.layout.js"></script>
@@ -44,7 +44,8 @@
     </style>
 </head>
 <body>
-    <script>        $(function () {
+    <script>
+        $(function () {
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
@@ -58,7 +59,9 @@
                 }, 200);
             });
             GetGrid();
-        });        //加载表格
+        });
+
+        //加载表格
         function GetGrid() {
             var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
@@ -109,7 +112,9 @@
                     }, page: 1
                 }).trigger('reloadGrid');
             });
-        }    </script>
+        }
+
+    </script>
 
     <div id="areascontent" style="margin:0px 10px 0px 10px; margin-bottom: 0px; overflow: auto;">
     <div class="rows" style="margin-top:0.5%; overflow: hidden; ">

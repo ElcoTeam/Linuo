@@ -21,14 +21,38 @@ AS
     ORDER BY [InTime] DESC, ErrRow
 GO
 
+--取得反冲料物料料号清单
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Bkf_Item_List]
+AS
+    SELECT
+         *
+    FROM MFG_WIP_BKF_Item_List
+    WHERE
+        [Status] > -2
+    ORDER BY ItemNumber
+GO
+
+--取得反冲料物料料号的详细信息
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Bkf_Item_Detail]
+    @ItemId    AS INT=0 
+AS
+    SELECT
+         *
+    FROM MFG_WIP_BKF_Item_List
+    WHERE
+        ID = @ItemId
+    ORDER BY ItemNumber
+GO
+
+
 --取得当日生产排程计划
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_get_today]
 AS
     SELECT
          ID
-        ,ErpWorkOrderNumber  WorkOrderNumber
+        ,RIGHT(ErpWorkOrderNumber, LEN(ErpWorkOrderNumber) - 4)  WorkOrderNumber
         ,MesWorkOrderVersion WorkOrderVersion
-        ,ErpGoodsCode GoodsCode
+        ,RIGHT(ErpGoodsCode, LEN(ErpGoodsCode) - 8) GoodsCode 
         ,FORMAT(MesPlanStartTime, 'yyyy-MM-dd hh:mm')  PlanStartTime
         ,FORMAT(MesPlanFinishTime,'yyyy-MM-dd hh:mm')  PlanFinishTime
         ,MesCostTime CostTime
@@ -624,6 +648,7 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Add]
     ,@AbnormalType       AS VARCHAR  (5)
     ,@AbnormalTime       AS VARCHAR  (50)
     ,@AbnormalUser       AS NVARCHAR (50)
+    ,@AbnormalPoint      AS INT
     ,@AbnormalProduct    AS INT
     ,@UpdateUser         AS NVARCHAR (50)
     ,@AbIdOperate        AS INT           OUTPUT --返回刚刚产生的新的ID值, 便于后期录入下线原因
@@ -637,9 +662,9 @@ AS
     DECLARE @WorkOrderVersion INT;
     DECLARE @GoodsCode        VARCHAR(50);
     DECLARE @ProcessCode      INT;
-    DECLARE @AbnormalPoint    VARCHAR(50);
+    DECLARE @AbnormalPointSP  VARCHAR(50);  --这个值现在已经不需要了, 已经可以从存储过程的参数中获取了: 即用户自己手工决定下线点.
     
-    EXEC usp_Mfg_Wip_Data_Rfid_getLast @RFID, @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT, @GoodsCode OUTPUT, @ProcessCode OUTPUT, @AbnormalPoint OUTPUT
+    EXEC usp_Mfg_Wip_Data_Rfid_getLast @RFID, @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT, @GoodsCode OUTPUT, @ProcessCode OUTPUT, @AbnormalPointSP OUTPUT
     
     --检查传入的RFID是否有效
     IF LEN(@WorkOrderNumber) = 0 
@@ -709,6 +734,7 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Edit]
     ,@AbnormalType       AS VARCHAR  (5)
     ,@AbnormalTime       AS VARCHAR  (50)
     ,@AbnormalUser       AS NVARCHAR (50)
+    ,@AbnormalPoint      AS INT
     ,@AbnormalProduct    AS INT
     ,@UpdateUser         AS NVARCHAR (50)
     ,@AbIdOperate        AS INT           OUTPUT --返回刚刚操作的Abnormal ID
@@ -757,6 +783,7 @@ AS
          AbnormalType   = @AbnormalType
         ,AbnormalTime   = @AbnormalTime
         ,AbnormalUser   = @AbnormalUser
+        ,AbnormalPoint  = @AbnormalPoint
         ,AbnormalProduct= @AbnormalProduct
         ,UpdateUser     = @Updateuser
         ,UpdateTime     = GETDATE()
@@ -2440,7 +2467,9 @@ AS
      IF @WorkOrderStatus = 0 OR @WorkOrderStatus = 1
      BEGIN
          UPDATE MFG_WO_List 
-         SET MesStatus = 2 
+         SET
+             MesStatus = 2 
+            ,MesActualStartTime = GETDATE()
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
          AND MesWorkOrderVersion = @WorkOrderVersion;
@@ -2539,7 +2568,9 @@ AS
      BEGIN
          --结束工单主记录 (后台有一个分钟级别的job, 可以根据状态把计件物料扣除的物料提供给接口表.)
          UPDATE MFG_WO_List
-         SET MesStatus = 3
+         SET 
+              MesStatus = 3
+             ,MesActualFinishTime = GETDATE()
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
          AND MesWorkOrderVersion = @WorkOrderVersion

@@ -1,5 +1,16 @@
 --SELECT * FROM ERP_Inventory_List;
+  
+  INSERT INTO Mfg_Wip_Bkf_Item_List (ItemNumber, ItemDsca, UOM, CreateUser)
+  SELECT DISTINCT ItemNumber, ItemDsca, UOM, 'MES_SYS' FROM MFG_WO_MTL_List WHERE Backflush = 'x'
+  
+  delete from UserM_Menu where MenuNo in ('3004','3005','3006','3007');
 
+  INSERT INTO UserM_Menu (MenuNo, MenuName, MenuAddr, ParentNo, Image1)
+  VALUES
+  ('3004', '反冲物料料号管理', '../Mfg/MaterialBkfConfig.aspx',    '3000','fa fa-key ls'),  
+  ('3005', '反冲物料申请',     '../Mfg/MaterialBkfApply.aspx',    '3000', 'fa fa-tasks ls'),  
+  ('3006', '反冲物料响应',     '../Mfg/MaterialBkfResponse.aspx', '3000', 'fa fa-tasks ls'), 
+  ('3007', '反冲物料确认',     '../Mfg/MaterialBkfConfirm.aspx',  '3000', 'fa fa-tasks ls'); 
 
 /*
 INSERT INTO ERP_Inventory_List ( MATNR, MAKTX, INVQTY )

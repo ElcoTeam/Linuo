@@ -235,6 +235,46 @@ CREATE TABLE [dbo].[MFG_WO_MTL_Pull] (
     [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:待响应; 1:待确认; 2:已完成
 );
 
+
+--产线的反冲物料料号清单
+IF OBJECT_ID('MFG_WIP_BKF_Item_List') is not null
+DROP TABLE MFG_WIP_BKF_Item_List;
+CREATE TABLE [dbo].[MFG_WIP_BKF_Item_List] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --物料编码
+    [ItemDsca]           NVARCHAR (50)   NOT NULL,                        --物料描述
+    [UOM]                NVARCHAR (15)   NOT NULL DEFAULT (N'EA'),        --用料计量单位
+    [CreateTime]         DATETIME        NOT NULL DEFAULT GETDATE(),      --创建时间
+    [CreateUser]         NVARCHAR (50)   NOT NULL,                        --创建用户
+    [ModifyTime]         DATETIME            NULL,                        --更新时间
+    [ModifyUser]         NVARCHAR (50)       NULL,                        --更新用户
+    [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:新增, -1:修改, -2:删除
+);
+
+
+
+--产线的反冲物料拉动记录表
+IF OBJECT_ID('MFG_WIP_BKF_MTL_Record') is not null
+DROP TABLE MFG_WIP_BKF_MTL_Record;
+CREATE TABLE [dbo].[MFG_WIP_BKF_MTL_Record] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --物料编码
+    [ItemDsca]           NVARCHAR (50)   NOT NULL,                        --物料描述
+    [UOM]                NVARCHAR (15)   NOT NULL DEFAULT (N'EA'),        --计量单位
+    [ApplyTime]          DATETIME        NOT NULL DEFAULT GETDATE(),      --申请时间
+    [ApplyUser]          NVARCHAR (50)   NOT NULL,                        --申请用户
+    [ApplyQty]           NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --申请数量
+    [ActionTime]         DATETIME            NULL,                        --响应时间
+    [ActionUser]         NVARCHAR (50)       NULL,                        --响应用户
+    [ActionQty]          NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --响应数量
+    [ConfirmTime]        DATETIME            NULL,                        --确认时间
+    [ConfirmUser]        NVARCHAR (50)       NULL,                        --确认用户
+    [ConfirmQty]         NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --确认数量
+    [OTFlag]             INT             NOT NULL DEFAULT (0),            --是否超时: 0:未超时; 1:超时
+    [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:待响应; 1:待确认; 2:已完成
+);
+
+
 --产线下线工序类型表
 IF OBJECT_ID('MFG_WIP_Data_Abnormal_Point') is not null
 DROP TABLE MFG_WIP_Data_Abnormal_Point;
@@ -296,13 +336,13 @@ CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Reason_Template] (
 INSERT INTO MFG_WIP_Data_Abnormal_Reason_Template (ID, abProductID, DisplayValue)
 VALUES
 (101, 1, N'黄铜接头'),
-(102, 1, N'锁口焊接'),
+(102, 1, N'缩口焊接'),
 (103, 1, N'集管折弯'),
 (104, 1, N'焊点(集管排管)'),
 (199, 1, N'其它'),
 
 (201, 2, N'黄铜接头'),
-(202, 2, N'锁口焊接'),
+(202, 2, N'缩口焊接'),
 (203, 2, N'集管折弯'),
 (204, 2, N'焊点(集管排管)'),
 (205, 2, N'吸热板焊穿'),

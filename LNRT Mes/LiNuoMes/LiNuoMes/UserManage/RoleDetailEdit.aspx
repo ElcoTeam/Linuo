@@ -13,7 +13,7 @@
     
     <script src="../Content/scripts/jquery-1.11.1.min.js"></script>
     <script src="../Content/scripts/bootstrap/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../js/m.js" charset="gbk"></script>
+    
     <script src="../js/pdfobject.js" type="text/javascript"></script>
     <link href="../Content/scripts/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <script src="../Content/scripts/plugins/jquery-ui/jquery-ui.min.js"></script>
@@ -24,7 +24,7 @@
     <link href="../Content/adminLTE/css/index.css" rel="stylesheet" />
     <link href="../Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
     <link rel="Shortcut icon" href="http://www.jq22.com/favicon.ico" />
-    <link href="../Content/styles/learun-ui.css?v=xGgPBYcCVZtMx26lXm_bETZOl5nvwnNwIiq-fpPtywo1" rel="stylesheet" />
+    <link href="../Content/styles/learun-ui.css" rel="stylesheet" />
     <link href="../css/my.css" rel="stylesheet" media="screen">
     <script src="../Content/scripts/plugins/layout/jquery.layout.js"></script>
     <script src="../Content/scripts/plugins/dialog/dialog.js"></script>
@@ -44,10 +44,16 @@
     </style>
 </head>
 <body>
-     <script>         var roleId = request('roleid');
-         console.log(roleId);         $(function () {
+     <script>
+
+         var roleId = request('roleid');
+         console.log(roleId);
+         $(function () {
              InitialPage();
-         });         //初始化页面         function InitialPage() {
+         });
+
+         //初始化页面
+         function InitialPage() {
              //layout布局
              $('#layout').layout({
                  applyDemoStyles: true,
@@ -60,7 +66,9 @@
                  }
              });
              $(".west-Panel").height($(window).height());
-         }         //保存表单
+         }
+
+         //保存表单
          function AcceptClick(grid) {
              if (!$('#ruleinfo').Validform()) {
                  return false;
@@ -110,11 +118,15 @@
                      Loading(false);
                  }
              });
-         }                function request(name) {
+         }
+       
+         function request(name) {
              var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
              var r = window.location.search.substr(1).match(reg);
              if (r != null) return unescape(r[2]); return null;
-         }         var zTree;
+         }
+
+         var zTree;
          var demoIframe;
 
          var setting = {
@@ -205,7 +217,8 @@
                      h = demoIframe.height() >= maxH ? minH : maxH;
              if (h < 530) h = 530;
              demoIframe.height(h);
-         }    </script>
+         }
+    </script>
     <div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
       <div class="ui-layout-west">
         <div class="west-Panel" style="margin: 0px; border-top: none; border-left: none; border-bottom: none;">

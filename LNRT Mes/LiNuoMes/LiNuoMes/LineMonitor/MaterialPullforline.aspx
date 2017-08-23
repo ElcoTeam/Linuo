@@ -11,7 +11,7 @@
     
     <script src="../Content/scripts/jquery-1.11.1.min.js"></script>
     <script src="../Content/scripts/bootstrap/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../js/m.js" charset="gbk"></script>
+    
     <script src="../js/pdfobject.js" type="text/javascript"></script>
     <link href="../Content/scripts/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <script src="../Content/scripts/plugins/jquery-ui/jquery-ui.min.js"></script>
@@ -80,7 +80,8 @@
                             } else if (cellvalue == 0) {
                                 return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer;\">未确认</span>' + '<span onclick=\"btn_delete(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer;margin-left:5px;\">删除</span>';
                             }
-                        }
+                        }
+
                     },
                 ],
                 viewrecords: true,

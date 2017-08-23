@@ -72,7 +72,7 @@
                                 title: '一级保养信息维护--执行',
                                 url: '../Equipment/EquFirstLevelMaintence.aspx',
                                 width: "900px",
-                                height: "500px",
+                                height: "800px",
                                 callBack: function (iframeId) {
                                      top.frames[iframeId].AcceptClick($("#gridTable"));
                                 }

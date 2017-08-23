@@ -49,7 +49,6 @@
     <%--    <script src="/Content/scripts/plugins/datetime/pikaday.js"></script>--%>
     <script src="../Content/scripts/utils/learun-ui.js"></script>
     <script src="../Content/scripts/utils/learun-form.js"></script>
-    <script src="../js/iziModal.min.js" type="text/javascript"></script>
     <link href="../css/void_autocomplete.css" rel="stylesheet" />
     <script src="../js/void_autocomplete.js"></script>
 
@@ -149,6 +148,24 @@
                  }
              }).keyup();
 
+             $.ajax({
+                 url: "EquFirstLevelMaintence.aspx/GetFirstLevelTestList",
+                 data: "{}",
+                 type: "post",
+                 dataType: "json",
+                 contentType: "application/json;charset=utf-8",
+                 success: function (data) {
+                     if (data == null) return false;
+                     var value = "";
+                     $.each(data.d, function (i, row) {
+                         value += row.ID + '.' + row.InspectionContent + '\n';
+                     });
+                     $("#PmComment").val(value);
+                     Loading(false);
+                 }, beforeSend: function () {
+                     Loading(true);
+                 }
+             });
          }
 
          //保存表单
@@ -160,7 +177,6 @@
                  //productcatagory.push($(this).find('p:eq(1)').html());
              });
 
-             
              var PmOper = $("#PmOper").val();
              var PmComment = $("#PmComment").val();
 
@@ -225,11 +241,9 @@
                  dialogMsg("您还没有上传文档", 0);
                  return false;
              }
-             
              dialogOpen({
                  id: "UploadifyForm",
                  title: '查看文件-' + objID,
-                 //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                  url: './FileSearchInfo.aspx?folderId=' + objID,
                  width: "1000px",
                  height: "800px",
@@ -255,12 +269,32 @@
 
                 <tr>
                     <th class="formTitle" valign="top" style="padding-top: 4px;">
-                        保养说明
+                        点检内容
                     </th>
                     <td class="formValue" colspan="3">
-                        <textarea id="PmComment"  class="form-control" style="height: 250px;"  placeholder="请输入保养说明"></textarea>
+                        <textarea id="PmComment"  class="form-control" style="height: 200px;" readonly ></textarea>
                     </td>
                 </tr> 
+
+                <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">
+                        问题记录
+                    </th>
+                    <td class="formValue" colspan="3">
+                        <textarea id="PmProblem"  class="form-control" style="height: 250px;"  placeholder="请输入问题记录"></textarea>
+                    </td>
+                </tr> 
+                 <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">
+                        
+                    <td colspan="3" >
+                        <ul>
+                            <li style="padding-top:10px;">设备进行点检发现问题共<input id="FindProblem" type="text" class="problemcount" isvalid="yes"/>次</li>
+                            <li style="padding-top:10px;">维修解决问题共<input id="RepairProblem"  type="text" class="problemcount" isvalid="yes"/>次</li>
+                            <li style="padding-top:10px;">遗留问题存在<input id="ReaminProblem"  type="text" class="problemcount" isvalid="yes"/>次</li>
+                        </ul>
+                    </td>
+                </tr>
             </table>
         </div>
     </div>
@@ -287,13 +321,13 @@
         font-size:9pt;
     }
     .card-box-img {
-    line-height:initial;
+        line-height:initial;
     }
     .card-box-img img {
-    width: 58px;
-    height: 58px;
-    border-radius: 0px;
-    margin-left:0px;
+        width: 58px;
+        height: 58px;
+        border-radius: 0px;
+        margin-left:0px;
     }
     .card-box-content p{
         height: 20px;
@@ -302,6 +336,13 @@
         width:200px;
         height:30px;
     }
+    .problemcount{
+        width: 40px; 
+        border: none; 
+        border-bottom: 1px solid #000;
+        text-align: center;
+    }
+    
     </style>
 </body>
 </html>

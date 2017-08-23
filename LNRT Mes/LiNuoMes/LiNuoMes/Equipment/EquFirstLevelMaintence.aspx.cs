@@ -29,6 +29,14 @@ namespace LiNuoMes.Equipment
 
         }
 
+
+        public class FirstLevelTestContent
+        {
+            public string ID { get; set; }
+            public string InspectionContent { get; set; }
+          
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
 
@@ -67,6 +75,38 @@ namespace LiNuoMes.Equipment
             }
         }
 
+
+        /// <summary>
+        /// 得到点检内容
+        /// </summary>
+        /// <returns></returns>
+        [WebMethod]
+        public static List<FirstLevelTestContent> GetFirstLevelTestList()
+        {
+            DataTable tb = new DataTable();
+            List<FirstLevelTestContent> list = new List<FirstLevelTestContent>();
+            string ReturnValue = string.Empty;
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = string.Empty;
+                str1 = "select ID,InspectionContent from Equ_FirstLevelTestContent";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(tb);
+               
+                if (tb.Rows.Count > 0)
+                {
+                    ReturnValue = DataTableJson(tb);
+                    list = JsonToList<FirstLevelTestContent>(ReturnValue);
+                    return list;
+                }
+                return list;
+            }
+        }
         /// <summary>       
         /// dataTable转换成Json格式       
         /// </summary>       

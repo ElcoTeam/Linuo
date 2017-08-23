@@ -12,7 +12,7 @@
     
     <script src="../Content/scripts/jquery-1.11.1.min.js"></script>
     <script src="../Content/scripts/bootstrap/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../js/m.js" charset="gbk"></script>
+    
     <script src="../js/pdfobject.js" type="text/javascript"></script>
     <link href="../Content/scripts/plugins/jquery-ui/jquery-ui.min.css" rel="stylesheet" />
     <script src="../Content/scripts/plugins/jquery-ui/jquery-ui.min.js"></script>
@@ -23,16 +23,16 @@
     <link href="../Content/adminLTE/css/index.css" rel="stylesheet" />
     <link href="../Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
     <link rel="Shortcut icon" href="../images/favicon.ico" />
-    <link href="../Content/styles/learun-ui.css?v=xGgPBYcCVZtMx26lXm_bETZOl5nvwnNwIiq-fpPtywo1" rel="stylesheet" />
+    <link href="../Content/styles/learun-ui.css" rel="stylesheet" />
     <link href="../css/my.css" rel="stylesheet" media="screen">
-    <link href="../css/iziModal.css" rel="stylesheet" />
+    
     <script src="../Content/scripts/plugins/dialog/dialog.js"></script>
     <script src="../Content/adminLTE/index.js"></script>
     <script src="../Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
     <script src="../Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
     <script src="../Content/scripts/utils/learun-ui.js"></script>
     <script src="../Content/scripts/utils/learun-form.js"></script>
-    <script src="../js/iziModal.min.js"></script>
+    
     <script src="../BaseConfig/GetSetBaseConfig.js"></script>
     <script>
          var timerID;

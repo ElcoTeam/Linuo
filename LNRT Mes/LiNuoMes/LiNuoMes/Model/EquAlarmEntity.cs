@@ -19,4 +19,13 @@ namespace LiNuoMes.Model
         public string DealWithComment { set; get; }
         public string StopTime { set; get; }
     }
+
+    public class EquAlarm
+    {
+       
+        public List<string> Device { set; get; }
+        public List<string> AlarmCount { set; get; }
+       
+    }
+
 }

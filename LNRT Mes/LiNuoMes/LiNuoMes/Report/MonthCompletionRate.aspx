@@ -53,7 +53,19 @@
 
             InitPage();
             fnDate();
-            
+
+            $("#btn_MonthBudget").click(function () {
+                dialogOpen({
+                    id: "Form",
+                    title: '本月预算产量维护',
+                    url: '../Report/MonthBudgetMan.aspx',
+                    width: "300px",
+                    height: "200px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].AcceptClick($("#gridTable"));
+                    }
+                });
+            });
         });
 
         //加载表格
@@ -66,7 +78,7 @@
                 postData: { Action: "MonthCompletionRateReport" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() *0.4,
+                height: $('#areascontent').height() *0.34,
                 colModel: [
                       {
                           label: '月份', name: '0', index: '0', width: panelwidth * 0.08, align: 'left', sortable: false
@@ -135,19 +147,24 @@
                           YEAR: $("#YEAR").val()
                       }
                   }).trigger('reloadGrid');
-              
+                  
+                  $.ajax({
+                      url: "GetReportInfo.ashx",
+                      data: {
+                          Action: "MonthCompletionRateChart",
+                          YEAR: $("#YEAR").val()
+                      },
+                      type: "post",
+                      datatype: "json",
+                      success: function (data) {
+                          paint(JSON.parse(data));
+                          console.log(JSON.parse(data));
+                      },
+                      error: function (msg) {
+                          dialogMsg("数据访问异常", -1);
+                      }
+                  });
             });
-
-            //查询回车
-            //$('#ItemName').bind('keypress', function (event) {
-            //    if (event.keyCode == "13") {
-            //        $('#spn_Search').trigger("click");
-            //    }
-            //});
-            //$('#DATE').bind('onpicking', function (event) {
-            //    alert(111);
-            //    $('#spn_Search').trigger("click");
-            //});
         }
 
         function fnDate() {
@@ -177,6 +194,58 @@
                     $("#title").html(year + '年' + '月度生产完成率报表');
                 }
             }
+
+        }
+
+
+        function paint(serice) {
+            //var datavalue = JSON.parse(serice).datavalue;
+            var charts = new Highcharts.chart('container', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: '月度生产完成率统计图'
+                },
+                credits: {
+                    enabled: false
+                },
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: '产量'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: [{
+                    name: serice[0].name,
+                    data: serice[0].datavalue
+                }, {
+                    name: serice[1].name,
+                    data: serice[1].datavalue
+                }, {
+                    name: serice[2].name,
+                    data: serice[2].datavalue
+                }]
+            });
+            //charts.series[0].data=JSON.parse(serice).datavalue;
+            charts.xAxis[0].setCategories(serice[0].catagory);
 
         }
 
@@ -235,7 +304,8 @@
                                         <input  id="YEAR" type="text"  class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'yyyy',onpicked:settitle})" readonly/>&nbsp;年&nbsp;
                                     </td>
                                     <td class="formValue">                                     
-                                        <a id="spn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
+                                        <a id="spn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a> 
+                                        <a id="btn_MonthBudget" class="btn btn-primary"><i class="fa fa-bullseye"></i>每月预算产量</a> 
                                     </td>
                                 </tr> 
                             </table>

@@ -26,6 +26,7 @@
     <link href="../Content/styles/learun-ui.css" rel="stylesheet" />
     <link href="../css/my.css" rel="stylesheet" media="screen">
     <link href="../Content/scripts/plugins/printTable/learun-report.css" rel="stylesheet" />
+    <script src="../Content/scripts/plugins/layout/jquery.layout.js"></script>
     <script src="../Content/scripts/plugins/dialog/dialog.js"></script>
     <script src="../Content/adminLTE/index.js"></script>
     <script src="../Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
@@ -57,7 +58,19 @@
 
         //加载表格
         function InitPage() {
-            var selectedRowIndex = 0;v
+
+            //layout布局
+            $('#layout').layout({
+                applyDemoStyles: true,
+                west: {
+                    size: $(window).width() * 0.5
+                },
+                onresize: function () {
+                    $(window).resize()
+                }
+            });
+
+            var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
             var panelwidth = $('.gridPanel').width();
             $gridTable.jqGrid({
@@ -188,7 +201,146 @@
                         DATE: date
                     }
                 }).trigger('reloadGrid');
+
+
+                $.ajax({
+                    url: "GetReportInfo.ashx",
+                    data: {
+                        Action: "GetPersonCapacityChart",
+                        DATE: date
+                    },
+                    type: "post",
+                    datatype: "json",
+                    success: function (data) {
+                        var datalength = JSON.parse(data).catagory.length;
+
+                        for (var i = datalength; i < 31; i++) {
+                            $gridTable.hideCol("" + (i + 1) + "").trigger("reloadGrid");
+                        }
+
+
+                        for (var i = 28; i < datalength; i++) {
+                            $gridTable.showCol("" + (i + 1) + "").trigger("reloadGrid");
+                        }
+
+                        paint(JSON.parse(data));
+                        paintSecond(JSON.parse(data));
+                    },
+                    error: function (msg) {
+                        dialogMsg("数据访问异常", -1);
+                    }
+                });
             });
+ 
+        }
+
+        function paint(serice) {
+            //var datavalue = JSON.parse(serice).datavalue;
+            var charts = new Highcharts.chart('container', {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: '产量统计图'
+                },
+                credits: {
+                    enabled: false
+                },
+                //subtitle: {
+                //    text: 'Source: WorldClimate.com'
+                //},
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    title: {
+                        text: '产量'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value;
+                        }
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: true          // 开启数据标签
+                        }
+                        //enableMouseTracking: false // 关闭鼠标跟踪，对应的提示框、点击事件会失效
+                    },
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '产量',
+                    data: serice.datavalueFirst
+                }]
+            });
+            //charts.series[0].data=JSON.parse(serice).datavalue;
+            charts.xAxis[0].setCategories(serice.catagory);
+
+        }
+
+        function paintSecond(serice) {
+            var charts = new Highcharts.chart('container1', {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: '人均产能统计图'
+                },
+                credits: {
+                    enabled: false
+                },
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    title: {
+                        text: '人均产能'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value;
+                        }
+                    }
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: true          // 开启数据标签
+                        }
+                        //enableMouseTracking: false // 关闭鼠标跟踪，对应的提示框、点击事件会失效
+                    },
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '人均产能',
+                    data: serice.datavalueSecond
+                }]
+            });
+            charts.xAxis[0].setCategories(serice.catagory);
+
         }
 
         function fnDate() {
@@ -268,7 +420,7 @@
                                 <tr>
                                     <th class="formTitle" >查询日期：</th>
                                     <td class="formValue" >
-                                        <input id="DATE" type="text" class="Wdate  form-control"  onfocus="WdatePicker({dateFmt:'yyyy-MM',onpicked:setsearch})"/> 
+                                        <input id="DATE" type="text" class="Wdate  form-control"  onfocus="WdatePicker({dateFmt:'yyyy-MM'})"/> 
                                     </td>
                                     <td class="formValue">                                     
                                         <a id="spn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
@@ -296,12 +448,31 @@
               </div>
          </div>
 
-         <div class="center-Panel">
+
+        
+        <div class="ui-layout" id="layout" style="height: 420px; width: 100%;">
+
+        <!--统计信息列表-->
+        <div class="ui-layout-west">
+             <div class="center-Panel">
                 <div class="panel-Title">统计信息折线图</div>
-                 <div id="container" style="width: 100%; height: 400px; text-align:center;  margin: 0 auto">
+                 <div id="container" style="width: 100%; height: 360px; text-align:center;  margin: 0 auto">
            
                  </div>
-         </div>
+            </div>
+
+        </div>
+
+        <!--统计信息折线图-->
+        <div class="ui-layout-center">
+            <div class="center-Panel">
+                <div class="panel-Title">统计信息折线图</div>
+                 <div id="container1" style="width: 100%; height: 360px; text-align:center;  margin: 0 auto">
+           
+                 </div>
+            </div>
+        </div>
+        </div>
     </div>
     
 </body>

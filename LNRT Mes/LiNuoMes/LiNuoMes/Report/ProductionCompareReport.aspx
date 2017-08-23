@@ -34,6 +34,7 @@
     <script src="../My97DatePicker/WdatePicker.js"></script>
     <script src="../Content/scripts/plugins/printTable/jquery.printTable.js"></script>
     <script src="ExportGridToExcel.js"></script>
+    <script src="../js/highchart.js" type="text/javascript"></script>
 
     <script>
 
@@ -64,47 +65,47 @@
                 postData: { Action: "ProductionCompareReport" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() *0.16,
                 colModel: [
-                    { label: '年度', name: 'Date', index: 'Date', width: panelwidth*0.15, align: 'center' },
+                    { label: '年度', name: 'Date', index: 'Date', width: panelwidth*0.08, align: 'center' },
                     {
-                        label: '1月产量', name: '1', index: '1', width: panelwidth * 0.1, align: 'center'
+                        label: '1月产量', name: '1', index: '1', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '2月产量', name: '2', index: '2', width: panelwidth * 0.1, align: 'center'
+                        label: '2月产量', name: '2', index: '2', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '3月产量', name: '3', index: '3', width: panelwidth * 0.1, align: 'center'
+                        label: '3月产量', name: '3', index: '3', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '4月产量', name: '4', index: '4', width: panelwidth * 0.1, align: 'center'
+                        label: '4月产量', name: '4', index: '4', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '5月产量', name: '5', index: '5', width: panelwidth * 0.1, align: 'center'
+                        label: '5月产量', name: '5', index: '5', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '6月产量', name: '6', index: '6', width: panelwidth * 0.1, align: 'center'
+                        label: '6月产量', name: '6', index: '6', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '7月产量', name: '7', index: '7', width: panelwidth * 0.1, align: 'center'
+                        label: '7月产量', name: '7', index: '7', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '8月产量', name: '8', index: '8', width: panelwidth * 0.1, align: 'center'
+                        label: '8月产量', name: '8', index: '8', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '9月产量', name: '9', index: '9', width: panelwidth * 0.1, align: 'center'
+                        label: '9月产量', name: '9', index: '9', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '10月产量', name: '10', index: '10', width: panelwidth * 0.1, align: 'center'
+                        label: '10月产量', name: '10', index: '10', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '11月产量', name: '11', index: '11', width: panelwidth * 0.1, align: 'center'
+                        label: '11月产量', name: '11', index: '11', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '12月产量', name: '12', index: '12', width: panelwidth * 0.1, align: 'center'
+                        label: '12月产量', name: '12', index: '12', width: panelwidth * 0.07, align: 'center'
                     },
                     {
-                        label: '汇总产量', name: 'sumcount', index: 'sumcount', width: panelwidth * 0.1, align: 'center'
+                        label: '汇总产量', name: 'sumcount', index: 'sumcount', width: panelwidth * 0.08, align: 'center'
                     },
                 ],
                 viewrecords: true,
@@ -131,20 +132,77 @@
                           EndYear: $("#EndYear").val()
                       }
                   }).trigger('reloadGrid');
+
+                  $.ajax({
+                      url: "GetReportInfo.ashx",
+                      data: {
+                          Action: "ProductionCompareChart",
+                          StartYear: $("#StartYear").val(),
+                          EndYear: $("#EndYear").val()
+                      },
+                      type: "post",
+                      datatype: "json",
+                      success: function (data) {
+                          paint(JSON.parse(data));
+                      },
+                      error: function (msg) {
+                          dialogMsg("数据访问异常", -1);
+                      }
+                  });
               
             });
 
-            //查询回车
-            //$('#ItemName').bind('keypress', function (event) {
-            //    if (event.keyCode == "13") {
-            //        $('#spn_Search').trigger("click");
-            //    }
-            //});
-            //$('#DATE').bind('onpicking', function (event) {
-            //    alert(111);
-            //    $('#spn_Search').trigger("click");
-            //});
         }
+
+
+        function paint(serice) {
+            //var datavalue = JSON.parse(serice).datavalue;
+            var charts = new Highcharts.chart('container', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: '年度产量对比统计图'
+                },
+                credits: {
+                    enabled: false
+                },
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: '产量'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} </b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: [{
+                    name: $("#StartYear").val(),
+                    data: serice.datavalueFirst
+                }, {
+                    name: $("#EndYear").val(),
+                    data: serice.datavalueSecond
+                }]
+            });
+            //charts.series[0].data=JSON.parse(serice).datavalue;
+            charts.xAxis[0].setCategories(serice.catagory);
+
+        }
+
 
         function settitle()
         {
@@ -232,6 +290,13 @@
                       <table id="gridTable"></table>                      
                   </div>
               </div>
+         </div>
+
+          <div class="center-Panel">
+                <div class="panel-Title">统计信息柱状图</div>
+                 <div id="container" style="width: 100%; height: 400px; text-align:center;  margin: 0 auto">
+           
+                 </div>
          </div>
     </div>
     <style>

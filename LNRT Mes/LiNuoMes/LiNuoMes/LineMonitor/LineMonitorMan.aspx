@@ -41,6 +41,8 @@
             {
                 location.href = "../Login/Login.aspx";
             }
+            $("#currentperson").text(id);
+
             if ($(window).height() > 900) {
                 $('#areascontent').height($(window).height() -100);
             }
@@ -61,6 +63,7 @@
                 }, 200);
             });
             CreateSelect();
+            fnDate();
             
             function count($this) {
                 var current = parseInt($this.html(), 10);
@@ -77,8 +80,6 @@
                
                 count(jQuery(this));
             });
-
-
         });
 
         //构造select
@@ -95,9 +96,10 @@
                     var data1 = eval('(' + data.d + ')');
                     var i = 0;//和for循环一样 i做计数
                     for (i in data1) {
-                        optionstring += "<option value=\"" + data1[i].AIO_No + "\" >" + data1[i].Procedure_Name.trim() + "</option>";
+                        optionstring += "<option value=\"" + data1[i].ProcessCode + "\" >" + data1[i].ProcessName.trim() + "</option>";
                     }
                     $("#currentgw").html(optionstring);
+                    InitalPage($("#currentgw").val());
                 },
                 error: function (msg) {
                     alert("数据访问异常");
@@ -107,41 +109,58 @@
         }
 
         function changeline() {
-
             var value = $("#currentgw").val();
+            InitalPage(value);
+        }
 
+        //当前订单
+        function InitalPage(data)
+        {
             $.ajax({
                 url: "LineMonitorMan.aspx/SetLineInfo",    //后台webservice里的方法名称  
                 type: "post",
                 dataType: "json",
-                data: "{lineno:'"+value+"'}",
+                data: "{lineno:'" + data + "'}",
                 contentType: "application/json;charset=utf-8",
                 success: function (data) {
-                    var data1 = eval('(' + data.d + ')');
-                    var i = 0;//和for循环一样 i做计数
-                    for (i in data1) {
-                        $("#currentgx").html(data1[i].Procedure_Name);
-                        $("#currentperson").html(data1[i].Emp_Name);
-                        $("#currentlogintime").html(data1[i].LoginTime);
+                    if (data.d!='') {
+                        var data1 = eval('(' + data.d + ')');
+                        var i = 0;
+                        for (i in data1) {
 
-                        $("#OrderNo").html(data1[i].OrderNo);
-                        $("#MaterialCode").html(data1[i].MaterialCode);
-                        $("#Order_Qty").html(data1[i].Order_Qty);
-                        $("#StartTime").html(data1[i].StartTime);
+                            $("#OrderNo").html(data1[i].WorkOrderNumber);
+                            $("#MaterialCode").html(data1[i].ErpGoodsCode);
+                            $("#MaterialDSCA").html(data1[i].ErpGoodsDsca);
+                            $("#Order_Qty").html(data1[i].ErpPlanQty);
+                            $("#StartTime").html(data1[i].MesActualStartTime);
 
-                        $("#CompletedOrder_Qty").html(data1[i].CompletedOrder_Qty);
-                        $("#CompletedStation_Qty").html(data1[i].CompletedStation_Qty);
-                        $("#Line_Takt").html(data1[i].Line_Takt);
-                        $("#Station_Takt").html(data1[i].Station_Takt);
+                            $("#CompletedOrder_Qty").html(data1[i].MesFinishQty);
+                            $("#CompletedStation_Qty").html(data1[i].ProcessFinishNum);
+                            $("#Line_Takt").html(data1[i].LineBeat);
+                            $("#Station_Takt").html(data1[i].ProcessBeat);
 
-                        $("#OrderNo_Next").html(data1[i].OrderNo_Next);
-                        $("#OrderQty_Next").html(data1[i].OrderQty_Next);
-                        $("#MaterialCode_Next").html(data1[i].MaterialCode_Next);
-                        $("#Planned_StartTime").html(data1[i].Planned_StartTime);
+                            //$("#OrderNo_Next").html(data1[i].OrderNo_Next);
+                            //$("#OrderQty_Next").html(data1[i].OrderQty_Next);
+                            //$("#MaterialCode_Next").html(data1[i].MaterialCode_Next);
+                            //$("#Planned_StartTime").html(data1[i].Planned_StartTime);                        
+                            $("#CountDown").html(data1[i].ProcessBeat);
+                            //PDFObject.embed(data1[i].WI_Path, "#example1", options);
+                        }
+                        IntialNext($("#OrderNo").html());
+                    }
+                    else
+                    {
+                        $("#OrderNo").html("");
+                        $("#MaterialCode").html("");
+                        $("#MaterialDSCA").html("");
+                        $("#Order_Qty").html("");
+                        $("#StartTime").html("");
 
-                        $("#CountDown").html(data1[i].CountDown);
-                        PDFObject.embed(data1[i].WI_Path, "#example1", options);
-
+                        $("#CompletedOrder_Qty").html("");
+                        $("#CompletedStation_Qty").html("");
+                        $("#Line_Takt").html("");
+                        $("#Station_Takt").html("");                     
+                        $("#CountDown").html("");
                     }
                 },
                 error: function (msg) {
@@ -150,6 +169,86 @@
             });
         }
 
+        function IntialNext(data)
+        {
+    
+            $.ajax({
+                url: "LineMonitorMan.aspx/SetNextLineInfo",    //后台webservice里的方法名称  
+                type: "post",
+                dataType: "json",
+                data: "{lineno:'" + data + "'}",
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    console.log(data);
+                    if (data.d!='')
+                    {
+                        var data1 = eval('(' + data.d + ')');
+                        var i = 0;
+                        for (i in data1) {
+                            $("#OrderNo_Next").html(data1[i].ErpWorkOrderNumber);
+                            $("#MaterialCode_Next").html(data1[i].ErpGoodsCode);
+                            $("#MaterialDSCA_Next").html(data1[i].ErpGoodsDsca);
+                            $("#OrderQty_Next").html(data1[i].ErpPlanQty);
+                            $("#Planned_StartTime").html(data1[i].ErpPlanStartTime);
+
+                        }
+                    }
+                    else
+                    {
+                        $("#OrderNo_Next").html("");
+                        $("#MaterialCode_Next").html("");
+                        $("#MaterialDSCA_Next").html("");
+                        $("#OrderQty_Next").html("");
+                        $("#Planned_StartTime").html("");
+                    }
+                   
+                },
+                error: function (msg) {
+                    alert("数据访问异常");
+                }
+            });
+        }
+
+        //登陆时间
+        function fnDate() {
+            var xhr = null;
+            if (window.XMLHttpRequest) {
+                xhr = new window.XMLHttpRequest();
+            } else { // ie
+                xhr = new ActiveObject("Microsoft")
+            }
+            // 通过get的方式请求当前文件
+            xhr.open("get", "/");
+            xhr.send(null);
+            // 监听请求状态变化
+            xhr.onreadystatechange = function () {
+                var time = null,
+                    curDate = null;
+
+                if (xhr.readyState === 2) {
+                    var seperator1 = "-";
+                    var seperator2 = ":";
+                    // 获取请求头里的时间戳
+                    time = xhr.getResponseHeader("Date");
+                    //console.log(xhr.getAllResponseHeaders())
+                    curDate = new Date(time);
+                    var month = curDate.getMonth() + 1;
+                    var strDate = curDate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate
+                              + " " + curDate.getHours() + seperator2 + curDate.getMinutes()
+                              + seperator2 + curDate.getSeconds();
+                    
+                    $("#currentlogintime").html(currentdate);
+                }
+            }
+
+        }
     </script>
 </head>
 <body data-spy="scroll" data-target=".navbar-example" id="body">
@@ -180,18 +279,18 @@
                                     <th class="formTitle">所在工序：</th>
                                     <td class="formValue">
                                         <%--<label id="currentgx" class="form-control" style=" border: 0px;">排管焊接</label>--%>
-                                         <select class="form-control" id="currentgw" style="width:200px;padding:0px;height:45px;" onchange="changeline()">
+                                         <select class="form-control" id="currentgw" style="padding:0px;height:45px;" onchange="changeline()">
                                          </select>
                                     </td>
                                     <th class="formTitle">操作人员：</th>
                                     <td class="formValue">
-                                        <label id="currentperson" class="form-control" style="border: 0px;">田宇旺</label>
+                                        <label id="currentperson" class="form-control" style="border: 0px;"></label>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th class="formTitle">登录时间：</th>
                                     <td class="formValue">
-                                        <label id="currentlogintime" class="form-control" style="border: 0px;">08:20:00</label>
+                                        <label id="currentlogintime" class="form-control" style="border: 0px;"></label>
                                     </td>
                                 </tr>
                             </table>
@@ -222,43 +321,47 @@
                                <tr>
                                    <th class="formTitle">订单编号：</th>
                                    <td class="formValue">
-                                       <label id="OrderNo" class="form-control" style="border: 0px;">20075000</label>
-                                   </td>                                  
-                               </tr>
-                               <tr>
+                                       <label id="OrderNo" class="form-control" style="border: 0px;"></label>
+                                   </td>   
                                    <th class="formTitle">物料编号：</th>
                                    <td class="formValue">
-                                       <label id="MaterialCode" class="form-control" style="border: 0px;">3030100000</label>
-                                   </td>
+                                       <label id="MaterialCode" class="form-control" style="border: 0px;"></label>
+                                   </td>                               
+                               </tr>
+                               <tr>
+                                   <th class="formTitle">物料描述：</th>
+                                   <td class="formValue" colspan="3">
+                                       <label id="MaterialDSCA" class="form-control" style="border: 0px; width:1000px;"></label>
+                                   </td> 
                                </tr>
                                <tr>
                                    <th class="formTitle">订单数量：</th>
                                    <td class="formValue">
-                                       <label id="Order_Qty" class="form-control" style=" border: 0px;">100</label>
+                                       <label id="Order_Qty" class="form-control" style=" border: 0px;"></label>
                                    </td>
                                    <th class="formTitle">开始时间：</th>
                                    <td class="formValue">
-                                       <label id="StartTime" class="form-control" style="border: 0px;">08:30:00</label>
+                                       <label id="StartTime" class="form-control" style="border: 0px;"></label>
                                    </td>
                                </tr>
                                <tr>
                                    <th class="formTitle">订单完成数量：</th>
                                    <td class="formValue">
-                                       <label id="CompletedOrder_Qty" class="form-control" style="border: 0px;">20</label>
+                                       <label id="CompletedOrder_Qty" class="form-control" style="border: 0px;"></label>
                                    </td>
                                    <th class="formTitle">本工位完成数量：</th>
                                    <td class="formValue">
-                                       <label id="CompletedStation_Qty" class="form-control" style="border: 0px;">30</label>
+                                       <label id="CompletedStation_Qty" class="form-control" style="border: 0px;"></label>
                                    </td>
                                </tr>
                                <tr>
                                    <th class="formTitle">产线生产节拍：</th>
                                    <td class="formValue">
-                                       <label id="Line_Takt" class="form-control" style="border: 0px;">120</label>
+                                       <label id="Line_Takt" class="form-control" style="border: 0px;"></label>
                                    </td>
                                    <th class="formTitle">本工位生产节拍：</th>
                                    <td class="formValue">
-                                       <label id="Station_Takt" class="form-control" style="border: 0px;">40</label>
+                                       <label id="Station_Takt" class="form-control" style="border: 0px;"></label>
                                    </td>
                                </tr>
                            </table>
@@ -276,23 +379,27 @@
                                 <tr>
                                     <th class="formTitle">订单编号：</th>
                                     <td class="formValue">
-                                        <label id="OrderNo_Next" class="form-control" style="border: 0px;">20075002</label>
+                                        <label id="OrderNo_Next" class="form-control" style="border: 0px;"></label>
                                     </td>
-                                </tr>
-                                <tr>
                                     <th class="formTitle">物料编码：</th>
                                     <td class="formValue">
-                                        <label id="MaterialCode_Next" class="form-control" style="border: 0px;">2610300176</label>
-                                    </td>                                   
+                                        <label id="MaterialCode_Next" class="form-control" style="border: 0px;"></label>
+                                    </td>   
+                                </tr>
+                                <tr>
+                                   <th class="formTitle">物料描述：</th>
+                                   <td class="formValue" colspan="3">
+                                       <label id="MaterialDSCA_Next" class="form-control" style="border: 0px; width:1000px;"></label>
+                                   </td>                                
                                 </tr>
                                 <tr>
                                     <th class="formTitle">订单数量：</th>
                                     <td class="formValue">
-                                        <label id="OrderQty_Next" class="form-control" style="border: 0px;">100</label>
+                                        <label id="OrderQty_Next" class="form-control" style="border: 0px;"></label>
                                     </td>
                                     <th class="formTitle">计划开始时间：</th>
                                     <td class="formValue">
-                                        <label id="Planned_StartTime" class="form-control" style="border: 0px;">11:30:00</label>
+                                        <label id="Planned_StartTime" class="form-control" style="border: 0px;"></label>
                                     </td>   
                                 </tr>
                             </table>

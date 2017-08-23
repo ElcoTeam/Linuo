@@ -10,6 +10,7 @@ namespace LiNuoMes.Model
         public string Number { set; get; }
         public string WorkOrderNumber { set; get; }
         public string WorkOrderVersion { set; get; }
+        public string StartTime { set; get; }
         public string FinishTime { set; get; }
         public string ItemNumber { set; get; }
         public string ItemDsca { set; get; }

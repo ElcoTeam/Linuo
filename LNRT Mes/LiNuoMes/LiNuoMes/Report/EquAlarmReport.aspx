@@ -34,6 +34,7 @@
     <script src="../My97DatePicker/WdatePicker.js"></script>
     <script src="../Content/scripts/plugins/printTable/jquery.printTable.js"></script>
     <script src="ExportGridToExcel.js"></script>
+    <script src="../js/highchart.js" type="text/javascript"></script>
 
     <script>
         $(function () {
@@ -50,7 +51,7 @@
             });
             GetGrid();
             CreateSelect();
-          
+            GetChart();
         });
 
         //加载表格
@@ -62,7 +63,7 @@
                 postData: { Action: "EquAlarmReport" },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() *0.4,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
@@ -71,11 +72,11 @@
                     },
                     { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 200, align: 'left' },
                     { label: '报警时间', name: 'AlarmTime', index: 'AlarmTime', width: 250, align: 'left' },
-                    { label: '报警项', name: 'AlarmItem', index: 'AlarmItem', width: 100, align: 'left' },
+                    { label: '报警项', name: 'AlarmItem', index: 'AlarmItem', width: 300, align: 'left' },
                     {
-                      label: '处理情况', name: 'DealWithResult', index: 'DealWithResult', width: 200, align: 'left'
+                      label: '处理情况', name: 'DealWithResult', index: 'DealWithResult', width: 100, align: 'left'
                     },
-                    { label: '处理完成时间', name: 'DealWithTime', index: 'DealWithTime', width: 250, align: 'left' },
+                    { label: '处理完成时间', name: 'DealWithTime', index: 'DealWithTime', width: 150, align: 'left' },
                     { label: '处理人', name: 'DealWithOper', index: 'DealWithOper', width: 100, align: 'left' },
                     { label: '处理说明', name: 'DealWithComment', index: 'DealWithComment', width: 100, align: 'left' },
                     { label: '停机时间', name: 'StopTime', index: 'StopTime', width: 100, align: 'center' },
@@ -94,6 +95,8 @@
                 }
             });
 
+
+           
             //查询事件
             $("#btn_Search").click(function () {
                 var processName = $("#ProcessName").val();
@@ -103,22 +106,61 @@
                 var AlarmEndTime = $("#AlarmEndTime").val();
                 var DealWithStartTime = $("#DealWithStartTime").val();
                 var DealWithEndTime = $("#DealWithEndTime").val();
-                var DealWithOper = $("#DealWithOper").val();
-                
+                var AlarmItem = $("#AlarmItem").val();
                 $gridTable.jqGrid('setGridParam', {
                     datatype: 'json',
                     postData: {
-                        Action: "EquAlarmReport", ProcessName: processName, DeviceName: deviceName, DealWithResult: DealWithResult, AlarmStartTime: AlarmStartTime, AlarmEndTime: AlarmEndTime, DealWithStartTime: DealWithStartTime, DealWithEndTime: DealWithEndTime, DealWithOper: DealWithOper
+                        Action: "EquAlarmReport",
+                        ProcessName: processName,
+                        DeviceName: deviceName,
+                        DealWithResult: DealWithResult,
+                        AlarmStartTime: AlarmStartTime,
+                        AlarmEndTime: AlarmEndTime,
+                        DealWithStartTime: DealWithStartTime,
+                        DealWithEndTime: DealWithEndTime,
+                        AlarmItem: AlarmItem
                     }
                 }).trigger('reloadGrid');
 
+                GetChart();
             });
-            //查询回车
-            //$('#orderno').bind('keypress', function (event) {
-            //    if (event.keyCode == "13") {
-            //        $('#btn_Search').trigger("click");
-            //    }
-            //});
+
+        }
+
+
+        function GetChart() {
+            var processName = $("#ProcessName").val();
+            var deviceName = $("#DeviceName").val();
+            var DealWithResult = $("#DealWithResult").val();
+            var AlarmStartTime = $("#AlarmStartTime").val();
+            var AlarmEndTime = $("#AlarmEndTime").val();
+            var DealWithStartTime = $("#DealWithStartTime").val();
+            var DealWithEndTime = $("#DealWithEndTime").val();
+            var AlarmItem = $("#AlarmItem").val();
+            //柱状图数据
+            $.ajax({
+                url: "GetReportInfo.ashx",
+                data: {
+                    Action: "EquAlarmChart",
+                    ProcessName: processName,
+                    DeviceName: deviceName,
+                    DealWithResult: DealWithResult,
+                    AlarmStartTime: AlarmStartTime,
+                    AlarmEndTime: AlarmEndTime,
+                    DealWithStartTime: DealWithStartTime,
+                    DealWithEndTime: DealWithEndTime,
+                    AlarmItem: AlarmItem
+                },
+                type: "post",
+                datatype: "json",
+                success: function (data) {
+                    paint(JSON.parse(data));
+                },
+                error: function (msg) {
+                    dialogMsg("数据访问异常", -1);
+                }
+            });
+
         }
 
         //构造select
@@ -145,6 +187,75 @@
             });           
         }
 
+
+        function paint(serice) {
+            //var datavalue = JSON.parse(serice).datavalue;
+            var charts = new Highcharts.chart('container', {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: '设备故障报警统计图'
+                },
+
+                credits: {
+                    enabled: false
+                },
+                //subtitle: {
+                //    text: 'Source: WorldClimate.com'
+                //},
+                xAxis: {
+                    categories: []
+                },
+                yAxis: {
+                    title: {
+                        text: '报警次数'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value;
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        borderWidth: 0,
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: function (e) {
+                                    //★添加跳转代码★
+                                    //alert(e.point.category);
+                                    dialogOpen({
+                                        id: "Form",
+                                        title: '设备保养明细表' + e.point.category,
+                                        url: '../Report/EquAlarmDetail.aspx?equid=' + e.point.category + '',
+                                        width: "750px",
+                                        height: "500px",
+                                        btn: null
+                                    });
+                                }
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    name: '报警次数',
+                    data: serice.datavalue
+                }]
+            });
+            //charts.series[0].data=JSON.parse(serice).datavalue;
+            charts.xAxis[0].setCategories(serice.catagory);
+
+        }
 
         //打印
         function btn_print(event) {
@@ -196,17 +307,22 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th class="formTitle">处理人：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DealWithOper" placeholder="请输入处理人">   
-                                    </td>
                                     <th class="formTitle">处理情况：</th>
                                     <td class="formValue">
                                        <select class="form-control" id="DealWithResult">
                                            <option value=''>请选择...</option>
-                                           <option value='已处理'>已处理</option>
-                                           <option value='未处理'>未处理</option>
+                                           <option value='R'>已处理</option>
+                                           <option value='N'>未处理</option>
                                        </select>
+                                    </td>
+
+                                    <th class="formTitle">报警项：</th>
+                                    <td class="formValue">
+                                        <select class="form-control" id="AlarmItem">
+                                           <option value=''>请选择...</option>
+                                           <option value='报警'>报警</option>
+                                           <option value='物料拉动'>物料拉动</option>
+                                       </select>   
                                     </td>
                                 </tr>
                                 <tr>
@@ -248,8 +364,13 @@
                   </div>
               </div>
          </div>
+         <div class="center-Panel">
+               <div class="panel-Title">统计信息折线图</div>
+               <div id="container" style="width: 100%; height: 400px; text-align:center;  margin: 0 auto">
+          
+               </div>
+         </div>
     </div>
-     
 </body>
 </html>
 

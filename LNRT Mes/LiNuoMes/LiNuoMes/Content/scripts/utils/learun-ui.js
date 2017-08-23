@@ -742,7 +742,7 @@ dialogTop = function (content, type) {
     }, 4000);
     $("#tip_container" + bid).css("left", ($(window).width() - $("#tip_container" + bid).width()) / 2);
 }
- dialogOpen = function (options) {
+dialogOpen = function (options) {
     Loading(true);
     var defaults = {
         id: null,

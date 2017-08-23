@@ -57,11 +57,11 @@
                 url: "GetMaterialConfirm.ashx",
                 
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() -380,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {
-                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 150, align: 'left'
+                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 120, align: 'left'
                     },
                     {
                         label: '订单类型', name: 'WorkOrderVersion', index: 'WorkOrderVersion', width: 80, align: 'left',

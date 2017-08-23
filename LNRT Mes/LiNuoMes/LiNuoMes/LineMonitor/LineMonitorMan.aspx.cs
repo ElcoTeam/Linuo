@@ -34,7 +34,7 @@ namespace LiNuoMes.LineMonitor
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
-                string str1 = "select * from AIO_LineMonitor";
+                string str1 = "select ProcessCode,ProcessName from Mes_Process_List where ParamName!=''";
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str1;
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
@@ -45,9 +45,9 @@ namespace LiNuoMes.LineMonitor
         }
 
         /// <summary>
-        /// 取得所有工位
+        /// 当前订单
         /// </summary>
-        /// <param name="deviceid"></param>
+        /// <param name="lineno"></param>
         /// <returns></returns>
         [WebMethod]
         public static string SetLineInfo(string lineno)
@@ -56,10 +56,42 @@ namespace LiNuoMes.LineMonitor
             string ReturnValue = string.Empty;
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
+                 SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_LineMonitor";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                sqlPara[0] = new SqlParameter("@devicecode", lineno);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(tb);
+                ReturnValue = DataTableJson(tb);
+                return ReturnValue;
+               
+            }
+        }
+
+        /// <summary>
+        /// 下一订单
+        /// </summary>
+        /// <param name="lineno"></param>
+        /// <returns></returns>
+        [WebMethod]
+        public static string SetNextLineInfo(string lineno)
+        {
+            DataTable tb = new DataTable();
+            string ReturnValue = string.Empty;
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
-                string str1 = "select * from AIO_LineMonitor where AIO_No='"+lineno.Trim()+"'";
+                string str1 = "select top(1) ErpWorkOrderNumber,ErpGoodsCode,ErpPlanQty,ErpPlanStartTime,ErpGoodsDsca  from MFG_WO_List where MesInturnNumber > (select MesInturnNumber from MFG_WO_List where ErpWorkOrderNumber = '" + lineno.Trim() + "') order by MesInturnNumber  ";
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str1;
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);

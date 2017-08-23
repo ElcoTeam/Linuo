@@ -72,14 +72,24 @@
                 height: $('#areascontent').height() *0.5,
                 colModel: [
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
-                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 300, align: 'center' },
-                    { label: '订单类型', name: 'WorkOrderVersion', index: 'WorkOrderVersion', width: 200, align: 'center' },
-                    { label: '完成时间', name: 'FinishTime', index: 'FinishTime', width: 150, align: 'center' },
+                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 200, align: 'center' },
+                    {
+                        label: '订单类型', name: 'WorkOrderVersion', index: 'WorkOrderVersion', width: 100, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            if (rowObject.WorkOrderVersion == 0) {
+                                return "正常订单";
+                            }
+                            else
+                                return "下线补单";
+                        }
+                    },
+                    { label: '开始时间', name: 'StartTime', index: 'StartTime', width: 200, align: 'center' },
+                    { label: '完成时间', name: 'FinishTime', index: 'FinishTime', width: 200, align: 'center' },
                     {
                         label: '产品物料编码', name: 'ItemNumber', index: 'ItemNumber', width: 150, align: 'center'
                     },
-                    { label: '产品物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 200, align: 'left' },
-                    { label: '单位', name: 'UOM', index: 'UOM', width: 100, align: 'left' },
+                    { label: '产品物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 250, align: 'left' },
+                    { label: '单位', name: 'UOM', index: 'UOM', width: 100, align: 'center' },
                     { label: '订单数量', name: 'ErpPlanQty', index: 'ErpPlanQty', width: 100, align: 'center' },
                     { label: '完成数量', name: 'MesFinishQty', index: 'MesFinishQty', width: 100, align: 'center' },
                     { label: '欠产数量', name: 'UnFinishQty', index: 'UnFinishQty', width: 100, align: 'center' },
@@ -100,7 +110,7 @@
                 postData: { Action: "AbnormalInfo" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() * 0.3,
+                height: $('#areascontent').height() * 0.23,
                 colModel: [
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth*0.2, align: 'center' },
                     { label: '报废数量', name: 'RejectQty', index: 'RejectQty', width: panelwidth * 0.2, align: 'center' },
@@ -151,7 +161,7 @@
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth * 0.2, align: 'center' },
                     { label: '物料名称', name: 'ItemName', index: 'ItemName', width: panelwidth * 0.2, align: 'center' },
                     { label: '拉动次数', name: 'PullTimes', index: 'PullTimes', width: panelwidth * 0.2, align: 'center' },
-                    { label: '超时次数', name: 'OerTimes', index: 'OverTimes', width: panelwidth * 0.2, align: 'center' },
+                    { label: '超时次数', name: 'OverTimes', index: 'OverTimes', width: panelwidth * 0.2, align: 'center' },
                 ],
                 viewrecords: true,
                 rowNum: "10000",
@@ -204,13 +214,6 @@
                     }
                 }).trigger('reloadGrid');
             });
-
-            //查询回车
-            //$('#orderno').bind('keypress', function (event) {
-            //    if (event.keyCode == "13") {
-            //        $('#btn_Search').trigger("click");
-            //    }
-            //});
         }
         
         function settitle() {
@@ -284,18 +287,23 @@
          </div>
           <div class="ui-report" style="margin-top:0.5%; overflow: hidden; ">
               <div class="gridPanel" id="gridPanel">
+                  
                   <div class="printArea">
                       <div class="grid-title"> 
                           <h2 style="text-align:center;" id="title"></h2> 
                       </div> 
+                      <div class="panel-Title">订单生产情况</div>
                       <table id="gridTable"></table>                 
                   </div>
+                  <div class="panel-Title">下线情况</div>
                   <div class="printArea">           
                        <table id="gridTable1"></table>   
                   </div>
+                  <div class="panel-Title">设备报警情况</div>
                   <div class="printArea">           
                        <table id="gridTable2"></table>   
                   </div>
+                  <div class="panel-Title">物料拉动情况</div>
                    <div class="printArea">           
                        <table id="gridTable3"></table>   
                   </div>

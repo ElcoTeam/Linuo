@@ -246,6 +246,9 @@
                 title: {
                     text: '每月出勤统计图'
                 },
+                credits: {
+                    enabled: false
+                },
                 //subtitle: {
                 //    text: 'Source: WorldClimate.com'
                 //},

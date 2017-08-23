@@ -223,24 +223,23 @@
          }            </script>
 <body>
    
-     <div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
     <div class="ui-layout-west">
         <div class="west-Panel" style="margin: 0px; border-top: none; border-left: none; border-bottom: none;">
             <div style="color:#9f9f9f;padding-top:5px; padding-bottom:5px;padding-left:8px;"><i style="padding-right:5px;" class="fa fa-info-circle"></i><span style="font-size: 9pt;">填写内容,选择右侧产品型号</span></div>
             <table class="form" id="ruleinfo">
-                
-                
                 <tr>
                     <th class="formTitle">保养人<font face="宋体">*</font></th>
                     <td class="formValue">
                         <input id="PmOper" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" readonly/>        
                     </td>
                 </tr>
+
                 <tr>
                     <th class="formTitle" valign="top" style="padding-top: 4px;">
                         保养说明
                     </th>
-                   <td class="formValue" colspan="3">
+                    <td class="formValue" colspan="3">
                         <textarea id="PmComment"  class="form-control" style="height: 250px;"  placeholder="请输入保养说明"></textarea>
                     </td>
                 </tr> 

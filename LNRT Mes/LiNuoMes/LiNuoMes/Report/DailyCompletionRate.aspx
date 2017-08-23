@@ -69,38 +69,104 @@
                 datatype: "local",
                 height: $('#areascontent').height() *0.64,
                 colModel: [
-                    { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
-                    { label: '日期', name: 'Date', index: 'Date', width: panelwidth*0.15, align: 'center' },
-                    {
-                        label: '当日SAP派工数量', name: 'DispatchNum', index: 'DispatchNum', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '当日SAP派工过账数量', name: 'SAPPostNum', index: 'SAPPostNum', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '当日过账数量', name: 'PostNum', index: 'PostNum', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '订单准确率', name: 'OrderAccuracy', index: 'OrderAccuracy', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '订单及时率', name: 'TimelyRate', index: 'TimelyRate', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '出勤人数', name: 'AttendanceNum', index: 'AttendanceNum', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '当日工作时间', name: 'WorkHour', index: 'WorkHour', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '出勤时间', name: 'AttendanceTime', index: 'AttendanceTime', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '有效生产时间', name: 'EffectiveTime', index: 'EffectiveTime', width: panelwidth * 0.1, align: 'center'
-                    },
-                    {
-                        label: '有效生产时间效率', name: 'EffectiveRate', index: 'EffectiveRate', width: panelwidth * 0.1, align: 'center'
-                    },
+                      { label: '日期', name: '0', index: '0', width: panelwidth * 0.055, align: 'left', sortable: false },
+                      {
+                          label: '1', name: '1', index: '1', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '2', name: '2', index: '2', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '3', name: '3', index: '3', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '4', name: '4', index: '4', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '5', name: '5', index: '5', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '6', name: '6', index: '6', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '7', name: '7', index: '7', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '8', name: '8', index: '8', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '9', name: '9', index: '9', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '10', name: '10', index: '10', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '11', name: '11', index: '11', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '12', name: '12', index: '12', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '13', name: '13', index: '13', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '14', name: '14', index: '14', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '15', name: '15', index: '15', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '16', name: '16', index: '16', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '17', name: '17', index: '17', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '18', name: '18', index: '18', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '19', name: '19', index: '19', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '20', name: '20', index: '20', width: panelwidth * 0.028, align: 'left'
+                      },
+                      {
+                          label: '21', name: '21', index: '21', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '22', name: '22', index: '22', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '23', name: '23', index: '23', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '24', name: '24', index: '24', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '25', name: '25', index: '25', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '26', name: '26', index: '26', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '27', name: '27', index: '27', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '28', name: '28', index: '28', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '29', name: '29', index: '29', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '30', name: '30', index: '30', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '31', name: '31', index: '31', width: panelwidth * 0.029, align: 'left'
+                      },
+                      {
+                          label: '汇总', name: '32', index: '32', width: panelwidth * 0.04, align: 'left'
+                      },
+
                 ],
                 viewrecords: true,
                 rowNum: "10000",
@@ -123,22 +189,38 @@
                       datatype: 'json',
                       postData: {
                           YEAR: $("#YEAR").val(),
-                          MONTH: $("#MONTH").val()
+                          
                       }
                   }).trigger('reloadGrid');
-              
+                  
+                  $.ajax({
+                      url: "GetReportInfo.ashx",
+                      data: {
+                          Action: "GetUserAttendenceChart",
+                          DATE: $("#YEAR").val()
+                      },
+                      type: "post",
+                      datatype: "json",
+                      success: function (data) {
+                          var datalength = JSON.parse(data).catagory.length;
+                          
+                          for (var i = datalength; i < 31; i++) {
+                              $gridTable.hideCol("" + (i + 1) + "").trigger("reloadGrid");
+                          }
+
+                         
+                          for (var i = 28; i < datalength; i++) {
+                              $gridTable.showCol("" + (i + 1) + "").trigger("reloadGrid");
+                          }
+                          
+                      },
+                      error: function (msg) {
+                          dialogMsg("数据访问异常", -1);
+                      }
+                  });
             });
 
-            //查询回车
-            //$('#ItemName').bind('keypress', function (event) {
-            //    if (event.keyCode == "13") {
-            //        $('#spn_Search').trigger("click");
-            //    }
-            //});
-            //$('#DATE').bind('onpicking', function (event) {
-            //    alert(111);
-            //    $('#spn_Search').trigger("click");
-            //});
+            
         }
 
         function fnDate() {
@@ -165,12 +247,11 @@
                         month = "0" + month;
                     }
                    
-                    $('#YEAR').val(curDate.getFullYear());
-                    $('#MONTH').val(month);
-
+                    $('#YEAR').val(curDate.getFullYear() + '-' + month);
+                   
                     var year = $("#YEAR").val();
-                    var month = $("#MONTH").val();
-                    $("#title").html(year + '年' + month + '月' + '每日生产完成率报表');
+                    
+                    $("#title").html(year  + '每日生产完成率报表');
                 }
             }
 
@@ -179,8 +260,8 @@
         function settitle()
         {
             var year = $("#YEAR").val();
-            var month = $("#MONTH").val();
-            $("#title").html(year + '年' + month + '月' + '每日生产完成率报表');
+            //var month = $("#MONTH").val();
+            $("#title").html(year  + '每日生产完成率报表');
 
         }
 
@@ -230,8 +311,8 @@
                                 <tr>
                                     <th class="formTitle" >查询日期：</th>
                                     <td class="formValue" colspan="2" >
-                                        <input  id="YEAR" type="text"  class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'yyyy',onpicked:settitle})" readonly/>&nbsp;年&nbsp;
-                                        <input  id="MONTH" type="text" class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'MM',onpicked:settitle})" readonly/> &nbsp;月&nbsp;
+                                        <input  id="YEAR" type="text"  class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'yyyy-MM',onpicked:settitle})" readonly/>
+                                       
                                     </td>
                                     <td class="formValue">                                     
                                         <a id="spn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  

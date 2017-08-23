@@ -17,14 +17,18 @@ namespace LiNuoMes.Report
     /// <summary>
     /// GetReportInfo 的摘要说明
     /// </summary>
-    public class GetReportInfo : IHttpHandler
+    public class GetReportInfo : IHttpHandler, IReadOnlySessionState
     {
         JavaScriptSerializer jsc = new JavaScriptSerializer();
         string Action = "";
-
+        string UserName = "";
         public void ProcessRequest(HttpContext context)
         {
             context.Response.ContentType = "text/plain";
+            if (context.Session["UserName"] != null)
+                UserName = context.Session["UserName"].ToString().ToUpper().Trim();
+            else
+                UserName = "";
             Action = RequstString("Action");
 
             if (Action.Length == 0) Action = "";
@@ -34,6 +38,35 @@ namespace LiNuoMes.Report
             {
                 List<EquAlarmEntity> equAlarm= new List<EquAlarmEntity>();
                 equAlarm = GetEquAlarmList(equAlarm);
+                context.Response.Write(jsc.Serialize(equAlarm));
+            }
+
+            //设备报警柱状图
+            if (Action == "EquAlarmChart")
+            {
+                EquAlarm equAlarmReport = new EquAlarm();
+                equAlarmReport = GetEquAlarmReport(equAlarmReport);
+                Chart chart = new Chart();
+                
+                List<string> catagory = new List<string>();
+                List<double> datavalue = new List<double>();
+
+                for (int i = 0; i < equAlarmReport.Device.Count(); i++)
+                {
+                    catagory.Add(equAlarmReport.Device[i].ToString());
+
+                    datavalue.Add(Convert.ToDouble(equAlarmReport.AlarmCount[i] == "" ? "0" : equAlarmReport.AlarmCount[i].ToString()));
+                }
+                chart.catagory = catagory;
+                chart.datavalue = datavalue;
+                context.Response.Write(jsc.Serialize(chart));
+            }
+
+            //设备详细报警
+            if (Action == "EquAlarmDetail")
+            {
+                List<EquAlarmEntity> equAlarm = new List<EquAlarmEntity>();
+                equAlarm = GetEquAlarmDetail(equAlarm);
                 context.Response.Write(jsc.Serialize(equAlarm));
             }
 
@@ -109,10 +142,6 @@ namespace LiNuoMes.Report
                     strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
                     strJson += "\"cell\":";
                     strJson += "[";
-                    //strJson += "\"" + dt.Rows[j]["KindName"].ToString().Trim() + "\",";
-                    //strJson += "\"" + dt.Rows[j]["DeviceCode"].ToString().Trim() + "\",";
-                    //strJson += "\"" + dt.Rows[j]["CheckItem"].ToString().Trim() + "\",";
-                    //strJson += "\"" + dt.Rows[j]["ItemSpec"].ToString().Trim() + "\",";
                     if(j==0)
                     {
                         for (int i = 0; i < userAttendence.AttendanceNum.Count()-1; i++)
@@ -183,78 +212,486 @@ namespace LiNuoMes.Report
             {
                 PersonCapacityEntity personCapacity = new PersonCapacityEntity();
                 personCapacity = GetPersonCapaticyData(personCapacity);
-                context.Response.Write(jsc.Serialize(personCapacity));
+                string strJson = "";
+                strJson = "{\"page\":1,\"total\": 3 ,\"records\":4,\"rows\":[";
+                for (int j = 0; j < 3; j++)
+                {
+                    strJson += "{";
+                    strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                    strJson += "\"cell\":";
+                    strJson += "[";
+                  
+                    if (j == 0)
+                    {
+                        for (int i = 0; i < personCapacity.Yield.Count() - 1; i++)
+                        {
+                            strJson += "\"" + personCapacity.Yield[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + personCapacity.Yield[personCapacity.Yield.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 1)
+                    {
+                        for (int i = 0; i < personCapacity.PersonNum.Count() - 1; i++)
+                        {
+                            strJson += "\"" + personCapacity.PersonNum[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + personCapacity.PersonNum[personCapacity.PersonNum.Count() - 1].ToString().Trim() + "\"";
+                    }
+                    if (j == 2)
+                    {
+                        for (int i = 0; i < personCapacity.PerCapacity.Count() - 1; i++)
+                        {
+                            strJson += "\"" + personCapacity.PerCapacity[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + personCapacity.PerCapacity[personCapacity.PerCapacity.Count() - 1].ToString() + "\"";
+                    }
+                  
+                    strJson += "]";
+                    strJson += "}";
+                    strJson += ",";
+
+                }
+                strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                strJson += "]}";
+                context.Response.Write(strJson);
             }
+
+            //人员产能报表
+            if (Action == "GetPersonCapacityChart")
+            {
+                PersonCapacityEntity personCapacity = new PersonCapacityEntity();
+                personCapacity = GetPersonCapaticyData(personCapacity);
+                DoubleChart chart = new DoubleChart();
+
+                List<string> catagory = new List<string>();
+                List<double> datavalue = new List<double>();
+                List<double> datavalue1 = new List<double>();
+                for (int i = 1; i < personCapacity.Yield.Count(); i++)
+                {
+                    catagory.Add(i.ToString());
+
+                    datavalue.Add(Convert.ToDouble(personCapacity.Yield[i] == "" ? "0" : personCapacity.Yield[i].ToString()));
+                }
+                for (int i = 1; i < personCapacity.PerCapacity.Count(); i++)
+                {
+                    //catagory.Add(i.ToString());
+                    datavalue1.Add(Convert.ToDouble(personCapacity.PerCapacity[i] == "" ? "0" : personCapacity.PerCapacity[i].ToString()));
+                }
+                chart.catagory = catagory;
+                chart.datavalueFirst = datavalue;
+                chart.datavalueSecond= datavalue1;
+                context.Response.Write(jsc.Serialize(chart));
+            }
+
 
             //每日生产完成率
             if (Action == "DailyCompletionRateReport")
             {
-                List<DailyCompletionRateEntity> dailyCompletionRate = new List<DailyCompletionRateEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                DailyCompletionRateEntity dailyCompletionRate = new DailyCompletionRateEntity();
+
+                dailyCompletionRate = GetDailyCompletionRate(dailyCompletionRate);
+
+                string strJson = "";
+                strJson = "{\"page\":1,\"total\": 11 ,\"records\":11,\"rows\":[";
+                for (int j = 0; j < 11; j++)
+                {
+                    strJson += "{";
+                    strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                    strJson += "\"cell\":";
+                    strJson += "[";
+                    
+                    if (j == 0)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.DispatchNum.Count()-1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.DispatchNum[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.DispatchNum[dailyCompletionRate.DispatchNum.Count()-1].ToString() + "\"";
+                    }
+                    if (j == 1)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.SAPPostNum.Count()-1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.SAPPostNum[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.SAPPostNum[dailyCompletionRate.SAPPostNum.Count()-1].ToString().Trim() + "\"";
+                    }
+                    if (j == 2)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.PostNum.Count()-1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.PostNum[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.PostNum[dailyCompletionRate.PostNum.Count()-1].ToString() + "\"";
+                    }
+                    if (j == 3)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.OrderAccuracy.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.OrderAccuracy[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.OrderAccuracy[dailyCompletionRate.OrderAccuracy.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 4)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.TimelyRate.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.TimelyRate[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.TimelyRate[dailyCompletionRate.TimelyRate.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 5)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.AttendanceNum.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.AttendanceNum[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.AttendanceNum[dailyCompletionRate.AttendanceNum.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 6)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.WorkHour.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.WorkHour[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.WorkHour[dailyCompletionRate.WorkHour.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 7)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.AttendanceTime.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.AttendanceTime[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.AttendanceTime[dailyCompletionRate.AttendanceTime.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 8)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.EffectiveTime.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.EffectiveTime[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.EffectiveTime[dailyCompletionRate.EffectiveTime.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 9)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.EffectiveRate.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.EffectiveRate[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.EffectiveRate[dailyCompletionRate.EffectiveRate.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 10)
+                    {
+                        for (int i = 0; i < dailyCompletionRate.MonthCompleteRate.Count() - 1; i++)
+                        {
+                            strJson += "\"" + dailyCompletionRate.MonthCompleteRate[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + dailyCompletionRate.MonthCompleteRate[dailyCompletionRate.MonthCompleteRate.Count() - 1].ToString() + "\"";
+                    }
+                    strJson += "]";
+                    strJson += "}";
+                    strJson += ",";
+
+                }
+                strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                strJson += "]}";
+                context.Response.Write(strJson);
             }
 
             //月度生产完成率
             if (Action == "MonthCompletionRateReport")
             {
                 MonthCompletionRateEntity monthCompletionRate = new MonthCompletionRateEntity();
+                monthCompletionRate = GetMonthlyCompletionRate(monthCompletionRate);
+                string strJson = "";
+                strJson = "{\"page\":1,\"total\": 7 ,\"records\":7,\"rows\":[";
+                for (int j = 0; j < 7; j++)
+                {
+                    strJson += "{";
+                    strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                    strJson += "\"cell\":";
+                    strJson += "[";
+
+                    if (j == 0)
+                    {
+                        for (int i = 0; i < monthCompletionRate.BudgetedQty.Count() - 1; i++)
+                        {
+                            strJson += "\"" + monthCompletionRate.BudgetedQty[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + monthCompletionRate.BudgetedQty[monthCompletionRate.BudgetedQty.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 1)
+                    {
+                        for (int i = 0; i < monthCompletionRate.FinishQty.Count() - 1; i++)
+                        {
+                            strJson += "\"" + monthCompletionRate.FinishQty[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + monthCompletionRate.FinishQty[monthCompletionRate.FinishQty.Count() - 1].ToString().Trim() + "\"";
+                    }
+                    if (j == 2)
+                    {
+                        for (int i = 0; i < monthCompletionRate.BudgetedCompletionRate.Count() - 1; i++)
+                        {
+                            strJson += "\"" + monthCompletionRate.BudgetedCompletionRate[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + monthCompletionRate.BudgetedCompletionRate[monthCompletionRate.BudgetedCompletionRate.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 3)
+                    {
+                        for (int i = 0; i < monthCompletionRate.DesignYield.Count() - 1; i++)
+                        {
+                            strJson += "\"" + monthCompletionRate.DesignYield[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + monthCompletionRate.DesignYield[monthCompletionRate.DesignYield.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 4)
+                    {
+                        for (int i = 0; i < monthCompletionRate.CapacityRate.Count() - 1; i++)
+                        {
+                            strJson += "\"" + monthCompletionRate.CapacityRate[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + monthCompletionRate.CapacityRate[monthCompletionRate.CapacityRate.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 5)
+                    {
+                        for (int i = 0; i < monthCompletionRate.ERPPlanYield.Count() - 1; i++)
+                        {
+                            strJson += "\"" + monthCompletionRate.ERPPlanYield[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + monthCompletionRate.ERPPlanYield[monthCompletionRate.ERPPlanYield.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 6)
+                    {
+                        for (int i = 0; i < monthCompletionRate.ERPCompleteRate.Count() - 1; i++)
+                        {
+                            strJson += "\"" + monthCompletionRate.ERPCompleteRate[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + monthCompletionRate.ERPCompleteRate[monthCompletionRate.ERPCompleteRate.Count() - 1].ToString() + "\"";
+                    }
+                  
+                    strJson += "]";
+                    strJson += "}";
+                    strJson += ",";
+
+                }
+                strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                strJson += "]}";
+                context.Response.Write(strJson);
+
+            }
+
+            //月度生产完成率柱状图
+            if (Action == "MonthCompletionRateChart")
+            {
+                MonthCompletionRateEntity monthCompletionRate = new MonthCompletionRateEntity();
+                monthCompletionRate = GetMonthlyCompletionRate(monthCompletionRate);
+                List<ChartWithName> chart = new List<ChartWithName>();
                 
+                List<string> catagory= new List<string>();
+
+                List<double> datavalue1 = new List<double>();
+                List<double> datavalue2 = new List<double>();
+                List<double> datavalue3 = new List<double>();
+                
+                for (int i = 1; i < monthCompletionRate.BudgetedQty.Count()-1; i++)
+                {
+                    catagory.Add(i.ToString()+'月');
+
+                    datavalue1.Add(Convert.ToDouble(monthCompletionRate.BudgetedQty[i] == "" ? "0" : monthCompletionRate.BudgetedQty[i].ToString()));
+                }
+
+                for (int i = 1; i < monthCompletionRate.FinishQty.Count()-1; i++)
+                {
+
+                    datavalue2.Add(Convert.ToDouble(monthCompletionRate.FinishQty[i] == "" ? "0" : monthCompletionRate.FinishQty[i].ToString()));
+                }
+
+
+                for (int i = 1; i < monthCompletionRate.ERPPlanYield.Count()-1; i++)
+                {
+
+                    datavalue3.Add(Convert.ToDouble(monthCompletionRate.ERPPlanYield[i] == "" ? "0" : monthCompletionRate.ERPPlanYield[i].ToString()));
+                }
+
+                chart.Add(new ChartWithName() 
+                { 
+                    name = monthCompletionRate.BudgetedQty[0].ToString(),  
+                    catagory = catagory, 
+                    datavalue = datavalue1 
+                });
+                chart.Add(new ChartWithName()
+                {
+                    name = monthCompletionRate.FinishQty[0].ToString(),  
+                    catagory = catagory, 
+                    datavalue = datavalue2 
+                });
+                chart.Add(new ChartWithName()
+                {
+                    name = monthCompletionRate.DesignYield[0].ToString(),  
+                    catagory = catagory, 
+                    datavalue = datavalue3 
+                });
+                context.Response.Write(jsc.Serialize(chart));
+            }
+
+
+
+            //获取每月预算产量
+            if (Action == "GetMonthBudget")
+            {
+                MonthBudget mb = new MonthBudget();
+                mb.CurrentMonth=RequstString("CurrentMonth");
+                mb=GetMonthBudget(mb);
+                context.Response.Write(jsc.Serialize(mb));
+            }
+
+            //新增每月预算产量
+            if (Action == "MonthBudget_Add")
+            {
+                MonthBudget mb = new MonthBudget();
+                mb.CurrentMonth = RequstString("CurrentMonth");
+                mb.BudgetedQty = RequstString("MonthBudget");
+                ResultMsg_MonthBudget result = new ResultMsg_MonthBudget();
+                result = MonthBudgetMan(mb, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+
+            //更新每月预算产量
+            if (Action == "MonthBudget_Edit")
+            {
+                MonthBudget mb = new MonthBudget();
+                mb.CurrentMonth = RequstString("CurrentMonth");
+                mb.BudgetedQty = RequstString("MonthBudget");
+                ResultMsg_MonthBudget result = new ResultMsg_MonthBudget();
+                result = MonthBudgetEdit(mb, result);
+                context.Response.Write(jsc.Serialize(result));
             }
 
             //产品直通率
             if (Action == "ProductThroughRateReport")
             {
                 List<ProductThroughRateEntity> productThroughRate = new List<ProductThroughRateEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                
             }
 
             //年度产量对比
             if (Action == "ProductionCompareReport")
             {
-                List<ProductionCompareEntity> productCompare = new List<ProductionCompareEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                ProductionCompareEntity productCompare = new ProductionCompareEntity();
+                productCompare = GetProductCompare(productCompare);
+                string strJson = "";
+                double sumYiled = 0;
+                double sumYiledSecond = 0;
+
+                strJson = "{\"page\":1,\"total\": 3 ,\"records\":4,\"rows\":[";
+                for (int j = 0; j < 3; j++)
+                {
+                    strJson += "{";
+                    strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                    strJson += "\"cell\":";
+                    strJson += "[";
+
+                    if (j == 0)
+                    {
+                        for (int i = 0; i < productCompare.Yiled.Count() - 1; i++)
+                        {
+                            strJson += "\"" + productCompare.Yiled[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + productCompare.Yiled[productCompare.Yiled.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 1)
+                    {
+                        for (int i = 0; i < productCompare.YiledSecond.Count() - 1; i++)
+                        {
+                            strJson += "\"" + productCompare.YiledSecond[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + productCompare.YiledSecond[productCompare.YiledSecond.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 2)
+                    {
+                        for (int i = 0; i < productCompare.YiledCompare.Count() - 1; i++)
+                        {
+                            strJson += "\"" + productCompare.YiledCompare[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + productCompare.YiledCompare[productCompare.YiledCompare.Count() - 1].ToString() + "\"";
+                    }
+                    strJson += "]";
+                    strJson += "}";
+                    strJson += ",";
+
+                }
+                strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                strJson += "]}";
+                context.Response.Write(strJson);
+
             }
 
-            //生产溯源
-            if (Action == "ProductionCompareReport")
+
+            //年度产量对比柱状图
+            if (Action == "ProductionCompareChart")
             {
-                List<ProductionSourceEntity> productionSource = new List<ProductionSourceEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                ProductionCompareEntity personCapacity = new ProductionCompareEntity();
+                personCapacity = GetProductCompare(personCapacity);
+                DoubleChart chart = new DoubleChart();
+
+                List<string> catagory = new List<string>();
+                List<double> datavalueFirst = new List<double>();
+                List<double> datavalueSecond = new List<double>();
+
+                for (int i = 1; i < personCapacity.Yiled.Count()-1; i++)
+                {
+                    catagory.Add(i.ToString());
+
+                    datavalueFirst.Add(Convert.ToDouble(personCapacity.Yiled[i] == "" ? "0" : personCapacity.Yiled[i].ToString()));
+                }
+
+                for (int i = 1; i < personCapacity.YiledSecond.Count()-1; i++)
+                {
+                    catagory.Add(i.ToString());
+
+                    datavalueSecond.Add(Convert.ToDouble(personCapacity.YiledSecond[i] == "" ? "0" : personCapacity.YiledSecond[i].ToString()));
+                }
+
+                chart.catagory = catagory;
+                chart.datavalueFirst = datavalueFirst;
+                chart.datavalueSecond = datavalueSecond;
+                context.Response.Write(jsc.Serialize(chart));
             }
+
+
+            //生产溯源
+           
 
             //订单生产情况
             if (Action == "OrderProductInfo")
             {
                 List<ProductionStatisticEntity> productionStatistic = new List<ProductionStatisticEntity>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                productionStatistic = GetOrderProductInfoList(productionStatistic);
+                context.Response.Write(jsc.Serialize(productionStatistic));
             }
 
             //下线情况
             if (Action == "AbnormalInfo")
             {
                 List<AbnormalInfo> abnormal = new List<AbnormalInfo>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                abnormal = GetAbnormalInfoList(abnormal);
+                context.Response.Write(jsc.Serialize(abnormal));
             }
 
             //设备报警情况
             if (Action == "EquAlarmInfo")
             {
                 List<EquAlarmInfo> equAlarm = new List<EquAlarmInfo>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                equAlarm = GetEquAlarmInfoList(equAlarm);
+                context.Response.Write(jsc.Serialize(equAlarm));
             }
 
             //物料拉动情况
             if (Action == "MaterialPullInfo")
             {
                 List<MaterialPullInfo> materialPull = new List<MaterialPullInfo>();
-                //materialPull = GetMaterialPullList(materialPull);
-                //context.Response.Write(jsc.Serialize(materialPull));
+                materialPull = GetMaterialPullInfoList(materialPull);
+                context.Response.Write(jsc.Serialize(materialPull));
             }
 
         }
@@ -282,6 +719,7 @@ namespace LiNuoMes.Report
             return ret;
         }
 
+
         /// <summary>
         /// 设别报警
         /// </summary>
@@ -297,7 +735,7 @@ namespace LiNuoMes.Report
             string AlarmEndTime = RequstString("AlarmEndTime");
             string DealWithStartTime = RequstString("DealWithStartTime");
             string DealWithEndTime = RequstString("DealWithEndTime");
-            string DealWithOper = RequstString("DealWithOper");
+            string AlarmItem = RequstString("AlarmItem");
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -314,7 +752,7 @@ namespace LiNuoMes.Report
                 sqlPara[4] = new SqlParameter("@AlarmEndTime", AlarmEndTime);
                 sqlPara[5] = new SqlParameter("@DealWithStartTime", DealWithStartTime);
                 sqlPara[6] = new SqlParameter("@DealWithEndTime", DealWithEndTime);
-                sqlPara[7] = new SqlParameter("@DealWithOper", DealWithOper);
+                sqlPara[7] = new SqlParameter("@AlarmItem", AlarmItem);
                 
                 foreach (SqlParameter para in sqlPara)
                 {
@@ -339,6 +777,110 @@ namespace LiNuoMes.Report
                         itemList.DealWithOper = dt.Rows[i]["DealWithOper"].ToString();
                         itemList.DealWithComment = dt.Rows[i]["DealWithComment"].ToString();
                         itemList.StopTime = dt.Rows[i]["StopTime"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        /// <summary>
+        /// 设备报警柱状图
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public EquAlarm GetEquAlarmReport(EquAlarm dataEntity)
+        {
+
+            DataTable dt = new DataTable();
+            string processName = RequstString("ProcessName");
+            string deviceName = RequstString("DeviceName");
+            string DealWithResult = RequstString("DealWithResult");
+            string AlarmStartTime = RequstString("AlarmStartTime");
+            string AlarmEndTime = RequstString("AlarmEndTime");
+            string DealWithStartTime = RequstString("DealWithStartTime");
+            string DealWithEndTime = RequstString("DealWithEndTime");
+            string AlarmItem = RequstString("AlarmItem");
+            EquAlarm itemList = new EquAlarm();
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_EquAlarmChart";
+                SqlParameter[] sqlPara = new SqlParameter[8];
+                sqlPara[0] = new SqlParameter("@processName", processName);
+                sqlPara[1] = new SqlParameter("@deviceName", deviceName);
+                sqlPara[2] = new SqlParameter("@DealWithResult", DealWithResult);
+                sqlPara[3] = new SqlParameter("@AlarmStartTime", AlarmStartTime);
+                sqlPara[4] = new SqlParameter("@AlarmEndTime", AlarmEndTime);
+                sqlPara[5] = new SqlParameter("@DealWithStartTime", DealWithStartTime);
+                sqlPara[6] = new SqlParameter("@DealWithEndTime", DealWithEndTime);
+                sqlPara[7] = new SqlParameter("@AlarmItem", AlarmItem);
+
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                List<string> Device = new List<string>();
+                List<string> AlarmCount = new List<string>();
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        Device.Add(dt.Rows[i]["DeviceCode"].ToString());
+                        AlarmCount.Add(dt.Rows[i]["AlarmCount"].ToString());
+                    }
+                }
+                itemList.Device = Device;
+                itemList.AlarmCount = AlarmCount;
+            }
+            return itemList;
+        }
+
+        /// <summary>
+        /// 设备报警明细
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<EquAlarmEntity> GetEquAlarmDetail(List<EquAlarmEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            string deviceName = RequstString("DeviceName");
+            
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_EquAlarmDetail";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+               
+                sqlPara[0] = new SqlParameter("@deviceName", deviceName);
+                
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        EquAlarmEntity itemList = new EquAlarmEntity();
+                        
+                        itemList.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        itemList.AlarmTime = dt.Rows[i]["AlarmTime"].ToString();
+                        itemList.AlarmItem = dt.Rows[i]["AlarmItem"].ToString();
+                        
                         dataEntity.Add(itemList);
                     }
                 }
@@ -443,10 +985,11 @@ namespace LiNuoMes.Report
             //{
             //    selectdate += "-01";
             //}
-            //else if (selecttype == "2")
-            //{
-            //    selectdate += "-01-01";
-            //}
+            if (selecttype == "2")
+            {
+               selectdate += "-01";
+               selectdate1 += "-01";
+            }
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -512,7 +1055,7 @@ namespace LiNuoMes.Report
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = selectstr;
                 SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);
-                Datapter.Fill(selectdt);
+                Datapter1.Fill(selectdt);
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     dt.Columns.Add("DATE", typeof(System.String));
@@ -636,9 +1179,687 @@ namespace LiNuoMes.Report
             DataTable selectdt = new DataTable();
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
-                
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                str = "select day(dateadd(mm,1,'" + date + "-01')-day('" + date + "-01')) as daynum";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_PersonCapaticy";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                sqlPara[0] = new SqlParameter("@date", date);
+               
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);
+
+                Datapter1.Fill(selectdt);
+
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    dt.Columns.Add("DateValue", typeof(System.String));
+                    dt.Columns.Add("Yield", typeof(System.String));
+                    dt.Columns.Add("PersonNum", typeof(System.String));
+                    dt.Columns.Add("PerCapacity", typeof(System.String));
+                    
+                    if (Convert.ToInt32(dt.Rows[0]["daynum"]) > 0)
+                    {
+                        int daynum = Convert.ToInt16(dt.Rows[0]["daynum"].ToString());
+
+                        for (int i = 1; i <= daynum; i++)
+                        {
+                            dt.Rows.Add(daynum, i.ToString(), "", "", "");
+                        }
+                        for (int j = 1; j < dt.Rows.Count; j++)
+                        {
+                            if (selectdt.Rows.Count > 0)
+                            {
+                                string filter = "convert(DateValue,'System.String') ='" + dt.Rows[j]["DateValue"] + "'";
+                                int count = selectdt.Select(filter).Count();
+                                if (count > 0)
+                                {
+                                    DataRow dr = selectdt.Select("DateValue='" + dt.Rows[j]["DateValue"].ToString() + "'")[0];
+                                    dt.Rows[j]["Yield"] = dr["Yield"].ToString();
+                                    dt.Rows[j]["PersonNum"] = dr["PersonNum"].ToString();
+                                    dt.Rows[j]["PerCapacity"] = dr["PerCapacity"].ToString();
+                                    
+                                }
+                            }
+                        }
+                    }
+                    dt.Rows.RemoveAt(0);
+                    List<string> Yield = new List<string>();
+                    List<string> PersonNum = new List<string>();
+                    List<string> PerCapacity = new List<string>();
+
+                    Yield.Add("产量");
+                    PersonNum.Add("人员数量");
+                    PerCapacity.Add("人均产能");
+                    
+                    for (int j = 0; j < dt.Rows.Count; j++)
+                    {
+                        Yield.Add(dt.Rows[j]["Yield"].ToString());
+                        PersonNum.Add(dt.Rows[j]["PersonNum"].ToString());
+                        PerCapacity.Add(dt.Rows[j]["PerCapacity"].ToString());                      
+                    }
+
+                    user.Yield = Yield;
+                    user.PersonNum = PersonNum;
+                    user.PerCapacity = PerCapacity;             
+                }
             }
             return user;
+        }
+
+        /// <summary>
+        /// 年度产量对比
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public ProductionCompareEntity GetProductCompare(ProductionCompareEntity user)
+        {
+            string StartYear = RequstString("StartYear");
+            string EndYear = RequstString("EndYear");
+
+            DataTable dt = new DataTable();
+           
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_ProductionCompare";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@date1", StartYear);
+                sqlPara[1] = new SqlParameter("@date2", EndYear);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);
+
+                Datapter1.Fill(dt);
+
+                
+                List<string> Yiled = new List<string>();
+                List<string> YiledSecond = new List<string>();
+                List<string> YiledCompare = new List<string>();
+
+                int sumYiled = 0;
+                int sumYiledSecond = 0;
+                double sumYiledCompare = 0.0;
+
+                Yiled.Add(StartYear);
+                YiledSecond.Add(EndYear);
+                YiledCompare.Add("同期产量对比");
+
+
+                for (int j = 0; j < dt.Rows.Count; j++)
+                {
+                    Yiled.Add(dt.Rows[j]["Yiled"].ToString());
+                    YiledSecond.Add(dt.Rows[j]["YiledSecond"].ToString());
+                    YiledCompare.Add(dt.Rows[j]["YiledCompare"].ToString());
+                    sumYiled += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[j]["Yiled"].ToString()) ? 0 : dt.Rows[j]["Yiled"]);
+                    sumYiledSecond += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[j]["YiledSecond"].ToString()) ? 0 : dt.Rows[j]["YiledSecond"]);
+                    sumYiledCompare += Convert.ToDouble(string.IsNullOrEmpty(dt.Rows[j]["YiledCompare"].ToString()) ? 0.0 : Convert.ToDouble(dt.Rows[j]["YiledCompare"].ToString().Substring(0, dt.Rows[j]["YiledCompare"].ToString().Length - 1)));
+                }
+
+                Yiled.Add(sumYiled.ToString());
+                YiledSecond.Add(sumYiledSecond.ToString());
+                YiledCompare.Add(sumYiledCompare.ToString() + '%');
+               
+                user.Yiled = Yiled;
+                user.YiledSecond = YiledSecond;
+                user.YiledCompare = YiledCompare;
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 获取当月预算产量
+        /// </summary>
+        /// <param name="monthbudget"></param>
+        /// <returns></returns>
+        public MonthBudget GetMonthBudget(MonthBudget monthbudget)
+        {
+            DataTable dt = new DataTable();
+            string ReturnValue = string.Empty;
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = "select BudgetProduction from Report_MonthBudget";
+                if (monthbudget.CurrentMonth != "")
+                {
+                    str1 += "  WHERE CurrentMonth ='" + monthbudget.CurrentMonth + "' ";
+                }
+
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    monthbudget.BudgetedQty = dt.Rows[0]["BudgetProduction"].ToString();
+                }
+                return monthbudget;
+            }
+        }
+
+        /// <summary>
+        /// 新增当月预算产量
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public ResultMsg_MonthBudget MonthBudgetMan(MonthBudget dataEntity, ResultMsg_MonthBudget result)
+        {
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    string strSql = string.Format(
+                         @" INSERT INTO Report_MonthBudget  
+                        (CurrentMonth,BudgetProduction, UpdateUser, UpdateTime) VALUES ( '{0}','{1}','{2}',getdate()) ",
+                             dataEntity.CurrentMonth,
+                             dataEntity.BudgetedQty,
+                             UserName
+                         );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+
+        /// <summary>
+        /// 编辑当月预算产量
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public ResultMsg_MonthBudget MonthBudgetEdit(MonthBudget dataEntity, ResultMsg_MonthBudget result)
+        {
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    string strSql = string.Format(
+                        @" UPDATE Report_MonthBudget SET 
+                                                  BudgetProduction  = '{0}' 
+                                                , UpdateUser   = '{1}'
+                                                , UpdateTime   = getdate()
+                                                  WHERE CurrentMonth = '{2}'
+                                            ",
+                                                    dataEntity.BudgetedQty,
+                                                    UserName,
+                                                    dataEntity.CurrentMonth
+                         );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 每日生产完成率
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public DailyCompletionRateEntity GetDailyCompletionRate(DailyCompletionRateEntity user)
+        {
+            string date = RequstString("YEAR");
+
+            DataTable dt = new DataTable();
+            DataTable selectdt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_DailyCompletionRate";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                sqlPara[0] = new SqlParameter("@date", date);
+               
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+
+                Datapter.Fill(dt);
+
+                List<string> DispatchNum = new List<string>();
+                List<string> SAPPostNum = new List<string>();
+                List<string> PostNum = new List<string>();
+                List<string> OrderAccuracy = new List<string>();
+                List<string> TimelyRate = new List<string>();
+                List<string> AttendanceNum = new List<string>();
+                List<string> WorkHour = new List<string>();
+                List<string> AttendanceTime = new List<string>();
+                List<string> EffectiveTime = new List<string>();
+                List<string> EffectiveRate = new List<string>();
+                List<string> MonthCompleteRate = new List<string>();
+                int sumDispatchNum = 0;
+                int sumSAPPostNum = 0;
+                int sumPostNum = 0;
+                int sumAttendanceNum =0;
+                int sumWorkHour = 0;
+                int sumAttendanceTime = 0;
+                int sumEffectiveTime = 0;
+                double sumEffectiveRate = 0.0;
+                double sumOrderAccuracy = 0.0;
+                double sumTimelyRate = 0.0;
+   
+                DispatchNum.Add("当日ERP派工数量");
+                SAPPostNum.Add("当日ERP派工过账数量");
+                PostNum.Add("当日过账数量");
+                OrderAccuracy.Add("订单准确率");
+                TimelyRate.Add("订单及时率");
+                AttendanceNum.Add("出勤人数");
+                WorkHour.Add("当日工作时间");
+                AttendanceTime.Add("出勤时间");
+                EffectiveTime.Add("有效生产时间");
+                EffectiveRate.Add("有效生产时间效率");
+                MonthCompleteRate.Add("月度完成率");
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        DispatchNum.Add(dt.Rows[i]["DispatchNum"].ToString());
+                        SAPPostNum.Add(dt.Rows[i]["SAPPostNum"].ToString());
+                        PostNum.Add(dt.Rows[i]["PostNum"].ToString());
+                        OrderAccuracy.Add(dt.Rows[i]["OrderAccuracy"].ToString());
+                        TimelyRate.Add(dt.Rows[i]["TimelyRate"].ToString());
+                        AttendanceNum.Add(dt.Rows[i]["AttendanceNum"].ToString());
+                        WorkHour.Add(dt.Rows[i]["WorkHour"].ToString());
+                        AttendanceTime.Add(dt.Rows[i]["AttendanceTime"].ToString());
+                        EffectiveTime.Add(dt.Rows[i]["EffectiveTime"].ToString());
+                        EffectiveRate.Add(dt.Rows[i]["EffectiveRate"].ToString());
+                        MonthCompleteRate.Add(dt.Rows[i]["MonthCompleteRate"].ToString());
+
+                        sumDispatchNum += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["DispatchNum"].ToString()) ? 0 : dt.Rows[i]["DispatchNum"]);
+                        sumSAPPostNum += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["SAPPostNum"].ToString())? 0 : dt.Rows[i]["SAPPostNum"]);
+                        sumPostNum += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["PostNum"].ToString()) ? 0 : dt.Rows[i]["PostNum"]);
+                        sumAttendanceNum += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["AttendanceNum"].ToString()) ? 0 : dt.Rows[i]["AttendanceNum"]);
+                        sumWorkHour += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["WorkHour"].ToString()) ? 0 : dt.Rows[i]["WorkHour"]);
+                        sumAttendanceTime += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["AttendanceTime"].ToString()) ? 0 : dt.Rows[i]["AttendanceTime"]);
+                        sumEffectiveTime += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["EffectiveTime"].ToString()) ? 0 : dt.Rows[i]["EffectiveTime"]);
+                        sumEffectiveRate += Convert.ToDouble(string.IsNullOrEmpty(dt.Rows[i]["EffectiveRate"].ToString()) ? 0 : dt.Rows[i]["EffectiveRate"]);
+                        sumOrderAccuracy += Convert.ToDouble(string.IsNullOrEmpty(dt.Rows[i]["OrderAccuracy"].ToString()) ? 0.0 : Convert.ToDouble(dt.Rows[i]["OrderAccuracy"].ToString().Substring(0, dt.Rows[i]["OrderAccuracy"].ToString().Length - 1)));
+                        sumTimelyRate += Convert.ToDouble(string.IsNullOrEmpty(dt.Rows[i]["TimelyRate"].ToString()) ? 0.0 : Convert.ToDouble(dt.Rows[i]["TimelyRate"].ToString().Substring(0, dt.Rows[i]["TimelyRate"].ToString().Length - 1)));
+
+                    }
+                }
+
+                sumOrderAccuracy = Math.Round(sumOrderAccuracy / dt.Rows.Count, 2);
+                sumTimelyRate = Math.Round(sumTimelyRate / dt.Rows.Count, 2); 
+
+                DispatchNum.Add(sumDispatchNum.ToString());
+                SAPPostNum.Add(sumSAPPostNum.ToString());
+                PostNum.Add(sumPostNum.ToString());
+                WorkHour.Add(sumWorkHour.ToString());
+                AttendanceNum.Add(sumAttendanceNum.ToString());
+                AttendanceTime.Add(sumAttendanceTime.ToString());
+                EffectiveTime.Add(sumEffectiveTime.ToString());
+                EffectiveRate.Add(sumEffectiveRate.ToString());
+                OrderAccuracy.Add(sumOrderAccuracy.ToString() + '%');
+                TimelyRate.Add(sumTimelyRate.ToString() + '%');
+
+                user.DispatchNum = DispatchNum;
+                user.SAPPostNum = SAPPostNum;
+                user.PostNum = PostNum;
+                user.OrderAccuracy = OrderAccuracy;
+                user.TimelyRate = TimelyRate;
+                user.AttendanceNum = AttendanceNum;
+                user.WorkHour = WorkHour;
+                user.AttendanceTime = AttendanceTime;
+                user.EffectiveTime = EffectiveTime;
+                user.EffectiveRate = EffectiveRate;
+                user.MonthCompleteRate = MonthCompleteRate;
+            }
+            return user;
+        }
+
+
+        /// <summary>
+        /// 月度生产完成率
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public MonthCompletionRateEntity GetMonthlyCompletionRate(MonthCompletionRateEntity user)
+        {
+            string date = RequstString("YEAR");
+
+            DataTable dt = new DataTable();
+            DataTable selectdt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_MonthCompletionRate";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                sqlPara[0] = new SqlParameter("@date", date);
+
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+
+                Datapter.Fill(dt);
+
+                List<string> BudgetedQty = new List<string>();
+                List<string> FinishQty = new List<string>();
+                List<string> BudgetedCompletionRate = new List<string>();
+                List<string> DesignYield = new List<string>();
+                List<string> CapacityRate = new List<string>();
+                List<string> ERPPlanYield = new List<string>();
+                List<string> ERPCompleteRate = new List<string>();
+
+                int sumBudgetedQty = 0;
+                int sumFinishQty = 0;
+                int sumDesignYield = 0;
+                int sumERPPlanYield = 0;
+                double sumBudgetedCompletionRate = 0.0;
+                double sumCapacityRate = 0.0;
+                double sumERPCompleteRate = 0.0;
+
+                BudgetedQty.Add("预算产量");
+                FinishQty.Add("完成产量");
+                BudgetedCompletionRate.Add("预算完成率");
+                DesignYield.Add("设计产能");
+                CapacityRate.Add("产能发挥率");
+                ERPPlanYield.Add("ERP计划产量");
+                ERPCompleteRate.Add("ERP完成率");
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        BudgetedQty.Add(dt.Rows[i]["BudgetedQty"].ToString());
+                        FinishQty.Add(dt.Rows[i]["FinishQty"].ToString());
+                        BudgetedCompletionRate.Add(dt.Rows[i]["BudgetedCompletionRate"].ToString());
+                        DesignYield.Add(dt.Rows[i]["DesignYield"].ToString());
+                        CapacityRate.Add(dt.Rows[i]["CapacityRate"].ToString());
+                        ERPPlanYield.Add(dt.Rows[i]["ERPPlanYield"].ToString());
+                        ERPCompleteRate.Add(dt.Rows[i]["ERPCompleteRate"].ToString());
+
+                        sumBudgetedQty += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["BudgetedQty"].ToString()) ? 0 : dt.Rows[i]["BudgetedQty"]);
+                        sumFinishQty += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["FinishQty"].ToString()) ? 0 : dt.Rows[i]["FinishQty"]);
+                        sumDesignYield += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["DesignYield"].ToString()) ? 0 : dt.Rows[i]["DesignYield"]);
+                        sumERPPlanYield += Convert.ToInt16(string.IsNullOrEmpty(dt.Rows[i]["ERPPlanYield"].ToString()) ? 0 : dt.Rows[i]["ERPPlanYield"]);
+                        sumBudgetedCompletionRate += Convert.ToDouble(string.IsNullOrEmpty(dt.Rows[i]["BudgetedCompletionRate"].ToString()) ? 0.0 : Convert.ToDouble( dt.Rows[i]["BudgetedCompletionRate"].ToString().Substring(0, dt.Rows[i]["BudgetedCompletionRate"].ToString().Length - 1)));
+                        sumCapacityRate += Convert.ToDouble(string.IsNullOrEmpty(dt.Rows[i]["CapacityRate"].ToString()) ? 0.0 : Convert.ToDouble(dt.Rows[i]["CapacityRate"].ToString().Substring(0, dt.Rows[i]["CapacityRate"].ToString().Length - 1)));
+                        sumERPCompleteRate += Convert.ToDouble(string.IsNullOrEmpty(dt.Rows[i]["ERPCompleteRate"].ToString()) ? 0.0 : Convert.ToDouble(dt.Rows[i]["ERPCompleteRate"].ToString().Substring(0, dt.Rows[i]["ERPCompleteRate"].ToString().Length - 1)));
+                    }
+                }
+                sumBudgetedCompletionRate = Math.Round(sumBudgetedCompletionRate / dt.Rows.Count, 2);
+                sumCapacityRate = Math.Round(sumCapacityRate / dt.Rows.Count, 2);
+                sumERPCompleteRate = Math.Round(sumERPCompleteRate / dt.Rows.Count, 2); 
+
+                BudgetedQty.Add(sumBudgetedQty == 0 ? "" : sumBudgetedQty.ToString());
+                FinishQty.Add(sumFinishQty == 0 ? "" : sumFinishQty.ToString());
+                BudgetedCompletionRate.Add(sumBudgetedCompletionRate == 0 ? "" : sumBudgetedCompletionRate.ToString() + '%');
+                DesignYield.Add(sumDesignYield == 0 ? "" : sumDesignYield.ToString());
+                CapacityRate.Add(sumCapacityRate == 0 ? "" : sumCapacityRate.ToString() + '%');
+                ERPPlanYield.Add(sumERPPlanYield == 0 ? "" : sumERPPlanYield.ToString());
+                ERPCompleteRate.Add(sumERPCompleteRate == 0 ? "" : sumERPCompleteRate.ToString() + '%');
+
+                user.BudgetedQty = BudgetedQty;
+                user.FinishQty = FinishQty;
+                user.BudgetedCompletionRate = BudgetedCompletionRate;
+                user.DesignYield = DesignYield;
+                user.CapacityRate = CapacityRate;
+                user.ERPPlanYield = ERPPlanYield;
+                user.ERPCompleteRate = ERPCompleteRate;
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 订单生产情况
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<ProductionStatisticEntity> GetOrderProductInfoList(List<ProductionStatisticEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            StartTime += " 00:00:00";
+            EndTime +=" 23:59:59";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_OrderProductInfo";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@date1", StartTime);
+                sqlPara[1] = new SqlParameter("@date2", EndTime);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        ProductionStatisticEntity itemList = new ProductionStatisticEntity();
+                        itemList.Number = (i + 1).ToString();
+                        itemList.WorkOrderNumber = dt.Rows[i]["ErpWorkOrderNumber"].ToString();
+                        itemList.WorkOrderVersion = dt.Rows[i]["MesWorkOrderVersion"].ToString();
+                        itemList.StartTime = dt.Rows[i]["MesPlanStartTime"].ToString();
+                        itemList.FinishTime = dt.Rows[i]["MesPlanFinishTime"].ToString();
+                        itemList.ItemNumber = dt.Rows[i]["ErpGoodsCode"].ToString();
+                        itemList.ItemDsca = dt.Rows[i]["ErpGoodsDsca"].ToString();
+                        itemList.UOM = dt.Rows[i]["UOM"].ToString();
+                        itemList.ErpPlanQty = dt.Rows[i]["MesPlanQty"].ToString();
+                        itemList.MesFinishQty = dt.Rows[i]["Mes2ErpCfmQty"].ToString();
+                        itemList.UnFinishQty = dt.Rows[i]["UnFinishNum"].ToString();
+                        itemList.BackQty = dt.Rows[i]["BackQty"].ToString();
+                        itemList.FinishRate = dt.Rows[i]["FinishRate"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        /// <summary>
+        /// 设备报警情况(生产统计报表)
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<EquAlarmInfo> GetEquAlarmInfoList(List<EquAlarmInfo> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            StartTime += " 00:00:00";
+            EndTime += " 23:59:59";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_EquAlarmStatistic";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@date1", StartTime);
+                sqlPara[1] = new SqlParameter("@date2", EndTime);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        EquAlarmInfo itemList = new EquAlarmInfo();
+                        itemList.ProcessName = dt.Rows[i]["ProcessName"].ToString();
+                        itemList.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        itemList.AlarmItem = dt.Rows[i]["Info"].ToString();
+                        itemList.AlarmTimes = dt.Rows[i]["AlarmTimes"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+
+        /// <summary>
+        /// 设备报警情况(生产统计报表)
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<MaterialPullInfo> GetMaterialPullInfoList(List<MaterialPullInfo> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            StartTime += " 00:00:00";
+            EndTime += " 23:59:59";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_MaterialPullStatistic";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@date1", StartTime);
+                sqlPara[1] = new SqlParameter("@date2", EndTime);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        MaterialPullInfo itemList = new MaterialPullInfo();
+                        itemList.ProcessName = dt.Rows[i]["ProcessName"].ToString();
+                        itemList.ItemName = dt.Rows[i]["ItemNumber"].ToString();
+                        itemList.PullTimes = dt.Rows[i]["PullCount"].ToString();
+                        itemList.OverTimes = dt.Rows[i]["OverTimes"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+
+
+        /// <summary>
+        /// 下线情况(生产统计报表)
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<AbnormalInfo> GetAbnormalInfoList(List<AbnormalInfo> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            StartTime += " 00:00:00";
+            EndTime += " 23:59:59";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_AbnormalInfoStatistic";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@date1", StartTime);
+                sqlPara[1] = new SqlParameter("@date2", EndTime);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        AbnormalInfo itemList = new AbnormalInfo();
+                        itemList.ProcessName = dt.Rows[i]["DisplayValue"].ToString();
+                        itemList.RejectQty = dt.Rows[i]["BaoFeiNum"].ToString();
+                        itemList.UnFinishQty = dt.Rows[i]["UnFinishNum"].ToString();
+                        itemList.RepairQty = dt.Rows[i]["BuXiuQty"].ToString();
+                        itemList.SumAbnormalQty = dt.Rows[i]["SumAbnormalQty"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
         }
     }
 }

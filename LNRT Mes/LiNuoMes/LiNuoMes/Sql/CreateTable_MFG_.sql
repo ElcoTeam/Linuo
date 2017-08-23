@@ -792,6 +792,46 @@ CREATE TABLE [dbo].[Equ_DeviceAlarm](
     [Status]             INT             NOT NULL DEFAULT (0)             --订单状态: 0:新增, -1:修改, -2:删除
 );
 
+--设备一级保养点检内容表
+IF OBJECT_ID('Equ_FirstLevelTestContent') is not null
+DROP TABLE Equ_FirstLevelTestContent;
+CREATE TABLE [dbo].[Equ_FirstLevelTestContent] (
+    [ID]                 INT             NOT NULL,                         -- (系统自动生成)
+    [InspectionContent]  NVARCHAR  (50)   NULL                          --点检内容
+);
+INSERT INTO Equ_FirstLevelTestContent (ID, InspectionContent)
+VALUES
+(1, N'设备操作机构灵活可靠'),
+(2, N'配合间隙传动正常'),
+(3, N'工装夹具安装及使用良好'),
+(4, N'安全装置、照明设施良好'),
+(5, N'润滑系统清洁畅通、润滑良好'),
+(6, N'电器装置绝缘良好安全可靠'),
+(7, N'电器箱内外清洁无灰尘');
+
+--设备一级保养问题记录表
+IF OBJECT_ID('Equ_FirstLevelInspectionProblem') is not null
+DROP TABLE Equ_FirstLevelInspectionProblem;
+CREATE TABLE [dbo].[Equ_FirstLevelInspectionProblem] (
+    [ID]                 INT             NOT NULL,                         -- (系统自动生成)
+    [InspectionProblem]  NVARCHAR  (MAX)     NULL,	--点检内容
+    [InspectionDate]     DATETIME            NULL,
+	[DeviceCode]         VARCHAR  (20)       NULL,
+	[FindProblem]        INT                 NULL,
+	[RepairProblem]      INT                 NULL,
+	[ReaminProblem]      INT                 NULL
+);
+
+--每月预算产量表
+IF OBJECT_ID('Report_MonthBudget') is not null
+DROP TABLE Report_MonthBudget;
+CREATE TABLE [dbo].[Report_MonthBudget](
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [BudgetProduction]   NVARCHAR (50)       NULL ,                       --处理人
+    [UpdateUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户
+    [UpdateTime]         DATETIME        NOT NULL DEFAULT GETDATE()       --更新时间
+ 
+);
 --设备报警记录表
 IF OBJECT_ID('Log_Mfg_Plc_Tag_Trig') is not null
 DROP TABLE Log_Mfg_Plc_Tag_Trig;
@@ -826,3 +866,5 @@ CREATE TABLE [dbo].[Log_Mfg_PLC_Tag_Trig](
                                 (4,            'A04',        '组框',        '组框工序',     120,          '');
                               -- LNRT END
 */
+
+

@@ -462,9 +462,9 @@ CREATE TABLE [dbo].[Mes_Config] (
     [ERP_ORDER_DETAIL]      VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 刷新SAP生产订单;      2: 响应刷新; 3: 刷新成功: 4: 刷新失败
     [ERP_GOODSMVT_CREATE]   VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 订单发料(计件物料扣帐); 2: 响应刷新; 3: 刷新成功: 4: 刷新失败
     [ERP_ORDER_CONFIRM]     VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 刷新报工;             2: 响应刷新; 3: 刷新成功: 4: 刷新失败
-    [ERP_INVENTORY_DATA]    VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 刷新可用库存;          2: 响应刷新; 3: 刷新成功: 4: 刷新失败
-    [RefreshERPWO]          VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 刷新SAP生产订单;       2: 响应刷新; 3: 刷新成功: 4: 刷新失败
-    [ConfirmERPWO]          VARCHAR(20)     NOT NULL DEFAULT ('0')           --1: 确认订单; 0: 未确认 (其0值和RefreshERPWO互斥,目的是排程界面的使能控制)
+    [ERP_INVENTORY_DATA]    VARCHAR(20)     NOT NULL DEFAULT ('0')           --0: 暂停刷新; 1: 刷新可用库存;          2: 响应刷新; 3: 刷新成功: 4: 刷新失败
+ -- [RefreshERPWO]          VARCHAR(20)     NOT NULL DEFAULT ('0'),          --此参数已经不用, 是接口没有定义完成之前开发期间使用的标记字, 当下数据库中也不存在了. 0: 暂停刷新; 1: 刷新SAP生产订单;       2: 响应刷新; 3: 刷新成功: 4: 刷新失败
+ -- [ConfirmERPWO]          VARCHAR(20)     NOT NULL DEFAULT ('0')           --此参数已经不用, 是接口没有定义完成之前开发期间使用的标记字, 当下数据库中也不存在了. 1: 确认订单; 0: 未确认 (其0值和RefreshERPWO互斥,目的是排程界面的使能控制)
 );
 
 --能源历史记录表

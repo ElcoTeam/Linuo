@@ -50,9 +50,10 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_get_today]
 AS
     SELECT
          ID
-        ,RIGHT(ErpWorkOrderNumber, LEN(ErpWorkOrderNumber) - 4)  WorkOrderNumber
+        ,ErpWorkOrderNumber WorkOrderNumber
         ,MesWorkOrderVersion WorkOrderVersion
-        ,RIGHT(ErpGoodsCode, LEN(ErpGoodsCode) - 8) GoodsCode 
+        ,ErpGoodsCode GoodsCode 
+        ,ErpGoodsDsca GoodsDsca
         ,FORMAT(MesPlanStartTime, 'yyyy-MM-dd hh:mm')  PlanStartTime
         ,FORMAT(MesPlanFinishTime,'yyyy-MM-dd hh:mm')  PlanFinishTime
         ,MesCostTime CostTime
@@ -147,6 +148,51 @@ AS
     END
 GO
 
+--取得需要进行完工过账的生产排程计划
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Mvt]
+      @WorkOrderNumber        AS VARCHAR(50) = ''
+     ,@PlanDate               AS VARCHAR(50) = ''
+AS
+    SELECT
+         ID
+        ,MesInturnNumber InturnNumber
+        ,ErpWorkOrderNumber WorkOrderNumber
+        ,MesWorkOrderVersion WorkOrderVersion
+        ,ErpGoodsCode GoodsCode 
+        ,ErpGoodsDsca GoodsDsca
+        ,FORMAT(MesPlanStartTime, 'yyyy-MM-dd')  PlanStartTime
+        ,MesWorkOrderType WorkOrderType
+        ,MesPlanQty PlanQty
+        ,Mes2ErpMVTStatus Mes2ErpMVTStatus
+        ,CASE Mes2ErpMVTStatus
+             WHEN  3 THEN '发料完成'     -- 此时显示按钮或者"过账完成"
+             WHEN  2 THEN '发料失败!'
+             WHEN  1 THEN '发料进行中...'
+             WHEN  0 THEN '等待处理中...'
+             WHEN -1 THEN ''            -- 新ERP工单或者补单产生的初始化时是这个状态, 此时没有必要给用户提示任何信息
+             ELSE         '系统未知'     -- 备用
+         END AS MVTMsg
+        ,CASE            
+             WHEN     ( Mes2ErpMVTStatus = 3 OR Mes2ErpMVTStatus = -1 ) 
+                  THEN 'DOMVT'
+             WHEN Mes2ErpCfmStatus = 2 THEN 'REDO'
+             ELSE      'SHOWTIP'
+         END AS EnableMVT
+    FROM MFG_WO_List
+    WHERE
+    (   --非初始化条件下, 使用过滤条件作为查询结果
+            (ErpWorkOrderNumber = @WorkOrderNumber OR @WorkOrderNumber = '' )
+        AND (DATEDIFF(DAY, MesPlanStartTime, CONVERT(DATE, @PlanDate)) = 0 OR @PlanDate = '' ) 
+    )
+    AND 
+    (   -- 初始化条件下, 以完成产量和已过账差值作为判断条件
+            ( 
+              Mes2ErpMVTStatus <> 3 AND @WorkOrderNumber = '' AND @PlanDate = ''
+            )
+        OR  ( @WorkOrderNumber <> '' OR @PlanDate <> '' )
+    )
+    ORDER BY InturnNumber
+GO
 
 --取得需要进行完工过账的生产排程计划
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Roc]
@@ -157,6 +203,9 @@ AS
          ID
         ,MesInturnNumber InturnNumber
         ,ErpWorkOrderNumber WorkOrderNumber
+        ,MesWorkOrderVersion WorkOrderVersion
+        ,ErpGoodsCode GoodsCode 
+        ,ErpGoodsDsca GoodsDsca
         ,FORMAT(MesPlanStartTime, 'yyyy-MM-dd')  PlanStartTime
         ,MesWorkOrderType WorkOrderType
         ,MesPlanQty PlanQty

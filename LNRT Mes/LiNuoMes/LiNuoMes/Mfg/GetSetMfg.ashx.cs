@@ -77,6 +77,13 @@ namespace LiNuoMes.Mfg
                 dataEntity = getWoRocList(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
             }
+            else if (Action == "MFG_WO_LIST_MVT")
+            {
+                List<WoEntity> dataEntity;
+                dataEntity = new List<WoEntity>();
+                dataEntity = getWoMvtList(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
             else if (Action == "MFG_WO_LIST_SUBPLAN")
             {
                 List<WoEntity> dataEntity;
@@ -153,12 +160,6 @@ namespace LiNuoMes.Mfg
                 dataEntity = new WipAbnormalEntity();
                 dataEntity = getWipAbnormalDetail(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
-            }
-            else if (Action == "MFG_WO_LIST_MVT")
-            {
-                ResultMsg result = new ResultMsg();
-                result = setWOListMvt(result);
-                context.Response.Write(jsc.Serialize(result));
             }
             else if (Action == "MFG_WO_LIST_INTURN_ADJUST")
             {
@@ -426,6 +427,7 @@ namespace LiNuoMes.Mfg
                         itemList.WorkOrderNumber = dt.Rows[i]["WorkOrderNumber"].ToString();
                         itemList.WorkOrderVersion = dt.Rows[i]["WorkOrderVersion"].ToString();
                         itemList.GoodsCode = dt.Rows[i]["GoodsCode"].ToString();
+                        itemList.GoodsDsca = dt.Rows[i]["GoodsDsca"].ToString();
                         itemList.PlanStartTime = dt.Rows[i]["PlanStartTime"].ToString();
                         itemList.PlanFinishTime = dt.Rows[i]["PlanFinishTime"].ToString();
                         itemList.CostTime = dt.Rows[i]["CostTime"].ToString();
@@ -434,7 +436,6 @@ namespace LiNuoMes.Mfg
                         itemList.FinishQty = dt.Rows[i]["FinishQty"].ToString();
                         itemList.StartPoint = dt.Rows[i]["StartPoint"].ToString();
                         itemList.Status = dt.Rows[i]["Status"].ToString();
-                        itemList.Mes2ErpMVTStatus = dt.Rows[i]["Mes2ErpMVTStatus"].ToString();                      
                         dataEntity.Add(itemList);
                     }
                 }
@@ -468,8 +469,11 @@ namespace LiNuoMes.Mfg
                     {
                         WoEntity itemList = new WoEntity();
                         itemList.ID = dt.Rows[i]["ID"].ToString();
-                        itemList.InturnNumber = ( i + 1 ).ToString(); 
+                        itemList.InturnNumber = ( i + 1 ).ToString();
                         itemList.WorkOrderNumber = dt.Rows[i]["WorkOrderNumber"].ToString();
+                        itemList.WorkOrderVersion = dt.Rows[i]["WorkOrderVersion"].ToString();
+                        itemList.GoodsCode = dt.Rows[i]["GoodsCode"].ToString();
+                        itemList.GoodsDsca = dt.Rows[i]["GoodsDsca"].ToString();
                         itemList.PlanStartTime = dt.Rows[i]["PlanStartTime"].ToString();
                         itemList.WorkOrderType = dt.Rows[i]["WorkOrderType"].ToString();
                         itemList.PlanQty = dt.Rows[i]["PlanQty"].ToString();
@@ -478,6 +482,50 @@ namespace LiNuoMes.Mfg
                         itemList.ROCQty = dt.Rows[i]["ROCQty"].ToString();
                         itemList.ROCMsg = dt.Rows[i]["ROCMsg"].ToString();
                         itemList.Mes2ErpCfmQty = dt.Rows[i]["Mes2ErpCfmQty"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public List<WoEntity> getWoMvtList(List<WoEntity> dataEntity)
+        {
+            String WorkOrderNumber = RequstString("WorkOrderNumber");
+            String PlanDate = RequstString("PlanDate");
+
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Mfg_Wo_List_Mvt";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@WorkOrderNumber", WorkOrderNumber);
+                sqlPara[1] = new SqlParameter("@PlanDate", PlanDate);
+                cmd.Parameters.Add(sqlPara[0]);
+                cmd.Parameters.Add(sqlPara[1]);
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        WoEntity itemList = new WoEntity();
+                        itemList.ID = dt.Rows[i]["ID"].ToString();
+                        itemList.InturnNumber = ( i + 1 ).ToString();
+                        itemList.WorkOrderNumber = dt.Rows[i]["WorkOrderNumber"].ToString();
+                        itemList.WorkOrderVersion = dt.Rows[i]["WorkOrderVersion"].ToString();
+                        itemList.GoodsCode = dt.Rows[i]["GoodsCode"].ToString();
+                        itemList.GoodsDsca = dt.Rows[i]["GoodsDsca"].ToString();
+                        itemList.PlanStartTime = dt.Rows[i]["PlanStartTime"].ToString();
+                        itemList.WorkOrderType = dt.Rows[i]["WorkOrderType"].ToString();
+                        itemList.PlanQty = dt.Rows[i]["PlanQty"].ToString();
+                        itemList.EnableMVT = dt.Rows[i]["EnableMVT"].ToString();
+                        itemList.MVTMsg = dt.Rows[i]["MvtMsg"].ToString();
+                        itemList.Mes2ErpMVTStatus = dt.Rows[i]["Mes2ErpMVTStatus"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }
@@ -1461,64 +1509,6 @@ namespace LiNuoMes.Mfg
             return result;
         }
 
-        public ResultMsg setWOListMvt(ResultMsg result)
-        {
-            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
-            {
-                SqlCommand cmd = new SqlCommand();
-                SqlTransaction transaction = null;
-                try
-                {
-                    conn.Open();
-                    transaction = conn.BeginTransaction();
-                    cmd.Transaction = transaction;
-                    cmd.Connection = conn;
-
-                    SqlParameter[] sqlPara = new SqlParameter[2];
-
-                    sqlPara[0] = new SqlParameter("@CatchError", 0);
-                    sqlPara[1] = new SqlParameter("@RtnMsg", "");
-
-                    sqlPara[0].Direction = ParameterDirection.Output;
-                    sqlPara[1].Direction = ParameterDirection.Output;
-                    sqlPara[1].Size = 100;
-
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.CommandText = "usp_Mfg_Wo_List_Mvt_Edit";
-
-                    foreach (SqlParameter para in sqlPara)
-                    {
-                        cmd.Parameters.Add(para);
-                    }
-
-                    cmd.ExecuteNonQuery();
-
-                    if (sqlPara[0].Value.ToString() != "0")
-                    {
-                        transaction.Rollback();
-                        result.result = "failed";
-                        result.msg = sqlPara[1].Value.ToString();
-                        cmd.Dispose();
-                        return result;
-                    }
-                    else
-                    {
-                        transaction.Commit();
-                        cmd.Dispose();
-                        result.result = "success";
-                        result.msg = "保存数据成功!";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    result.result = "failed";
-                    result.msg = "保存失败! \n" + ex.Message;
-                }
-            }
-            return result;
-        }
-
         public bool IsReusable
         {
             get
@@ -1572,6 +1562,7 @@ namespace LiNuoMes.Mfg
         public string WorkOrderNumber  { set; get; }
         public string WorkOrderVersion { set; get; }
         public string GoodsCode        { set; get; }
+        public string GoodsDsca        { set; get; }
         public string PlanStartTime    { set; get; }
         public string PlanFinishTime   { set; get; }
         public string CostTime         { set; get; }
@@ -1591,8 +1582,10 @@ namespace LiNuoMes.Mfg
         public string UploadedFile     { set; get; }
         public string SubPlanFlag      { set; get; }
         public string EnableROC        { set; get; }
+        public string EnableMVT        { set; get; }
         public string ROCQty           { set; get; }
         public string ROCMsg           { set; get; }
+        public string MVTMsg           { set; get; }
         public string Mes2ErpCfmQty    { set; get; }
         public string Mes2ErpMVTStatus { set; get; }
     }

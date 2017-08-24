@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ReportOrderComplete.aspx.cs" Inherits="LiNuoMes.Mfg.ReportOrderComplete" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="WoMtlMVT.aspx.cs" Inherits="LiNuoMes.Mfg.WoMtlMVT" %>
 
 <!DOCTYPE html>
 
@@ -72,7 +72,7 @@
             var $gridTable = $('#gridTable');
             $gridTable.jqGrid({
                 url: "GetSetMfg.ashx",
-                postData: { Action: "MFG_WO_LIST_ROC" },
+                postData: { Action: "MFG_WO_LIST_MVT" },
                 datatype: "json",
                 height: $('#areascontent').height() - 180,
                 width: $('#areascontent').width,
@@ -83,48 +83,27 @@
                 },
                 colModel: [
                     { label: 'ID', name: 'ID', hidden: true },
-                    { label: 'EnableROC', name: 'EnableROC', hidden: true, sortable: false },
+                    { label: 'EnableMVT', name: 'EnableMVT', hidden: true, sortable: false },
                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 50, align: 'center', sortable: false },
                     { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 120, align: 'center', sortable: false },
                     { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: 160, align: 'center', sortable: false },
                     { label: '产品物料描述', name: 'GoodsDsca', index: 'GoodsDsca', width: 350, align: 'center', sortable: false },
-                    {
-                        label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 100, align: 'center', sortable: false,
-                        formatter: function (cellvalue, options, rowObject) {
-                            return  cellvalue == "0" ? "正常订单"
-                                  : cellvalue == "1" ? "下线补单"
-                                  : "";
-                        }
-                    },
                     { label: '排程日期', name: 'PlanStartTime', index: 'PlanStartTime', width: 140, align: 'center', sortable: false },
                     { label: '订单数量', name: 'PlanQty', index: 'PlanQty', width: 100, align: 'center', sortable: false },
-                    { label: '完成数量', name: 'FinishQty', index: 'FinishQty', width: 100, align: 'center', sortable: false },
-                    { label: '已报工数量', name: 'Mes2ErpCfmQty', index: 'Mes2ErpCfmQty', width: 100, align: 'center', sortable: false },
-                    {
-                        label: '待报工数量', name: 'ROCQty', index: 'ROCQty', width: 100, align: 'center', sortable: false,
-                        editable: true,
-                        editrules: {
-                            number: true,
-                            custom: false,
-                            required: true,
-                            minValue: 1,
-                            maxValue: 50000
-                        }
-                    },
                     {
                         label: '操 作', name: 'opcell', index: 'opcell', width: 300, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             var msg;
-                            if (rowObject.EnableROC == 'DOROC') {
+                            if (rowObject.EnableMVT == 'DOMVT') {
                                 msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>过账</button>';
                             }
-                            else if (rowObject.EnableROC == 'REDO') {
-                                msg = rowObject.ROCMsg;
+                            else if (rowObject.EnableMVT == 'REDO') {
+                                msg = rowObject.MVTMsg;
                                 msg += '<button onclick=\"showdlg(   \'' + rowObject.WorkOrderNumber + '\')\" class=\"btn btn-info\"     style=\"' + strBtnStyle + '"><i class="fa fa-list-ul" ></i>查看原因</button>';
                                 msg += '<button onclick=\"onBtnRedo( \'' + rowObject.ID              + '\')\" class=\"btn btn-primary\"  style=\"' + strBtnStyle + '"><i class="fa fa-retweet" ></i>重试一次</button>';
                             }
                             else {
-                                msg = rowObject.ROCMsg;
+                                msg = rowObject.MVTMsg;
                             }
                             return msg;
                         }
@@ -134,29 +113,10 @@
                 autowidth: true,
                 scrollrows: true,
                 gridview: true,
-                onSelectRow: function (rowid){},
-                beforeSelectRow: function (rowid) {
-                //  if (rowid && rowid != selectedRowIndex) {
-                //      if ($("#gridTable").getRowData(selectedRowIndex).EnableROC == 'DOROC') {
-                //  //        $("#gridTable").saveRow(selectedRowIndex);
-                //      }
-                //  }
-                //  if ($("#gridTable").getRowData(rowid).EnableROC == 'DOROC') {
-                //  //    $("#gridTable").editRow(rowid, true);
-                //  }
+                onSelectRow: function (rowid) {
                     selectedRowIndex = rowid;
-                    return false;
                 },
-                gridComplete: function () {
-                    var ids = $("#gridTable").jqGrid().getDataIDs();
-                    for (var i = ids.length - 1; i >= 0 ; i--) {
-                        var rowData = $("#gridTable").getRowData(ids[i]);
-                        if (rowData.EnableROC == 'DOROC') {
-                            $("#gridTable").editRow(ids[i], true);
-                        }
-                    }
-                //    $("#gridTable").setSelection(selectedRowIndex, true);
-                }
+                gridComplete: function () { }
             });
 
             //查询事件
@@ -181,34 +141,14 @@
 
         function onBtnOk(id) {
             selectedRowIndex = id;
-            $("#gridTable").saveRow(selectedRowIndex, true);
             var rowData = $('#gridTable').jqGrid('getRowData', selectedRowIndex);
-            var ROCID         = rowData.ID;
-            var ROCQty        = rowData.ROCQty    ;
-            var FinishQty     = rowData.FinishQty ;
-            var Mes2ErpCfmQty = rowData.Mes2ErpCfmQty;
-
-            //一定要在此处把选中的行给置编辑态, 否则会产生报错后无法继续现象. 
-            //如果提前放到saveRow之后立即进行editRow操作, 则会发生读取数据错误:
-            //(尽管数据貌似已经读入到rowData变量中--其实是引用调用造成).
-            $("#gridTable").editRow(selectedRowIndex, true);
-
-            if( isNaN( ROCQty) ){
-                dialogMsg("请输入有效的数字型数据!", -1);
-                return;
-            }
-
-            if ( parseInt(ROCQty) > parseInt(FinishQty) - parseInt(Mes2ErpCfmQty) ) {
-                dialogMsg("您录入的完工过账数量已经超出了待过账数量!" ,-1);
-                return;
-            }
+            var WoId    = rowData.ID;
 
             $.ajax({
                 url: "GetSetMfg.ashx",
                 data: {
-                    "Action": "MFG_WO_LIST_ROC_EDIT",
-                    "WoId": ROCID,
-                    "ROCQty": parseInt(ROCQty)
+                    "Action": "MFG_WO_LIST_MVT_ADD",
+                    "WoId": WoId
                 },
                 async: true,
                 type: "post",
@@ -241,7 +181,7 @@
             $.ajax({
                 url: "GetSetMfg.ashx",
                 data: {
-                    "Action": "MFG_WO_LIST_ROC_REDO",
+                    "Action": "MFG_WO_LIST_MVT_REDO",
                     "WoId": selectedRowIndex,
                 },
                 async: true,
@@ -271,46 +211,23 @@
         }
 
         function showdlg(StdCode) {
-            if (StdCode == undefined) {
-                StdCode = "0";
-            }
-
-            var sTitle = "查看错误原因";
+            var sTitle = "订单发料失败原因";
             var sUrl = "SapErrorInformation.aspx";
             var sWidth = "1024px";
             var sHeight = "768px";
-
+            if (StdCode == undefined) {
+                StdCode = "";
+            }
             dialogOpen({
                 id: "Form",
                 title: sTitle,
-                url: sUrl + "?RFCName=" + "ZMES_ORDER_CONFIRM" + "&StdCode=" + StdCode,
+                url: sUrl + "?RFCName=" + "ERP_GOODSMVT_CREATE" + "&StdCode=" + StdCode,
                 width: sWidth,
                 height: sHeight,
                 callBack: function (iframeId) {
                     top.frames[iframeId].AcceptClick();
                 }
             });
-        }
-
-        Date.prototype.format = function (format) {
-            var o = {
-                "M+": this.getMonth() + 1, //month
-                "d+": this.getDate(),    //day
-                "h+": this.getHours(),   //hour
-                "m+": this.getMinutes(), //minute
-                "s+": this.getSeconds(), //second
-                "q+": Math.floor((this.getMonth() + 3) / 3), //quarter
-                "S": this.getMilliseconds() //millisecond
-            }
-            if (/(y+)/.test(format)) {
-                format = format.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-            }
-            for (var k in o) {
-                if (new RegExp("(" + k + ")").test(format)) {
-                    format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
-                }
-            }
-            return format;
         }
 
     </script>
@@ -333,7 +250,7 @@
                         <div class="panel-heading">
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-check fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">完工报工</strong></th>
+                                    <th><i class="fa fa-shopping-cart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">订单发料</strong></th>
                                     <td></td>
                                 </tr>
                             </table>

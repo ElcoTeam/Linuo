@@ -191,7 +191,7 @@
                         <div class="panel-heading" >
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">创建下线补单</strong></th>
+                                    <th><i class="fa fa-plus fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">下线补单</strong></th>
                                     <td></td>
                                 </tr>
                             </table>
@@ -208,8 +208,8 @@
                                         <input type="text" readonly="true" id="PlanDate" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd'})" class="Wdate timeselect" placeholder="排程日期">
                                     </td>                                    
                                     <td class="formValue" style="text-align:right">                                           
-                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>查询</a>
-                                        <a id="btn_Return" class="btn btn-primary"><i class="fa fa-reply"></i>返回</a>
+                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>查询 / 刷新</a>
+                                        <a id="btn_Return" class="btn btn-primary"><i class="fa fa-reply"></i>返回 生产排程</a>
                                     </td>
                                 </tr>
                             </table>

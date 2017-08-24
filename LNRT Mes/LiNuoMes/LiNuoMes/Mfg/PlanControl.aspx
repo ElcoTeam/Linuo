@@ -35,7 +35,8 @@
     
     <script src="../BaseConfig/GetSetBaseConfig.js"></script>
     <script>
-         var timerID;
+        var timerID = 0;
+        var nCounter = 0;
          var selectedRowIndex0 = 0;
          var selectedRowIndex1 = 0;
          $(function () {
@@ -56,97 +57,88 @@
              });
 
              InitPage0();
-       //    InitPage1();  //因为布局原因, 决定把当日保养计划隐藏不显示 [2017-07-31]
-
              InitButtons();
-             refreshSapStatus();
-             timerID = window.setInterval(refreshSapStatus, 30 * 1000);
+             refreshWOStatus();
 
         });
 
         function InitButtons() {
-            $("#btn_Pause").bind("click", onPause);
-            $("#btn_Play").bind("click", onPlay);
-            $("#btn_Refresh").bind("click", onRefresh);
-            $("#btn_Confirm").bind("click", onConfirm);
+            $("#btn_Rfs").bind("click", onRefresh);
+            $("#btn_Mtl").bind("click", onMVT);
+            $("#btn_Roc").bind("click", onRoc);
             $("#btn_Add").bind("click", onWoAdd);
-            $("#btn_SAPInfo").bind("click", function ()
-            {
-                showSapErrorInfo("");
-            });
+        }
+
+        function onRefresh() {
+            nCounter = 0; 
+            RefreshWOTip('1');
+            setTimerRefreshWo();
+            g_getSetParam("ERP_ORDER_DETAIL", "1", "WRITE", null);
+        }
+
+        function setTimerRefreshWo()
+        {
+            if (timerID == 0) {
+                nCounter = 0; 
+                timerID = window.setInterval(refreshWOStatus, 1 * 1000);
+            }
+        }
+
+        function refreshWOStatus() {
+            g_getSetParam("ERP_ORDER_DETAIL", "", "READ", RefreshWOTip);
+        }
+
+        function RefreshWOTip(Flag) {
+            if     (Flag == '0') {
+                $("#btn_Rfs").hide();
+                $("#msg_Rfs").html("暂停刷新.(" + nCounter + ")");
+            }
             
-            g_getSetParam("PlayPause",        "", "READ", togglePausePlay);
-            g_getSetParam("ERP_ORDER_DETAIL", "", "READ", toggleERPWO);
-        }
-
-        function onPause()   { g_getSetParam("PlayPause",           "PAUSE",   "WRITE", togglePausePlay); }
-        function onPlay()    { g_getSetParam("PlayPause",           "PLAY",    "WRITE", togglePausePlay); }
-        function onRefresh() { g_getSetParam("ERP_ORDER_DETAIL",    "1",       "WRITE", toggleERPWO); }
-        function onConfirm() {
-            $.ajax({
-                url: "GetSetMfg.ashx",
-                data: {
-                    Action: "MFG_WO_LIST_MVT"
-                },
-                type: "post",
-                datatype: "json",
-                success: function (data) {
-                    g_getSetParam("ERP_GOODSMVT_CREATE", "1", "WRITE", toggleERPWO);
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    dialogMsg(errorThrown, -1);
-                },
-                beforeSend: function () {
-                },
-                complete: function () {
+            else if (Flag == '1') {
+                $("#btn_Rfs").hide();
+                $("#msg_Rfs").html("刷新命令已发出...(" + nCounter + ")");
+            }
+            else if (Flag == '2') {
+                $("#btn_Rfs").hide();
+                $("#msg_Rfs").html("正在刷新...(" + nCounter + ")");
+            }
+            else if (Flag == '3') {
+                $("#btn_Rfs").show();
+                if (timerID == 0) {
+                    $("#msg_Rfs").html("");
                 }
-            });
-        }
-
-        function togglePausePlay(PlayPause)
-        {
-            if (PlayPause == "PLAY") {
-                $("#btn_Play").hide();
-                $("#btn_Pause").show();
-                $("[myObj]").attr("disabled", true);
+                else {
+                    $("#msg_Rfs").html("刷新完成.");
+                }
             }
-            else if(PlayPause == "PAUSE"){
-                $("#btn_Pause").hide();
-                $("#btn_Play").show();
-                $("[myObj]").attr("disabled", false);
-            }
-        }
-
-        function toggleERPWO(ERPWOFlag)
-        {
-            if (ERPWOFlag == '1')
+            else if( Flag == '4')
             {
-                $("#btn_Refresh").hide();
-                $("#btn_Confirm").show();
+                $("#btn_Rfs").show();
+                $("#msg_Rfs").html("刷新出错!!!");
             }
-            else //if (ERPWOFlag == 'CONFIRM')
-            {
-                $("#btn_Refresh").show();
-                $("#btn_Confirm").hide();
+
+            if (Flag != '3' && Flag != '4') {
+                setTimerRefreshWo();
             }
-            refreshSapStatus();
+            else {
+                if (timerID != 0) {
+                    window.clearInterval(timerID);
+                    timerID = 0;
+                }
+            }
+            nCounter++;
         }
 
-        function toggleSapErrorInfo(ERPWOFlag) {
-            if (ERPWOFlag == '4') {
-                $("#btn_SAPInfo").show();
-            }
-            else 
-            {
-                $("#btn_SAPInfo").hide();
-            }
+        function onMVT(event) {
+            window.location.href = "./WoMtlMVT.aspx";
         }
 
-        function refreshSapStatus() {
-            g_getSetParam("ERP_GOODSMVT_CREATE", "", "READ", toggleSapErrorInfo);
-        }
         function onWoAdd(event) {
             window.location.href = "./SubPlanControl.aspx";
+        }
+
+        function onRoc(event) {
+            window.location.href = "./ReportOrderComplete.aspx";
         }
 
         function InitPage0() {
@@ -166,21 +158,22 @@
                 colModel: [
                     { label: 'ID',          name: 'ID', hidden: true },
                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 50, align: 'center', sortable: false },
-                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 140, align: 'center', sortable: false },
-                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: 200, align: 'center', sortable: false },
+                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 120, align: 'center', sortable: false },
+                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: 160, align: 'center', sortable: false },
+                    { label: '产品物料描述', name: 'GoodsDsca', index: 'GoodsDsca', width: 350, align: 'center', sortable: false },
                     {
-                        label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 80, align: 'center', sortable: false,
+                        label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 70, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return  cellvalue == "0" ? "正常订单"
                                   : cellvalue == "1" ? "下线补单"
                                   : "";
                         }
                     },
-                    { label: '计划开始时间', name: 'PlanStartTime', index: 'PlanStartTime', width: 160, align: 'center', sortable: false },
-                    { label: '计划完成时间', name: 'PlanFinishTime', index: 'PlanFinishTime', width: 160, align: 'center', sortable: false },
+                    { label: '计划开始时间', name: 'PlanStartTime', index: 'PlanStartTime', width: 150, align: 'center', sortable: false },
+                    { label: '计划完成时间', name: 'PlanFinishTime', index: 'PlanFinishTime', width: 150, align: 'center', sortable: false },
                     { label: '预计耗时', name: 'CostTime', index: 'CostTime', width: 50, align: 'center', sortable: false },
                     { label: '订单数量', name: 'PlanQty', index: 'PlanQty', width: 50, align: 'center', sortable: false },
-                    { label: '已完成数量', name: 'FinishQty', index: 'FinishQty', width: 60, align: 'center', sortable: false },
+                    { label: '完成数量', name: 'FinishQty', index: 'FinishQty', width: 50, align: 'center', sortable: false },
                     {
                         label: '订单状态', name: 'Status', index: 'Status', width: 88, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
@@ -219,13 +212,11 @@
                         }
                     },
                     {
-                        label: '查 看', width: 240, align: 'center', sortable: false,
+                        label: '查 看', width: 180, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                            var str  = '<button onclick=\"showdlg(\'CHECK\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-eye"    ></i>查看   </button>'
-                                str += '<button onclick=\"showdlg(\'MTLLIST\',\'' + rowObject.ID + '\')\" class=\"btn btn-info\"    style=\"' + strBtnStyle + '"><i class="fa fa-list-ol"></i>物料清单</button>';
-                            if (rowObject.Mes2ErpMVTStatus == "2") {
-                                str += '<button onclick=\"showSapErrorInfo(   \'' + rowObject.WorkOrderNumber + '\')\" class=\"btn btn-danger\"    style=\"' + strBtnStyle + '"><i class="fa fa-info-circle"></i>扣料</button>'
-                            }
+                            var str ="";
+                            str += '<button onclick=\"showdlg(\'CHECK\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-eye"    ></i>查看   </button>'
+                            str += '<button onclick=\"showdlg(\'MTLLIST\',\'' + rowObject.ID + '\')\" class=\"btn btn-info\"    style=\"' + strBtnStyle + '"><i class="fa fa-list-ol"></i>物料清单</button>';
                             return str;
                         }
                     },
@@ -240,41 +231,6 @@
                 },
                 gridComplete: function () {
                     $("#gridTable0").setSelection(selectedRowIndex0, true);
-                }
-            });
-        }
-        
-        function InitPage1() {
-            var $gridTable1 = $('#gridTable1');
-            $gridTable1.jqGrid({
-                url: "./GetSetMfg.ashx",
-                postData: { Action: "MFG_PM_PLAN_LIST" },
-                datatype: "json",
-                height: $('#areascontent').height() * 0.30,
-                rowNum: -1,
-                jsonReader: {
-                    repeatitems: false,
-                    id: "ID"
-                },
-                colModel: [
-                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 60, align: 'center', sortable: false },
-                    { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 160, align: 'center', sortable: false },
-                    { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 180, align: 'center', sortable: false },
-                    { label: '保养计划名称', name: 'PmPlanName', index: 'PmPlanName', width: 260, align: 'center', sortable: false },
-                    { label: '计划开始时间', name: 'PmFirstDate', index: 'PmFirstDate', width: 160, align: 'center', sortable: false },
-                    { label: '计划完成时间', name: 'PmFinishDate', index: 'PmFinishDate', width: 160, align: 'center', sortable: false },
-                    { label: '保养耗时', name: 'PmTimeUsage', index: 'PmTimeUsage', width: 90, align: 'center', sortable: false }
-                ],
-                shrinkToFit: true,
-                autowidth: true,
-                scroll: true,
-                multiselect: false,
-                gridview: true,
-                onSelectRow: function (rowid) {
-                    selectedRowIndex1 = $("#gridTable1").jqGrid("getGridParam", "selrow");
-                },
-                gridComplete: function () {
-                    $("#gridTable1").setSelection(selectedRowIndex1, true);
                 }
             });
         }
@@ -349,26 +305,6 @@
                 complete: function () {
                 }
             }); 
-        }
-
-        function showSapErrorInfo(StdCode) {
-            var sTitle = "当日订单确认失败原因";
-            var sUrl = "SapErrorInformation.aspx";
-            var sWidth = "1024px";
-            var sHeight = "768px";
-            if (StdCode == undefined) {
-                StdCode = "";
-            }
-            dialogOpen({
-                id: "Form",
-                title: sTitle,
-                url: sUrl + "?RFCName=" + "ERP_GOODSMVT_CREATE" + "&StdCode=" + StdCode,
-                width: sWidth,
-                height: sHeight,
-                callBack: function (iframeId) {
-                    top.frames[iframeId].AcceptClick();
-                }
-            });
         }
         
         //编辑信息
@@ -480,7 +416,7 @@
                         <div class="panel-heading" >
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">当日生产排程管理</strong></th>
+                                    <th><i class="fa fa-bell-o fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">当日生产排程管理</strong></th>
                                     <td></td>
                                 </tr>
                             </table>
@@ -490,12 +426,11 @@
                                 <tr>
                                     <th class="formTitle" style="width:180px;font-weight:bold;text-align:right">当日生产排程</th>                                    
                                     <td class="formValue" style="text-align:right">                                           
-                                        <a id="btn_Pause"  class="btn btn-primary" hidden><i class="fa fa-pause"></i>&nbsp;暂停待生产订单</a>
-                                        <a id="btn_Play"   class="btn btn-danger"  hidden><i class="fa fa-play"></i>&nbsp;恢复待生产订单</a>
-                                        <a id="btn_Refresh" myObj class="btn btn-primary"  hidden><i class="fa fa-refresh"></i>&nbsp;刷新当日生产订单</a>
-                                        <a id="btn_Confirm" myObj class="btn btn-primary"  hidden><i class="fa fa-check"></i>&nbsp;确认当日生产排程</a>
-                                        <a id="btn_Add"     myObj class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;新建补单</a>
-                                        <a id="btn_SAPInfo"       class="btn btn-default"  hidden><i class="fa fa-list-ul"></i>&nbsp;确认当日生产排程失败! 查看原因</a>
+                                        <strong id="msg_Rfs"  style="font-size:14px;padding:5px; vertical-align:central; text-align:right"></strong>
+                                        <a id="btn_Rfs"     class="btn btn-primary"><i class="fa fa-refresh"></i>&nbsp;刷新订单</a>
+                                        <a id="btn_Roc"     class="btn btn-primary"><i class="fa fa-check"></i>&nbsp;完工报工</a>
+                                        <a id="btn_Mtl"     class="btn btn-primary"><i class="fa fa-shopping-cart"></i>&nbsp;订单发料</a>
+                                        <a id="btn_Add"     class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;下线补单</a>
                                     </td>
                                 </tr>
                             </table>
@@ -508,25 +443,6 @@
                     </div>
                 </div>
             </div>
-<%--            <div style="float: left; width: 100%;">
-                <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff; margin-top:5px">
-                    <div class="panel panel-default">
-                        <div class="panel-body" style="text-align:left">
-                            <table class="form" border="0">
-                                <tr>
-                                    <th class="formTitle" style="width:180px;font-weight:bold;text-align:right">当日保养计划</th>                                    
-                                    <td class="formValue" style="text-align:right"></td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="rows" style="margin-top:0.5%; width:100%; overflow: hidden; ">
-                              <div class="gridPanel">
-                                   <table id="gridTable1"></table>
-                              </div>
-                        </div>
-                    </div>               
-                </div>
-             </div>--%>
         </div>
     </div>
 

@@ -250,7 +250,7 @@
                         <div class="panel-heading">
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-shopping-cart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">订单发料</strong></th>
+                                    <th><i class="fa fa-shopping-cart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">发料</strong></th>
                                     <td></td>
                                 </tr>
                             </table>

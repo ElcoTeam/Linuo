@@ -191,7 +191,7 @@
                         <div class="panel-heading" >
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-plus fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">下线补单</strong></th>
+                                    <th><i class="fa fa-plus fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">补单</strong></th>
                                     <td></td>
                                 </tr>
                             </table>

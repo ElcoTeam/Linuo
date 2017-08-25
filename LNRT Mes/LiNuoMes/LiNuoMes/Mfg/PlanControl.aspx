@@ -162,7 +162,7 @@
                     { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: 160, align: 'center', sortable: false },
                     { label: '产品物料描述', name: 'GoodsDsca', index: 'GoodsDsca', width: 350, align: 'center', sortable: false },
                     {
-                        label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 70, align: 'center', sortable: false,
+                        label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 80, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return  cellvalue == "0" ? "正常订单"
                                   : cellvalue == "1" ? "下线补单"
@@ -416,7 +416,7 @@
                         <div class="panel-heading" >
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-bell-o fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">当日生产排程管理</strong></th>
+                                    <th><i class="fa fa-bell-o fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px">生产排程</strong></th>
                                     <td></td>
                                 </tr>
                             </table>
@@ -428,9 +428,9 @@
                                     <td class="formValue" style="text-align:right">                                           
                                         <strong id="msg_Rfs"  style="font-size:14px;padding:5px; vertical-align:central; text-align:right"></strong>
                                         <a id="btn_Rfs"     class="btn btn-primary"><i class="fa fa-refresh"></i>&nbsp;刷新订单</a>
+                                        <a id="btn_Mtl"     class="btn btn-primary"><i class="fa fa-shopping-cart"></i>&nbsp;发&nbsp;&nbsp;料</a>
                                         <a id="btn_Roc"     class="btn btn-primary"><i class="fa fa-check"></i>&nbsp;报&nbsp;&nbsp;工</a>
-                                        <a id="btn_Mtl"     class="btn btn-primary"><i class="fa fa-shopping-cart"></i>&nbsp;订单发料</a>
-                                        <a id="btn_Add"     class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;下线补单</a>
+                                        <a id="btn_Add"     class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;补&nbsp;&nbsp;单</a>
                                     </td>
                                 </tr>
                             </table>

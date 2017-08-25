@@ -148,7 +148,7 @@ AS
     END
 GO
 
---取得需要进行完工过账的生产排程计划
+--取得需要进行完工报工的生产排程计划
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Mvt]
       @WorkOrderNumber        AS VARCHAR(50) = ''
      ,@PlanDate               AS VARCHAR(50) = ''
@@ -165,18 +165,17 @@ AS
         ,MesPlanQty PlanQty
         ,Mes2ErpMVTStatus Mes2ErpMVTStatus
         ,CASE Mes2ErpMVTStatus
-             WHEN  3 THEN '发料完成'     -- 此时显示按钮或者"过账完成"
-             WHEN  2 THEN '发料失败!'
+             WHEN  3 THEN '发料完成'    
+             WHEN  2 THEN '发料失败!!!'
              WHEN  1 THEN '发料进行中...'
-             WHEN  0 THEN '等待处理中...'
+             WHEN  0 THEN '等待发料...'
              WHEN -1 THEN ''            -- 新ERP工单或者补单产生的初始化时是这个状态, 此时没有必要给用户提示任何信息
              ELSE         '系统未知'     -- 备用
          END AS MVTMsg
         ,CASE            
-             WHEN     ( Mes2ErpMVTStatus = 3 OR Mes2ErpMVTStatus = -1 ) 
-                  THEN 'DOMVT'
-             WHEN Mes2ErpCfmStatus = 2 THEN 'REDO'
-             ELSE      'SHOWTIP'
+             WHEN Mes2ErpMVTStatus = -1 THEN 'DOMVT'
+             WHEN Mes2ErpMVTStatus =  2 THEN 'REDO'
+             ELSE                            'SHOWTIP'
          END AS EnableMVT
     FROM MFG_WO_List
     WHERE
@@ -185,16 +184,17 @@ AS
         AND (DATEDIFF(DAY, MesPlanStartTime, CONVERT(DATE, @PlanDate)) = 0 OR @PlanDate = '' ) 
     )
     AND 
-    (   -- 初始化条件下, 以完成产量和已过账差值作为判断条件
+    (   -- 初始化条件下, 以完成产量和已报工差值作为判断条件
             ( 
               Mes2ErpMVTStatus <> 3 AND @WorkOrderNumber = '' AND @PlanDate = ''
             )
         OR  ( @WorkOrderNumber <> '' OR @PlanDate <> '' )
     )
+    AND MesWorkOrderVersion = 0
     ORDER BY InturnNumber
 GO
 
---取得需要进行完工过账的生产排程计划
+--取得需要进行完工报工的生产排程计划
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Roc]
       @WorkOrderNumber        AS VARCHAR(50) = ''
      ,@PlanDate               AS VARCHAR(50) = ''
@@ -213,19 +213,19 @@ AS
         ,Mes2ErpCfmQty Mes2ErpCfmQty
         ,(ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty ROCQty
         ,CASE Mes2ErpCfmStatus
-             WHEN  3 THEN '过账完成'     -- 此时显示按钮或者"过账完成"
-             WHEN  2 THEN '过账失败!'
-             WHEN  1 THEN '过账进行中...'
-             WHEN  0 THEN '等待处理中...'
+             WHEN  3 THEN '报工完成'     
+             WHEN  2 THEN '报工失败!!!'     
+             WHEN  1 THEN '报工进行中...'
+             WHEN  0 THEN '等待报工...'
              WHEN -1 THEN ''            -- 新ERP工单或者补单产生的初始化时是这个状态, 此时没有必要给用户提示任何信息
              ELSE         '系统未知'     -- 备用
          END AS ROCMsg
         ,CASE            
              WHEN     ( Mes2ErpCfmStatus = 3 OR Mes2ErpCfmStatus = -1 ) 
                   AND ((ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty > 0 )
-                  THEN 'DOROC'
+                                       THEN 'DOROC'
              WHEN Mes2ErpCfmStatus = 2 THEN 'REDO'
-             ELSE      'SHOWTIP'
+             ELSE                           'SHOWTIP'
          END AS EnableROC
     FROM MFG_WO_List
     WHERE
@@ -234,7 +234,7 @@ AS
         AND (DATEDIFF(DAY, MesPlanStartTime, CONVERT(DATE, @PlanDate)) = 0 OR @PlanDate = '' ) 
     )
     AND 
-    (   -- 初始化条件下, 以完成产量和已过账差值作为判断条件
+    (   -- 初始化条件下, 以完成产量和已报工差值作为判断条件
             ( 
               ((ABS(MesFinishQty + MesPlanQty) - ABS(MesFinishQty - MesPlanQty))/2 - Mes2ErpCfmQty > 0 OR Mes2ErpCfmStatus <> 3
               ) AND @WorkOrderNumber = '' AND @PlanDate = ''
@@ -1227,7 +1227,7 @@ AS
     COMMIT TRANSACTION
 GO
 
---生产排程:订单完工过账
+--生产排程:订单完工报工
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Roc_Edit]
      @WOID               AS INT                  --Mfg_WO_LIST更改ID
     ,@ROCQTY             AS VARCHAR(50)          --报完工数量
@@ -1285,7 +1285,7 @@ AS
     COMMIT TRANSACTION
 GO
 
---生产排程:订单完工过账重试
+--生产排程:订单报工重试
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Roc_Redo]
      @WOID               AS INT                  --Mfg_WO_LIST更改ID
     ,@UserName           AS NVARCHAR(50)         --报完工人员
@@ -1325,7 +1325,7 @@ AS
              Mes2ErpCfmStatus = 0
         WHERE ID = @WOID;
 
-        --在全局状态表中加入更新到SAP的标志
+        --在全局状态表中设定更新的标志
         UPDATE Mes_Config 
         SET 
             ERP_ORDER_CONFIRM = '1';
@@ -1334,28 +1334,98 @@ AS
 GO
 
 
---订单计件物料扣除, 确认当日生产排程
-ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Mvt_Edit]
-     @CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
-    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回值
+--生产排程:订单发料重试
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Mvt_Redo]
+     @WOID               AS INT                  --Mfg_WO_LIST更改ID
+    ,@UserName           AS NVARCHAR(50)         --报完工人员
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+
+    IF (SELECT COUNT(1) FROM MFG_WO_List WHERE ID=@WOID) = 0
+    BEGIN
+        SET @CatchError = @CatchError + 1
+        SET @RtnMsg     = '您要重试发料的订单并不存在, 请刷新后重试! [WOID:' + CONVERT(VARCHAR(10), @WOID) + ']!'
+        RETURN
+    END
+
+    DECLARE @MesMvtStatus AS INT;
+    SELECT @MesMvtStatus = MAX(Mes2ErpMVTStatus) FROM MFG_WO_List WHERE ID=@WOID;
+
+    IF @MesMvtStatus <> 2
+    BEGIN
+        SET @CatchError = @CatchError + 1
+        SET @RtnMsg     = '您要重试的订单当前状态不是发料失败状态, 请核对订单状态! [WOID:' + CONVERT(VARCHAR(10), @WOID) + ']!'
+        RETURN
+    END
+
+    BEGIN TRANSACTION
+        UPDATE ERP_WO_Material_Transfer 
+        SET 
+             MesModifyTime = GETDATE()
+            ,ErpMvtStatus  = 0
+            ,MesMvtStatus  = 0
+        WHERE WOID = @WOID 
+          AND ErpMvtStatus = 2
+
+        UPDATE MFG_WO_List SET
+             Mes2ErpMVTStatus = 0
+        WHERE ID = @WOID;
+
+        --在全局状态表中设定更新的标志
+        UPDATE Mes_Config 
+        SET 
+            ERP_GOODSMVT_CREATE = '1';
+
+    COMMIT TRANSACTION
+GO
+
+--生产排程:订单发料新增
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Mvt_Add]
+     @WOID               AS INT                  --Mfg_WO_LIST更改ID
+    ,@UserName           AS NVARCHAR(50)         --报完工人员
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
 AS
     --只把完成的主订单需要制作此记录输出即可.
     SET @CatchError = 0
     SET @RtnMsg     = '';
+
+    IF (SELECT COUNT(1) FROM MFG_WO_List WHERE ID=@WOID) = 0
+    BEGIN
+        SET @CatchError = @CatchError + 1
+        SET @RtnMsg     = '您要发料的订单并不存在, 请刷新后重试! [WOID:' + CONVERT(VARCHAR(10), @WOID) + ']!'
+        RETURN
+    END
+
+    DECLARE @MesMvtStatus AS INT;
+    SELECT @MesMvtStatus = MAX(Mes2ErpMVTStatus) FROM MFG_WO_List WHERE ID=@WOID;
+
+    --只要发料一次, 标记位肯定不是-1, 即使重试过一次, 其也会是0值
+    IF @MesMvtStatus <> -1
+    BEGIN
+        SET @CatchError = @CatchError + 1
+        SET @RtnMsg     = '您要重试的订单当前状态不是未发料状态, 请核对订单状态! [WOID:' + CONVERT(VARCHAR(10), @WOID) + ']!'
+        RETURN
+    END
+
     BEGIN TRANSACTION    
         INSERT INTO ERP_WO_Material_Transfer 
                (WOID, AUFNR,              MATNR,        MAKTX,        GAMNG,      FinishQty,    MesCreateUser, MesCreateTime, MesModifyTime, ErpMvtStatus, MesMvtStatus)
         SELECT  ID,   ErpWorkOrderNumber, ErpGoodsCode, ErpGoodsDsca, ErpPlanQty, MesFinishQty, 'MES_SYS',     GETDATE(),     GETDATE(),     0,            0 
         FROM MFG_WO_List
         WHERE 
-        MesWorkOrderVersion = 0 AND Mes2ErpMVTStatus =-1
+            ID = @WOID
+        AND Mes2ErpMVTStatus =-1 
+
 
         UPDATE MFG_WO_List SET
             Mes2ErpMVTStatus = 0
         WHERE 
-        MesWorkOrderVersion = 0 AND Mes2ErpMVTStatus =-1
-
-        UPDATE ERP_WO_Material_Transfer SET ErpMvtStatus = 0, MesMvtStatus = 1 WHERE ErpMvtStatus = 2;
+            ID = @WOID
+        AND Mes2ErpMVTStatus =-1 
 
     COMMIT TRANSACTION
 GO
@@ -1943,7 +2013,7 @@ AS
     SELECT @SerialNumber = SENO FROM @ListTB;
 GO
 
---同步MES上传到SAP的完工过账状态
+--同步MES上传到SAP的完工报工状态
 ALTER PROCEDURE [dbo].[usp_Mfg_Wo_List_Mes2Erp_ROC_UpdateStatus]
 AS
     DECLARE     @RocId             AS INT
@@ -1969,7 +2039,7 @@ AS
             END
             ELSE
             BEGIN
-                UPDATE ERP_WO_REPORT_COMPLETE SET MesCfmStatus = 1 WHERE ID = @RocId;
+                UPDATE ERP_WO_REPORT_COMPLETE SET MesCfmStatus = 1 WHERE ID = @RocId AND (MesCfmStatus = 0 OR MesCfmStatus = -1);
             END
         COMMIT
         FETCH NEXT FROM RecRoc INTO @RocId, @WoId, @CfmStat;
@@ -2005,7 +2075,6 @@ AS
             END
             ELSE
             BEGIN
-                --此处的设定要和存储过程 [usp_Mfg_Wo_List_Mvt_Edit], 大约在行号:1170 配合起来完成,
                 UPDATE ERP_WO_Material_Transfer SET MesMvtStatus = 1 WHERE ID = @MvtId AND (MesMvtStatus = 0 OR MesMvtStatus = -1);
             END 
         COMMIT

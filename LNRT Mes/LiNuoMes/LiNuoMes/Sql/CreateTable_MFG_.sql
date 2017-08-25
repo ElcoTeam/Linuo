@@ -175,10 +175,10 @@ CREATE TABLE [dbo].[MFG_WO_List] (
     [MesUnitCostTime]       INT                 NULL DEFAULT (2),         --单位生产耗时(分钟)
     [MesCustomerID]         INT                 NULL,                     --客户ID
     [MesOrderComment]       NVARCHAR(150)       NULL,                     --订单说明
-    [Mes2ErpMVTStatus]      INT             NOT NULL DEFAULT (-1),        --订单计件物料扣除: -1:新增, 0:待处理, 1:进行中, 2:失败, 3:已完成 [ZME_GOODSMVT_CREATE]         
-    [Mes2ErpCfmStatus]      INT             NOT NULL DEFAULT (-1),        --订单报工状态:    -1:新增, 0:待处理, 1:进行中, 2:失败, 3:已完成 [BAPI_PRODORDCONF_CREATE_HDR] 
-    [Mes2ErpMVTQty]         INT             NOT NULL DEFAULT (0),         --订单物料扣除数量: [ZME_GOODSMVT_CREATE]          此字段目前用不上, 因为SAP处理时不需要数量作为参数.
-    [Mes2ErpCfmQty]         INT             NOT NULL DEFAULT (0),         --订单已经报工数量: [BAPI_PRODORDCONF_CREATE_HDR]  一天只处理一次即可, 目的是为了反冲料的统计
+    [Mes2ErpMVTStatus]      INT             NOT NULL DEFAULT (-1),        --订单发料状态: -1:新增, 0:待处理, 1:进行中, 2:失败, 3:已完成 [ZME_GOODSMVT_CREATE]         
+    [Mes2ErpCfmStatus]      INT             NOT NULL DEFAULT (-1),        --订单报工状态: -1:新增, 0:待处理, 1:进行中, 2:失败, 3:已完成 [BAPI_PRODORDCONF_CREATE_HDR] 
+    [Mes2ErpMVTQty]         INT             NOT NULL DEFAULT (0),         --订单发料数量: [ZME_GOODSMVT_CREATE]          --此字段目前用不上, 因为SAP处理时不需要数量作为参数.
+    [Mes2ErpCfmQty]         INT             NOT NULL DEFAULT (0),         --订单报工数量: [BAPI_PRODORDCONF_CREATE_HDR]  
     [MesStartPoint]         VARCHAR  (50)   NOT NULL DEFAULT ('0'),       --订单上线工序点(正常订单或者补单如果有报废, 则首道工序, 其它下线则以低工序下线点为准.)
     [MesSubPlanFlag]        INT             NOT NULL DEFAULT (0)          --已经创建下线补单标志: 0: 未创建; 1: 已经创建          
 );
@@ -459,10 +459,10 @@ DROP TABLE Mes_Config;
 CREATE TABLE [dbo].[Mes_Config] (
     [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
     [PlayPause]             VARCHAR(20)     NOT NULL DEFAULT ('PLAY'),       --此值代表系统当前状态, 不是代表界面的提示字
-    [ERP_ORDER_DETAIL]      VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 刷新SAP生产订单;      2: 响应刷新; 3: 刷新成功: 4: 刷新失败
-    [ERP_GOODSMVT_CREATE]   VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 订单发料(计件物料扣帐); 2: 响应刷新; 3: 刷新成功: 4: 刷新失败
-    [ERP_ORDER_CONFIRM]     VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 刷新报工;             2: 响应刷新; 3: 刷新成功: 4: 刷新失败
-    [ERP_INVENTORY_DATA]    VARCHAR(20)     NOT NULL DEFAULT ('0')           --0: 暂停刷新; 1: 刷新可用库存;          2: 响应刷新; 3: 刷新成功: 4: 刷新失败
+    [ERP_ORDER_DETAIL]      VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 等待刷新; 2: 响应刷新; 3: 刷新成功: 4: 刷新失败
+    [ERP_GOODSMVT_CREATE]   VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 等待发料; 2: 响应刷新; 3: 刷新成功: 4: 刷新失败
+    [ERP_ORDER_CONFIRM]     VARCHAR(20)     NOT NULL DEFAULT ('0'),          --0: 暂停刷新; 1: 等待报工; 2: 响应刷新; 3: 刷新成功: 4: 刷新失败
+    [ERP_INVENTORY_DATA]    VARCHAR(20)     NOT NULL DEFAULT ('0')           --0: 暂停刷新; 1: 等待库存; 2: 响应刷新; 3: 刷新成功: 4: 刷新失败
  -- [RefreshERPWO]          VARCHAR(20)     NOT NULL DEFAULT ('0'),          --此参数已经不用, 是接口没有定义完成之前开发期间使用的标记字, 当下数据库中也不存在了. 0: 暂停刷新; 1: 刷新SAP生产订单;       2: 响应刷新; 3: 刷新成功: 4: 刷新失败
  -- [ConfirmERPWO]          VARCHAR(20)     NOT NULL DEFAULT ('0')           --此参数已经不用, 是接口没有定义完成之前开发期间使用的标记字, 当下数据库中也不存在了. 1: 确认订单; 0: 未确认 (其0值和RefreshERPWO互斥,目的是排程界面的使能控制)
 );

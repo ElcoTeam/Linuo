@@ -96,11 +96,11 @@
             
             else if (Flag == '1') {
                 $("#btn_Rfs").hide();
-                $("#msg_Rfs").html("刷新命令已发出...(" + nCounter + ")");
+                $("#msg_Rfs").html("等待刷新...(" + nCounter + ")");
             }
             else if (Flag == '2') {
                 $("#btn_Rfs").hide();
-                $("#msg_Rfs").html("正在刷新...(" + nCounter + ")");
+                $("#msg_Rfs").html("刷新进行中...(" + nCounter + ")");
             }
             else if (Flag == '3') {
                 $("#btn_Rfs").show();
@@ -108,13 +108,13 @@
                     $("#msg_Rfs").html("");
                 }
                 else {
-                    $("#msg_Rfs").html("刷新完成.");
+                    $("#msg_Rfs").html("刷新完成");
                 }
             }
             else if( Flag == '4')
             {
                 $("#btn_Rfs").show();
-                $("#msg_Rfs").html("刷新出错!!!");
+                $("#msg_Rfs").html("刷新失败!!!");
             }
 
             if (Flag != '3' && Flag != '4') {
@@ -428,7 +428,7 @@
                                     <td class="formValue" style="text-align:right">                                           
                                         <strong id="msg_Rfs"  style="font-size:14px;padding:5px; vertical-align:central; text-align:right"></strong>
                                         <a id="btn_Rfs"     class="btn btn-primary"><i class="fa fa-refresh"></i>&nbsp;刷新订单</a>
-                                        <a id="btn_Roc"     class="btn btn-primary"><i class="fa fa-check"></i>&nbsp;完工报工</a>
+                                        <a id="btn_Roc"     class="btn btn-primary"><i class="fa fa-check"></i>&nbsp;报&nbsp;&nbsp;工</a>
                                         <a id="btn_Mtl"     class="btn btn-primary"><i class="fa fa-shopping-cart"></i>&nbsp;订单发料</a>
                                         <a id="btn_Add"     class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;下线补单</a>
                                     </td>

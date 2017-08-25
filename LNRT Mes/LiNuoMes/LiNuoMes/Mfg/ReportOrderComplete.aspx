@@ -116,7 +116,7 @@
                         formatter: function (cellvalue, options, rowObject) {
                             var msg;
                             if (rowObject.EnableROC == 'DOROC') {
-                                msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>过账</button>';
+                                msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>报工</button>';
                             }
                             else if (rowObject.EnableROC == 'REDO') {
                                 msg = rowObject.ROCMsg;
@@ -199,7 +199,7 @@
             }
 
             if ( parseInt(ROCQty) > parseInt(FinishQty) - parseInt(Mes2ErpCfmQty) ) {
-                dialogMsg("您录入的完工过账数量已经超出了待过账数量!" ,-1);
+                dialogMsg("您录入的报工数量已经超出了待报工数量!" ,-1);
                 return;
             }
 
@@ -333,7 +333,7 @@
                         <div class="panel-heading">
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-check fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">完工报工</strong></th>
+                                    <th><i class="fa fa-check fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">报工</strong></th>
                                     <td></td>
                                 </tr>
                             </table>

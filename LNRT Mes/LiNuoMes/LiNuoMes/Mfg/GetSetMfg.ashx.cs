@@ -174,11 +174,18 @@ namespace LiNuoMes.Mfg
                 result = saveWoDataInDB(dataEntity, result);
                 context.Response.Write(jsc.Serialize(result));
             }
+            else if (Action == "MFG_WO_LIST_MVT_ADD" || Action == "MFG_WO_LIST_MVT_REDO")
+            {
+                WoEntity dataEntity = new WoEntity();
+                ResultMsg result = new ResultMsg();
+                result = saveWoMvtDataInDB(dataEntity, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MFG_WO_LIST_ROC_EDIT")
             {
                 WoEntity dataEntity = new WoEntity();
                 ResultMsg result = new ResultMsg();
-                result = saveWoRocDataInDB(dataEntity, result);
+                result = saveWoRocEditDataInDB(dataEntity, result);
                 context.Response.Write(jsc.Serialize(result));
             }
             else if (Action == "MFG_WO_LIST_ROC_REDO")
@@ -958,7 +965,79 @@ namespace LiNuoMes.Mfg
             return result;
         }
 
-        public ResultMsg saveWoRocDataInDB(WoEntity dataEntity, ResultMsg result)
+        public ResultMsg saveWoMvtDataInDB(WoEntity dataEntity, ResultMsg result)
+        {
+            dataEntity.ID = RequstString("WoId");
+
+            if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    if (Action == "MFG_WO_LIST_MVT_ADD")
+                    {
+                        cmd.CommandText = "usp_Mfg_Wo_List_Mvt_Add";
+                    }
+                    else if (Action == "MFG_WO_LIST_MVT_REDO")
+                    {
+                        cmd.CommandText = "usp_Mfg_Wo_List_Mvt_Redo";                        
+                    }
+
+                    SqlParameter[] sqlPara = new SqlParameter[4];
+                    sqlPara[0] = new SqlParameter("@WOID", Convert.ToInt32(dataEntity.ID));
+                    sqlPara[1] = new SqlParameter("@UserName",  UserName);
+                    sqlPara[2] = new SqlParameter("@CatchError", 0);
+                    sqlPara[3] = new SqlParameter("@RtnMsg", "");
+
+                    sqlPara[2].Direction = ParameterDirection.Output;
+                    sqlPara[3].Direction = ParameterDirection.Output;
+                    sqlPara[3].Size = 100;
+
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+
+                    cmd.ExecuteNonQuery();
+
+                    if (sqlPara[2].Value.ToString() != "0")
+                    {
+                        transaction.Rollback();
+                        result.result = "failed";
+                        result.msg = sqlPara[3].Value.ToString();
+                        cmd.Dispose();
+                        return result;
+                    }
+                    else
+                    {
+                        transaction.Commit();
+                        result.result = "success";
+                        result.msg = "保存数据成功!";
+                        cmd.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+
+            return result;
+        }
+
+        public ResultMsg saveWoRocEditDataInDB(WoEntity dataEntity, ResultMsg result)
         {
             dataEntity.ID = RequstString("WoId");
             dataEntity.ROCQty = RequstString("ROCQty");

@@ -88,14 +88,14 @@
                     { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 120, align: 'center', sortable: false },
                     { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: 160, align: 'center', sortable: false },
                     { label: '产品物料描述', name: 'GoodsDsca', index: 'GoodsDsca', width: 350, align: 'center', sortable: false },
-                    { label: '排程日期', name: 'PlanStartTime', index: 'PlanStartTime', width: 140, align: 'center', sortable: false },
-                    { label: '订单数量', name: 'PlanQty', index: 'PlanQty', width: 100, align: 'center', sortable: false },
+                    { label: '排程日期', name: 'PlanStartTime', index: 'PlanStartTime', width: 160, align: 'center', sortable: false },
+                    { label: '订单数量', name: 'PlanQty', index: 'PlanQty', width: 120, align: 'center', sortable: false },
                     {
                         label: '操 作', name: 'opcell', index: 'opcell', width: 300, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             var msg;
                             if (rowObject.EnableMVT == 'DOMVT') {
-                                msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>过账</button>';
+                                msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>发料</button>';
                             }
                             else if (rowObject.EnableMVT == 'REDO') {
                                 msg = rowObject.MVTMsg;

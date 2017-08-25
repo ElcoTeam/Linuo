@@ -276,6 +276,7 @@ AS
     WHERE            
             (DATEDIFF(DAY, WO.MesPlanStartTime, CONVERT(DATE, @PlanDate)) = 0 OR WO.MesStatus = 3 ) 
         AND (WO.ErpWorkOrderNumber = @WorkOrderNumber OR @WorkOrderNumber='')
+        AND MesDiscardQty1 + MesDiscardQty1 + MesLeftQty1 + MesLeftQty2 > 0
         
 ORDER BY InturnNumber
 

@@ -42,7 +42,10 @@
     </style>
 </head>
 <body>
+    <script src="../BaseConfig/GetSetBaseConfig.js"></script>
      <script>
+         var timerID = 0;
+         var nCounter = 0;
          var WoId   = "";
          $(function () {
              if ($('#areascontent').height() > $(window).height()) {
@@ -60,16 +63,21 @@
                      "WoId": WoId
                  },
                  datatype: "json",
-                 height: $('#areascontent').height() - 50,
+                 height: $('#areascontent').height() - 60,
                  width: $('#areascontent').width() - 10,
                  rowNum: -1,
+                 jsonReader: {
+                     repeatitems: false,   //此两个参数影响了是否刷新之后高亮选中记录: 如果直接设定为true, 则无论id项设定与否都可以实现高亮选中
+                     id: "ID"              //此两个参数影响了是否刷新之后高亮选中记录: 需要设定为唯一字段即可,如果设定为0值, 则需要repeatitems为true才可以.
+                 },
                  colModel: [
                      { label: 'ID', name: 'ID', hidden: true },
                      { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 60, align: 'center', hidden: true, sortable: false },
                      { label: '行号', name: 'LineNumber', index: 'LineNumber', width: 60, align: 'center', sortable: false },
                      { label: '物料编码', name: 'ItemNumber', index: 'ItemNumber', width: 160, align: 'center', sortable: false },
                      { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 350, align: 'left', sortable: false },
-                     { label: '数量', name: 'Qty', index: 'Qty', width: 90, align: 'center', sortable: false },
+                     { label: '订单用量', name: 'Qty', index: 'Qty', width: 90, align: 'center', sortable: false },
+                     { label: 'ERP库存', name: 'ErpInvQty', index: 'ErpInvQty', width: 90, align: 'center', sortable: false },
                      { label: '单位', name: 'UOM', index: 'UOM', width: 60, align: 'center', sortable: false },
                      { label: '工序编号', name: 'ProcessCode', index: 'ProcessCode', width: 80, align: 'center', sortable: false },
                      { label: '工作中心', name: 'WorkCenter', index: 'WorkCenter', width: 100, align: 'center', sortable: false },
@@ -84,13 +92,87 @@
                  gridview: true
              });
 
+             setRefreshTimer();
+
          });
+
+         function getInvdataFromDB() {
+             $.ajax({
+                 url: "GetSetMfg.ashx",
+                 data: {
+                     "Action": "MFG_WO_MTL_LIST_INV",
+                     "WoId": WoId
+                 },
+                 type: "post",
+                 datatype: "json",
+                 success: function (data) {
+                     data = JSON.parse(data);
+                     if (data.result == "success") {
+                         //UPDATE GRID DATA LINE BY LINE.
+                     }
+                 },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                     dialogMsg(errorThrown, -1);
+                 },
+                 beforeSend: function () {
+                 },
+                 complete: function () {
+                 }
+             });
+         }
+
+         function setRefreshTimer() {
+             if (timerID == 0) {
+                 nCounter = 0;
+                 timerID = window.setInterval(refreshInvStatus, 1 * 1000);
+             }
+         }
+
+         function clearRefreshTimer() {
+             if (timerID != 0) {
+                 window.clearInterval(timerID);
+                 timerID = 0;
+             }
+         }
+
+         function refreshInvStatus() {
+             g_getSetParam("ERP_INVENTORY_DATA", "", "READ", RefreshInvTip);
+         }
+
+         function RefreshInvTip(Flag) {
+             if (Flag == '0') {
+                 $("#msg_Rfs").html("暂停刷新.(" + nCounter + ")");
+             }
+             else if (Flag == '1') {
+                 $("#msg_Rfs").html("等待刷新...(" + nCounter + ")");
+             }
+             else if (Flag == '2') {
+                 $("#msg_Rfs").html("刷新进行中...(" + nCounter + ")");
+             }
+             else if (Flag == '3') {
+                 $("#msg_Rfs").html("刷新完成");
+             }
+             else if (Flag == '4') {
+                 $("#msg_Rfs").html("刷新失败!!!");
+             }
+
+             if (Flag == '4') {
+                 clearRefreshTimer();
+             }
+             else if (Flag == '3') {
+                 clearRefreshTimer();
+                 $("#gridTable").trigger("reloadGrid");
+             }
+             else {
+                 setRefreshTimer();
+             }
+             nCounter++;
+         }
 
          function AcceptClick(grid) {
             dialogClose();
             return;
          }
-
 
          function request(name) {
              var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
@@ -106,6 +188,7 @@
                     <table id="gridTable"></table>
                 </div>
             </div>
+            <div id="msg_Rfs" style="border: 1px solid #e6e6e6; background-color: #b9b9b9; ">更新状态提示</div>
         </div>
    <style>
     .form .formTitle {

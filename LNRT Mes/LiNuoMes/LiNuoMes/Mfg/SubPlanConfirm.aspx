@@ -146,7 +146,6 @@
                             maxValue: 50000
                         }
                     },
-                    { label: '最新库存可用数量', name: 'InventoryQty', index: 'InventoryQty', width: panelwidth * 0.15, align: 'center', sortable: false },
                 ],
                 shrinkToFit: true,
                 autowidth: true,

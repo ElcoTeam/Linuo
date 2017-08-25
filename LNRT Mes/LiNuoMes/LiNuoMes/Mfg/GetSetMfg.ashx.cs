@@ -319,6 +319,7 @@ namespace LiNuoMes.Mfg
                     {
                         WoMtlEntity itemList = new WoMtlEntity();
                         itemList.InturnNumber = (i + 1).ToString();
+                        itemList.ID = dt.Rows[i]["ID"].ToString();
                         itemList.LineNumber = dt.Rows[i]["LineNumber"].ToString();
                         itemList.ItemNumber = dt.Rows[i]["ItemNumber"].ToString();
                         itemList.ItemDsca = dt.Rows[i]["ItemDsca"].ToString();
@@ -853,7 +854,6 @@ namespace LiNuoMes.Mfg
                         itemList.UOM = dt.Rows[i]["UOM"].ToString();
                         itemList.LeftQty = dt.Rows[i]["LeftQty"].ToString();
                         itemList.RequireQty = dt.Rows[i]["RequireQty"].ToString();
-                        itemList.InventoryQty = dt.Rows[i]["InventoryQty"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }

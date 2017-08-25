@@ -34,9 +34,10 @@
     <script src="../Content/scripts/utils/learun-form.js"></script>
     
     <script src="../BaseConfig/GetSetBaseConfig.js"></script>
-    <script>
-        var timerID = 0;
-        var nCounter = 0;
+     <script>
+         var timerID = 0;
+         var nCounter = 0;
+         var nWaitMTL = 0;
          var selectedRowIndex0 = 0;
          var selectedRowIndex1 = 0;
          $(function () {
@@ -72,17 +73,25 @@
         function onRefresh() {
             nCounter = 0; 
             RefreshWOTip('1');
-            setTimerRefreshWo();
+            setRefreshTimer();
             g_getSetParam("ERP_ORDER_DETAIL", "1", "WRITE", null);
         }
 
-        function setTimerRefreshWo()
+        function setRefreshTimer()
         {
             if (timerID == 0) {
                 nCounter = 0; 
                 timerID = window.setInterval(refreshWOStatus, 1 * 1000);
             }
         }
+
+        function clearRefreshTimer() {
+            if (timerID != 0) {
+                window.clearInterval(timerID);
+                timerID = 0;
+            }
+        }
+
 
         function refreshWOStatus() {
             g_getSetParam("ERP_ORDER_DETAIL", "", "READ", RefreshWOTip);
@@ -103,12 +112,13 @@
                 $("#msg_Rfs").html("刷新进行中...(" + nCounter + ")");
             }
             else if (Flag == '3') {
-                $("#btn_Rfs").show();
                 if (timerID == 0) {
+                    $("#btn_Rfs").show();
                     $("#msg_Rfs").html("");
                 }
                 else {
-                    $("#msg_Rfs").html("刷新完成");
+                    $("#btn_Rfs").hide();
+                    $("#msg_Rfs").html("导入进行中...(" + nCounter + ")");
                 }
             }
             else if( Flag == '4')
@@ -117,14 +127,27 @@
                 $("#msg_Rfs").html("刷新失败!!!");
             }
 
-            if (Flag != '3' && Flag != '4') {
-                setTimerRefreshWo();
+            if (Flag == '4') {
+                nWaitMTL = 0;
+                clearRefreshTimer();
+            }
+            else if (Flag == '3') {
+               //设置第一次进行导入计数标志, 并且重新计时. 
+               if (nWaitMTL == 0) {
+                    nWaitMTL = 1;
+                    nCounter = 0;
+               }
+               if (nCounter == 5 * 60) {
+                   nWaitMTL = 0;
+                   $("#btn_Rfs").show();
+                   $("#msg_Rfs").html("刷新完成");
+                   clearRefreshTimer();
+                   $("#gridTable0").trigger("reloadGrid");
+               }
             }
             else {
-                if (timerID != 0) {
-                    window.clearInterval(timerID);
-                    timerID = 0;
-                }
+                nWaitMTL = 0;
+                setRefreshTimer();
             }
             nCounter++;
         }

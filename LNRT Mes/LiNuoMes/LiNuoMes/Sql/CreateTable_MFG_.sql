@@ -94,9 +94,10 @@ IF OBJECT_ID('ERP_Inventory_List') is not null
 DROP TABLE ERP_Inventory_List;
 CREATE TABLE [dbo].[ERP_Inventory_List] (
     [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [SOURCEID]           INT             NOT NULL DEFAULT (0) ,           --源表ID
     [MATNR]              VARCHAR  (50)   NOT NULL,                        --原料编码
     [MAKTX]              NVARCHAR (50)   NOT NULL,                        --原料描述
-    [INVQTY]             NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --库存数量
+    [INVQTY]             NUMERIC  (18, 4)    NULL,                        --库存数量
     [ErpUpdateTime]      DATETIME            NULL,                        --ERP获取时间 (如果不为空, 则说明需要ERP接口程序需要获得数据)
     [MesCreateTime]      DATETIME        NOT NULL DEFAULT GETDATE()       --Mes创建时间
 );

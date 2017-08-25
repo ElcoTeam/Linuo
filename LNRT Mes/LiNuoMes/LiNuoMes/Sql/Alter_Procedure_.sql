@@ -973,11 +973,6 @@ GO
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Mtl_List_Summary]
      @WOID               AS INT                  --Mfg_WO_LIST.ID
 AS
-  SELECT 
-    ABC.*, 
-    ISNULL(INV.INVQTY, 0) InventoryQty
-    FROM    
-    (
     SELECT
          MTL.ProcessCode     ProcessCode
         ,MTL.ItemNumber      ItemNumber
@@ -999,42 +994,6 @@ AS
         MTL.ItemNumber,
         MTL.ItemDsca,
         MTL.UOM
-    ) AS ABC
-    LEFT JOIN ERP_Inventory_List AS INV ON ABC.ItemNumber = INV.MATNR
-    ORDER BY 
-        ProcessCode
-       ,ItemNumber
-       ,UOM
-
-    BEGIN TRAN
-        --此处备份一下, 目的是为了方便调试, 防止当库存数据模块取回不来出现问题无从知晓.
-        INSERT INTO Log_ERP_Inventory_List
-              (ID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime )
-        SELECT ID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime 
-        FROM ERP_Inventory_List
-        ORDER BY ID;
-
-        DELETE FROM ERP_Inventory_List;
-        INSERT INTO ERP_Inventory_List ( MATNR, MAKTX, INVQTY )
-        SELECT
-        DISTINCT
-             MTL.ItemNumber      ItemNumber
-            ,MTL.ItemDsca        ItemDsca
-            ,0
-        FROM
-             MFG_WIP_Data_Abnormal AB
-            ,MFG_WIP_Data_Abnormal_MTL MTL
-            ,MFG_WO_List WO
-        WHERE
-                WO.ID = @WOID
-            AND AB.ID = MTL.AbnormalID
-            AND AB.WorkOrderNumber  = WO.ErpWorkOrderNumber
-            AND AB.WorkOrderVersion = WO.MesWorkOrderVersion;
-
-        UPDATE Mes_Config 
-        SET 
-            ERP_INVENTORY_DATA = '1';   
-    COMMIT;
 GO
 
 --生产排程:订单顺序调整
@@ -1428,6 +1387,11 @@ AS
             ID = @WOID
         AND Mes2ErpMVTStatus =-1 
 
+        --在全局状态表中设定更新的标志
+        UPDATE Mes_Config 
+        SET 
+            ERP_GOODSMVT_CREATE = '1';
+
     COMMIT TRANSACTION
 GO
 
@@ -1474,6 +1438,33 @@ AS
     AND MTL.WorkOrderVersion=WO.MesWorkOrderVersion
     AND WO.ID=@WOID
     ORDER BY LineNumber;
+
+    --准备后期定时刷新ERP系统的时时库存准备接口数据
+    --BEGIN TRAN
+    --    --此处备份一下, 目的是为了方便调试, 防止当库存数据模块取回不来出现问题无从知晓.
+    --    INSERT INTO Log_ERP_Inventory_List
+    --            (ID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime )
+    --    SELECT ID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime 
+    --    FROM ERP_Inventory_List
+    --    ORDER BY ID;
+    --
+    --    DELETE FROM ERP_Inventory_List;
+    --
+    --    INSERT INTO ERP_Inventory_List ( SOURCEID, MATNR, MAKTX )
+    --    SELECT
+    --        MTL.ID, ItemNumber, ItemDsca
+    --    FROM Mfg_WO_MTL_List MTL, Mfg_WO_List WO
+    --    WHERE
+    --        MTL.WorkOrderNumber =WO.ErpWorkOrderNumber
+    --    AND MTL.WorkOrderVersion=WO.MesWorkOrderVersion
+    --    AND WO.ID=@WOID
+    --    ORDER BY LineNumber;
+    --
+    --    UPDATE Mes_Config 
+    --    SET 
+    --        ERP_INVENTORY_DATA = '1';   
+    -- COMMIT;
+
 GO
 
 --取得当日设备保养计划

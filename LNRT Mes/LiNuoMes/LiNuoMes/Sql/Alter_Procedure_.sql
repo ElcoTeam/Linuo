@@ -2456,7 +2456,7 @@ AS
 
     SET @TagFinishQty = CONVERT(INT, @TagValue);
 
-    --共需要3步操作: 
+   --共需要3步操作: 
     --1.查找工序清单, 找到当下的工单, 
 
     --查找工序
@@ -2477,6 +2477,23 @@ AS
         ,@ProcessFinishQty = FinishQty
     FROM Mes_Process_List 
     WHERE ProcessCode = @pProcessCode; --此处和物料拉动不同, 产量计数是基于PLC为单位的.
+
+    --首先记录一下节拍数据 ---- 开始
+    DECLARE @PreValue AS DATETIME;
+    SELECT @PreValue = ISNULL(
+            (
+                SELECT UpdateTime 
+                FROM Mes_Process_Beat_Record 
+                WHERE ID = (SELECT MAX(ID) FROM Mes_Process_Beat_Record WHERE TagName = @TagName)
+            ),     
+            GETDATE()
+        );
+    INSERT INTO Mes_Process_Beat_Record 
+           ( ProcessCode,                          TagName,   DisplayValue, BeatValue)
+    VALUES (ISNULL(@pProcessCode, @mProcessCode), @TagName, @TagFinishQty,  DATEDIFF(SECOND, @PreValue, GETDATE()));
+    --记录节拍数据 ---- 完成
+
+
 
     --如果订单已经完结, 则找到当下排程的下一个工单
     IF ISNULL(@ProcessFinishQty, -1) = -1

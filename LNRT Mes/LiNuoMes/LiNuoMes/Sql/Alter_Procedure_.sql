@@ -1440,30 +1440,45 @@ AS
     ORDER BY LineNumber;
 
     --准备后期定时刷新ERP系统的时时库存准备接口数据
-    --BEGIN TRAN
-    --    --此处备份一下, 目的是为了方便调试, 防止当库存数据模块取回不来出现问题无从知晓.
-    --    INSERT INTO Log_ERP_Inventory_List
-    --            (ID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime )
-    --    SELECT ID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime 
-    --    FROM ERP_Inventory_List
-    --    ORDER BY ID;
-    --
-    --    DELETE FROM ERP_Inventory_List;
-    --
-    --    INSERT INTO ERP_Inventory_List ( SOURCEID, MATNR, MAKTX )
-    --    SELECT
-    --        MTL.ID, ItemNumber, ItemDsca
-    --    FROM Mfg_WO_MTL_List MTL, Mfg_WO_List WO
-    --    WHERE
-    --        MTL.WorkOrderNumber =WO.ErpWorkOrderNumber
-    --    AND MTL.WorkOrderVersion=WO.MesWorkOrderVersion
-    --    AND WO.ID=@WOID
-    --    ORDER BY LineNumber;
-    --
-    --    UPDATE Mes_Config 
-    --    SET 
-    --        ERP_INVENTORY_DATA = '1';   
-    -- COMMIT;
+    BEGIN TRAN
+        --此处备份一下, 目的是为了方便调试, 防止当库存数据模块取回不来出现问题无从知晓.
+        INSERT INTO Log_ERP_Inventory_List
+              (ID, SOURCEID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime )
+        SELECT ID, SOURCEID, MATNR, MAKTX, INVQTY, ErpUpdateTime, MesCreateTime 
+        FROM ERP_Inventory_List
+        ORDER BY ID;
+    
+        DELETE FROM ERP_Inventory_List;
+    
+        INSERT INTO ERP_Inventory_List ( SOURCEID, MATNR, MAKTX )
+        SELECT
+            MTL.ID, ItemNumber, ItemDsca
+        FROM Mfg_WO_MTL_List MTL, Mfg_WO_List WO
+        WHERE
+            MTL.WorkOrderNumber =WO.ErpWorkOrderNumber
+        AND MTL.WorkOrderVersion=WO.MesWorkOrderVersion
+        AND WO.ID=@WOID
+        ORDER BY LineNumber;
+    
+        UPDATE Mes_Config 
+        SET 
+            ERP_INVENTORY_DATA = '1';   
+     COMMIT;
+
+GO
+
+--取得订单的物料的ERP库存
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_Mtl_List_Inv]
+     @WOID   AS INT  --Mfg_WO_LIST.ID
+AS
+    SELECT
+        INV.*
+    FROM ERP_Inventory_List INV, Mfg_WO_MTL_List MTL, Mfg_WO_List WO
+    WHERE
+        MTL.WorkOrderNumber =WO.ErpWorkOrderNumber
+    AND MTL.WorkOrderVersion=WO.MesWorkOrderVersion
+    AND WO.ID=@WOID
+    ORDER BY SOURCEID;
 
 GO
 

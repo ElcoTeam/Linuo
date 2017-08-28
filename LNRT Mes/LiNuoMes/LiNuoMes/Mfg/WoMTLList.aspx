@@ -191,7 +191,7 @@
                     <table id="gridTable"></table>
                 </div>
             </div>
-            <div id="msg_Rfs" style="text-align:right; margin:0px; padding-right:5px; vertical-align:central; border: 1px solid #e6e6e6; background-color: #e6e6e6; ">更新状态提示</div>
+            <div id="msg_Rfs" style="text-align:right; margin:0px; padding-right:5px; vertical-align:central; border: 1px solid #e6e6e6; background-color: #e6e6e6; "></div>
         </div>
    <style>
     .form .formTitle {

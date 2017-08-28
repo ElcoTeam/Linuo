@@ -109,12 +109,12 @@
                      data = JSON.parse(data);
                      for (var i = 0; i < data.length; i++) {
                          var InvQty = data[i].InvQty;
-                         var ReqQty = $('#gridTable').jqGrid('getRowData', data[i].ID).ReqQty;
-                         $('#gridTable').jqGrid('setRowData', data[i].ID, { "InvQty": InvQty });
-                         if (InvQty < ReqQty) {
-                             $('#' + data[i].ID).find("td").css("background-color", "pink");
-                         }
-                         
+                         var InvId  = data[i].ID;
+                         var ReqQty = $('#gridTable').jqGrid('getRowData', InvId).ReqQty;
+                         $('#gridTable').jqGrid('setRowData', InvId, { "InvQty": InvQty });
+                         if (parseFloat(InvQty) < parseFloat(ReqQty)) {
+                             $('#' + InvId).find("td").css("background-color", "#FF3333");
+                         }                         
                      }
                  },
                  error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -147,23 +147,23 @@
 
          function RefreshInvTip(Flag) {
              if      (Flag == '0') {
-                 $("#msg_Rfs").html("暂停刷新.(" + nCounter + ")");
+                 $("#msg_Rfs").html("刷新库存暂停.(" + nCounter + ")");
              }
              else if (Flag == '1') {
-                 $("#msg_Rfs").html("库存刷新命令已发出...(" + nCounter + ")");
+                 $("#msg_Rfs").html("刷新库存命令已发出...(" + nCounter + ")");
              }
              else if (Flag == '2') {
-                 $("#msg_Rfs").html("库存刷新进行中...(" + nCounter + ")");
                  getInvDataFromDB();
+                 $("#msg_Rfs").html("刷新库存进行中...(" + nCounter + ")");
              }
              else if (Flag == '3') {
-                 $("#msg_Rfs").html("库存刷新完成");
                  clearRefreshTimer();
                  getInvDataFromDB();
+                 $("#msg_Rfs").html("刷新库存完成.");
              }
              else if (Flag == '4') {
-                 $("#msg_Rfs").html("库存刷新失败!!!");
                  clearRefreshTimer();
+                 $("#msg_Rfs").html("刷新库存失败!!!");
              }
 
              if (Flag != '3' && Flag != '4') {

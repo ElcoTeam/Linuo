@@ -107,6 +107,7 @@ IF OBJECT_ID('Log_ERP_Inventory_List') is not null
 DROP TABLE Log_ERP_Inventory_List;
 CREATE TABLE [dbo].[Log_ERP_Inventory_List] (
     [ID]                 INT             NOT NULL,                    -- (系统自动生成)
+    [SOURCEID]           INT             NOT NULL DEFAULT (0) ,           --源表ID
     [MATNR]              VARCHAR  (50)   NOT NULL,                        --原料编码
     [MAKTX]              NVARCHAR (50)   NOT NULL,                        --原料描述
     [INVQTY]             NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --库存数量

@@ -470,7 +470,7 @@ CREATE TABLE [dbo].[Mes_Config] (
 );
 
 --能源历史记录表
---此表设计用意是记录
+--此表设计用意是记录工厂的电能用量(包含示数)历史
 IF OBJECT_ID('Mes_Energy_Record') is not null
 DROP TABLE Mes_Energy_Record;
 CREATE TABLE [dbo].[Mes_Energy_Record] (
@@ -479,6 +479,21 @@ CREATE TABLE [dbo].[Mes_Energy_Record] (
     [DisplayValue]       INT             NOT NULL DEFAULT ('0'),          --电表市数
     [CostValue]          INT             NOT NULL DEFAULT ('0')           --最近时间间隔内电能消耗值
 );
+
+--工位生产用时(节拍:秒)记录表
+--此表设计用意是记录工位记录的产出数据时的时刻间隔
+--此表只记录有PLC产量计数工位的数据.
+IF OBJECT_ID('Mes_Process_Beat_Record') is not null
+DROP TABLE Mes_Process_Beat_Record;
+CREATE TABLE [dbo].[Mes_Process_Beat_Record] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [UpdateTime]       DATETIME        NOT NULL DEFAULT GETDATE(),        --更新时间
+    [ProcessCode]      VARCHAR  (50)   NOT NULL DEFAULT (''),             --工序编号
+    [TagName]          VARCHAR  (50)   NOT NULL,                          --PLC参数名称
+    [DisplayValue]     INT             NOT NULL,                          --PLC参数数值: 产量示数
+    [BeatValue]        INT             NOT NULL DEFAULT ('0')             --最近时间间隔值(Beat值:秒)
+);
+
 
 --客户信息表
 IF OBJECT_ID('Mes_Customer_List') is not null

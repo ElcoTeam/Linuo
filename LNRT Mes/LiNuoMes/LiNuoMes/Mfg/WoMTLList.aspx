@@ -72,12 +72,12 @@
                  },
                  colModel: [
                      { label: 'ID', name: 'ID', hidden: true },
-                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 60, align: 'center', hidden: true, sortable: false },
+                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 60, align: 'center', sortable: false },
                      { label: '行号', name: 'LineNumber', index: 'LineNumber', width: 60, align: 'center', sortable: false },
                      { label: '物料编码', name: 'ItemNumber', index: 'ItemNumber', width: 160, align: 'center', sortable: false },
                      { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 350, align: 'left', sortable: false },
-                     { label: '订单用量', name: 'Qty', index: 'Qty', width: 90, align: 'center', sortable: false },
-                     { label: 'ERP库存', name: 'ErpInvQty', index: 'ErpInvQty', width: 90, align: 'center', sortable: false },
+                     { label: '订单用量', name: 'ReqQty', index: 'ReqQty', width: 90, align: 'center', sortable: false },
+                     { label: 'ERP库存', name: 'InvQty', index: 'InvQty', width: 90, align: 'center', sortable: false },
                      { label: '单位', name: 'UOM', index: 'UOM', width: 60, align: 'center', sortable: false },
                      { label: '工序编号', name: 'ProcessCode', index: 'ProcessCode', width: 80, align: 'center', sortable: false },
                      { label: '工作中心', name: 'WorkCenter', index: 'WorkCenter', width: 100, align: 'center', sortable: false },
@@ -96,7 +96,7 @@
 
          });
 
-         function getInvdataFromDB() {
+         function getInvDataFromDB() {
              $.ajax({
                  url: "GetSetMfg.ashx",
                  data: {
@@ -107,8 +107,14 @@
                  datatype: "json",
                  success: function (data) {
                      data = JSON.parse(data);
-                     if (data.result == "success") {
-                         //UPDATE GRID DATA LINE BY LINE.
+                     for (var i = 0; i < data.length; i++) {
+                         var InvQty = data[i].InvQty;
+                         var ReqQty = $('#gridTable').jqGrid('getRowData', data[i].ID).ReqQty;
+                         $('#gridTable').jqGrid('setRowData', data[i].ID, { "InvQty": InvQty });
+                         if (InvQty < ReqQty) {
+                             $('#' + data[i].ID).find("td").css("background-color", "pink");
+                         }
+                         
                      }
                  },
                  error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -124,7 +130,7 @@
          function setRefreshTimer() {
              if (timerID == 0) {
                  nCounter = 0;
-                 timerID = window.setInterval(refreshInvStatus, 1 * 1000);
+                 timerID = window.setInterval(refreshInvStatus, 5 * 1000);
              }
          }
 
@@ -140,30 +146,27 @@
          }
 
          function RefreshInvTip(Flag) {
-             if (Flag == '0') {
+             if      (Flag == '0') {
                  $("#msg_Rfs").html("暂停刷新.(" + nCounter + ")");
              }
              else if (Flag == '1') {
-                 $("#msg_Rfs").html("等待刷新...(" + nCounter + ")");
+                 $("#msg_Rfs").html("等待库存刷新...(" + nCounter + ")");
              }
              else if (Flag == '2') {
-                 $("#msg_Rfs").html("刷新进行中...(" + nCounter + ")");
+                 $("#msg_Rfs").html("库存刷新进行中...(" + nCounter + ")");
+                 getInvDataFromDB();
              }
              else if (Flag == '3') {
-                 $("#msg_Rfs").html("刷新完成");
+                 $("#msg_Rfs").html("库存刷新完成");
+                 clearRefreshTimer();
+                 getInvDataFromDB();
              }
              else if (Flag == '4') {
-                 $("#msg_Rfs").html("刷新失败!!!");
+                 $("#msg_Rfs").html("库存刷新失败!!!");
+                 clearRefreshTimer();
              }
 
-             if (Flag == '4') {
-                 clearRefreshTimer();
-             }
-             else if (Flag == '3') {
-                 clearRefreshTimer();
-                 $("#gridTable").trigger("reloadGrid");
-             }
-             else {
+             if (Flag != '3' && Flag != '4') {
                  setRefreshTimer();
              }
              nCounter++;
@@ -188,7 +191,7 @@
                     <table id="gridTable"></table>
                 </div>
             </div>
-            <div id="msg_Rfs" style="border: 1px solid #e6e6e6; background-color: #b9b9b9; ">更新状态提示</div>
+            <div id="msg_Rfs" style="text-align:right; margin:0px; padding-right:5px; vertical-align:central; border: 1px solid #e6e6e6; background-color: #e6e6e6; ">更新状态提示</div>
         </div>
    <style>
     .form .formTitle {

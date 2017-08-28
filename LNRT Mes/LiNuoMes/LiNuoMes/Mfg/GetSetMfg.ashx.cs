@@ -63,6 +63,13 @@ namespace LiNuoMes.Mfg
                 dataEntity = getWoMtlListObj(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
             }
+            else if (Action == "MFG_WO_MTL_LIST_INV")
+            {
+                List<WoMtlEntity> dataEntity;
+                dataEntity = new List<WoMtlEntity>();
+                dataEntity = getWoMtlInvListObj(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
             else if (Action == "MFG_WO_LIST")
             {
                 List<WoEntity> dataEntity;
@@ -323,7 +330,7 @@ namespace LiNuoMes.Mfg
                         itemList.LineNumber = dt.Rows[i]["LineNumber"].ToString();
                         itemList.ItemNumber = dt.Rows[i]["ItemNumber"].ToString();
                         itemList.ItemDsca = dt.Rows[i]["ItemDsca"].ToString();
-                        itemList.Qty = dt.Rows[i]["Qty"].ToString();
+                        itemList.ReqQty = dt.Rows[i]["Qty"].ToString();
                         itemList.UOM = dt.Rows[i]["UOM"].ToString();
                         itemList.ProcessCode = dt.Rows[i]["ProcessCode"].ToString();
                         itemList.WorkCenter = dt.Rows[i]["WorkCenter"].ToString();
@@ -331,6 +338,36 @@ namespace LiNuoMes.Mfg
                         itemList.Phantom = dt.Rows[i]["Phantom"].ToString();
                         itemList.Bulk = dt.Rows[i]["Bulk"].ToString();
                         itemList.Backflush = dt.Rows[i]["Backflush"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public List<WoMtlEntity> getWoMtlInvListObj(List<WoMtlEntity> dataEntity)
+        {
+            String WoId = RequstString("WoId");
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Mfg_Wo_Mtl_List_Inv";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                sqlPara[0] = new SqlParameter("@WOID", WoId);
+                cmd.Parameters.Add(sqlPara[0]);
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        WoMtlEntity itemList = new WoMtlEntity();
+                        itemList.ID = dt.Rows[i]["SOURCEID"].ToString();
+                        itemList.InvQty = dt.Rows[i]["InvQty"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }
@@ -1676,7 +1713,8 @@ namespace LiNuoMes.Mfg
         public string LineNumber   { set; get; }
         public string ItemNumber   { set; get; }
         public string ItemDsca     { set; get; }
-        public string Qty          { set; get; }
+        public string ReqQty       { set; get; }
+        public string InvQty       { set; get; }
         public string UOM          { set; get; }
         public string ProcessCode  { set; get; }
         public string WorkCenter   { set; get; }

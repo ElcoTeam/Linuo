@@ -150,7 +150,7 @@
                  $("#msg_Rfs").html("暂停刷新.(" + nCounter + ")");
              }
              else if (Flag == '1') {
-                 $("#msg_Rfs").html("等待库存刷新...(" + nCounter + ")");
+                 $("#msg_Rfs").html("库存刷新命令已发出...(" + nCounter + ")");
              }
              else if (Flag == '2') {
                  $("#msg_Rfs").html("库存刷新进行中...(" + nCounter + ")");

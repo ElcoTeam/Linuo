@@ -2478,7 +2478,7 @@ AS
     FROM Mes_Process_List 
     WHERE ProcessCode = @pProcessCode; --此处和物料拉动不同, 产量计数是基于PLC为单位的.
 
-    --首先记录一下节拍数据 ---- 开始
+    --记录一下节拍数据 ---- 开始
     DECLARE @PreValue AS DATETIME;
     SELECT @PreValue = ISNULL(
             (

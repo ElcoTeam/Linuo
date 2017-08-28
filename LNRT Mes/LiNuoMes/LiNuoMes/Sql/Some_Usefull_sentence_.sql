@@ -1,3 +1,10 @@
+update ERP_Inventory_List set INVQTY = sourceid;
+select * from ERP_Inventory_List;
+
+update mes_config set ERP_INVENTORY_DATA =3;
+select * from mes_config;
+
+
 --SELECT * FROM ERP_Inventory_List;
   
   INSERT INTO Mfg_Wip_Bkf_Item_List (ItemNumber, ItemDsca, UOM, CreateUser)

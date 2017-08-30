@@ -310,8 +310,8 @@
 
          function onMaintainCustomer() {
 
-             var sWidth = "600px";
-             var sHeight = "480px"
+             var sWidth = "500px";
+             var sHeight = "400px"
              originalCustomerID = $("#CustomerID").val();
              dialogOpen({
                  id: "FormCustomerConfig",

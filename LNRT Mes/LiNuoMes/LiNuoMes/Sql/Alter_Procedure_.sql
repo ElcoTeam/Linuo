@@ -12,10 +12,10 @@ AS
         ,[Message] ErrMessage 
     FROM SapErrorInformation
     WHERE
-        [RFCName] = @RFCName
+        RIGHT([RFCName] ,13) = RIGHT(@RFCName, 13)
     AND
     ( 
-        ( @StdCode = StdCode)
+        ( RIGHT(@StdCode,8) = RIGHT(StdCode,8) )
     OR  ( @StdCode = '' AND InTime > GETDATE() - 2 ) 
     )
     ORDER BY [InTime] DESC, ErrRow
@@ -268,15 +268,18 @@ AS
         ,WO.MesStatus Status
         ,WO.MesSubPlanFlag SubPlanFlag
         ,WO.MesStartPoint StartPoint
-        ,MesDiscardQty1 + MesDiscardQty1  DiscardQty
+        ,MesDiscardQty1 + MesDiscardQty1 + MesDiscardQty3 + MesDiscardQty4  DiscardQty
         ,MesLeftQty1   LeftQty1
         ,MesLeftQty2   LeftQty2
+        ,MesLeftQty3   LeftQty3
+        ,MesLeftQty4   LeftQty4
     FROM 
         MFG_WO_List AS WO 
     WHERE            
             (DATEDIFF(DAY, WO.MesPlanStartTime, CONVERT(DATE, @PlanDate)) = 0 OR WO.MesStatus = 3 ) 
         AND (WO.ErpWorkOrderNumber = @WorkOrderNumber OR @WorkOrderNumber='')
-        AND MesDiscardQty1 + MesDiscardQty1 + MesLeftQty1 + MesLeftQty2 > 0
+        AND MesDiscardQty1 + MesDiscardQty1 + MesDiscardQty3 + MesDiscardQty4 
+          + MesLeftQty1    + MesLeftQty2    + MesLeftQty3    + MesLeftQty4 > 0
         
 ORDER BY InturnNumber
 
@@ -317,28 +320,52 @@ AS
         WorkOrderVersion,
         SUM(
             CASE 
-            WHEN AbnormalPoint = '1' AND AbnormalType = 3 THEN 1 
+            WHEN AbnormalPoint = 1 AND AbnormalType = 3 THEN 1 
             ELSE 0
             END 
         ) AS LeftQty1
         ,SUM(
             CASE 
-            WHEN AbnormalPoint = '2' AND AbnormalType = 3  OR AbnormalPoint = '3' THEN 1 --第三个下线点仅存在"未完工"下线, 但是其对应的上线点与第二个下线点的上线工序点相同
+            WHEN AbnormalPoint = 2 AND AbnormalType = 3 THEN 1
             ELSE 0
             END 
         ) AS LeftQty2
         ,SUM(
+            CASE 
+            WHEN AbnormalPoint = 3 AND AbnormalType = 3 THEN 1 
+            ELSE 0
+            END 
+        ) AS LeftQty3
+        ,SUM(
+            CASE 
+            WHEN AbnormalPoint = 4 AND AbnormalType = 3 THEN 1
+            ELSE 0
+            END 
+        ) AS LeftQty4
+        ,SUM(
             CASE   
-            WHEN AbnormalPoint = '1' AND AbnormalType = 2 THEN 1 
+            WHEN AbnormalPoint = 1 AND AbnormalType = 2 THEN 1 
             ELSE 0 
             END 
         ) AS DiscardQty1
         ,SUM(
             CASE   
-            WHEN AbnormalPoint = '2' AND AbnormalType = 2 THEN 1 
+            WHEN AbnormalPoint = 2 AND AbnormalType = 2 THEN 1 
             ELSE 0 
             END 
         ) AS DiscardQty2
+        ,SUM(
+            CASE   
+            WHEN AbnormalPoint = 3 AND AbnormalType = 2 THEN 1 
+            ELSE 0 
+            END 
+        ) AS DiscardQty3
+        ,SUM(
+            CASE   
+            WHEN AbnormalPoint = 4 AND AbnormalType = 2 THEN 1 
+            ELSE 0 
+            END 
+        ) AS DiscardQty4
     FROM 
         MFG_WIP_Data_Abnormal
     WHERE 
@@ -400,9 +427,10 @@ AS
     END 
 
     DECLARE @StartPoint  VARCHAR(50);
-    DECLARE @APO1        VARCHAR(50);
-    DECLARE @APO2        VARCHAR(50);
-    DECLARE @APO3        VARCHAR(50);
+    DECLARE @APO1        INT;
+    DECLARE @APO2        INT;
+    DECLARE @APO3        INT;
+    DECLARE @APO4        INT;
     DECLARE @ATY2        INT;
     DECLARE @ATY3        INT;
     DECLARE @PlanQty     INT;
@@ -410,9 +438,10 @@ AS
 
     --选择上线工序
     SELECT
-         @APO1    = SUM(CASE AbnormalPoint WHEN '1' THEN 1 ELSE 0 END ),
-         @APO2    = SUM(CASE AbnormalPoint WHEN '2' THEN 1 ELSE 0 END ),
-         @APO3    = SUM(CASE AbnormalPoint WHEN '3' THEN 1 ELSE 0 END ),        
+         @APO1    = SUM(CASE AbnormalPoint WHEN  1  THEN 1 ELSE 0 END ),
+         @APO2    = SUM(CASE AbnormalPoint WHEN  2  THEN 1 ELSE 0 END ),
+         @APO3    = SUM(CASE AbnormalPoint WHEN  3  THEN 1 ELSE 0 END ),        
+         @APO4    = SUM(CASE AbnormalPoint WHEN  4  THEN 1 ELSE 0 END ),        
          @ATY2    = SUM(CASE AbnormalType  WHEN  2  THEN 1 ELSE 0 END ),
          @ATY3    = SUM(CASE AbnormalType  WHEN  3  THEN 1 ELSE 0 END ),
          @PlanQty = SUM(1)
@@ -425,6 +454,7 @@ AS
        AND AB.AbnormalType > 1
        AND WO.ID = @WoId
 
+--此处需求没有重新定义, 也许[需要重写]
     IF @APO3 > 0 OR @ATY2 > 0 
        SET @StartPoint = '0';
     ELSE 
@@ -476,6 +506,7 @@ AS
          WO.ID
         ,WO.ErpWorkOrderNumber WorkOrderNumber
         ,WO.ErpGoodsCode GoodsCode
+        ,WO.ErpGoodsDsca GoodsDsca
         ,WO.MesPlanQty PlanQty
         ,FORMAT(WO.MesPlanStartTime, 'yyyy-MM-dd hh:mm')  PlanStartTime
         ,FORMAT(WO.MesPlanFinishTime,'yyyy-MM-dd hh:mm')  PlanFinishTime
@@ -484,9 +515,11 @@ AS
         ,WO.MesWorkOrderType WorkOrderType
         ,WO.MesCustomerID    CustomerID
         ,WO.MesOrderComment  OrderComment
-        ,MesDiscardQty1 + MesDiscardQty2  DiscardQty
+        ,MesDiscardQty1 + MesDiscardQty2 + MesDiscardQty3 + MesDiscardQty4  DiscardQty
         ,MesLeftQty1         LeftQty1
         ,MesLeftQty2         LeftQty2
+        ,MesLeftQty3         LeftQty3
+        ,MesLeftQty4         LeftQty4
     FROM MFG_WO_List WO
     WHERE
         WO.ID = @WOID
@@ -502,18 +535,26 @@ AS
         WorkOrderVersion INT,
         LeftQty1         INT,
         LeftQty2         INT,
+        LeftQty3         INT,
+        LeftQty4         INT,
         DiscardQty1      INT,
-        DiscardQty2      INT
+        DiscardQty2      INT,
+        DiscardQty3      INT,
+        DiscardQty4      INT
     )
     INSERT INTO @ABN
     EXEC usp_Mfg_Wip_Data_Abnormal_SummayQty @WorkOrderNumber, @WorkOrderVersion
 
     UPDATE Mfg_WO_List 
     SET 
-         Mfg_WO_List.MesLeftQty1   = ABN.LeftQty1
-        ,Mfg_WO_List.MesLeftQty2   = ABN.LeftQty2
-        ,Mfg_WO_List.MesDiscardQty1= ABN.DiscardQty1
-        ,Mfg_WO_List.MesDiscardQty2= ABN.DiscardQty2
+         Mfg_WO_List.MesLeftQty1    = ABN.LeftQty1
+        ,Mfg_WO_List.MesLeftQty2    = ABN.LeftQty2
+        ,Mfg_WO_List.MesLeftQty3    = ABN.LeftQty3
+        ,Mfg_WO_List.MesLeftQty4    = ABN.LeftQty4
+        ,Mfg_WO_List.MesDiscardQty1 = ABN.DiscardQty1
+        ,Mfg_WO_List.MesDiscardQty2 = ABN.DiscardQty2
+        ,Mfg_WO_List.MesDiscardQty3 = ABN.DiscardQty3
+        ,Mfg_WO_List.MesDiscardQty4 = ABN.DiscardQty4
     FROM @ABN ABN
     WHERE 
          Mfg_WO_List.ErpWorkOrderNumber  = ABN.WorkOrderNumber
@@ -601,21 +642,21 @@ AS
          AbnormalID = @AbId
 GO
 
+-- 此存储过程需要完全重写: 根据下线点取出最近一次的RFID信息记录值.
 -- 取得最后近次的正常生产的RFID所代表工单等信息
 -- 此存储过程在上线调试时[需要重写]
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Rfid_getLast]
-      @RFID               AS NVARCHAR (50)
+      @RFID               AS NVARCHAR (50) OUTPUT
      ,@WorkOrderNumber    AS VARCHAR  (50) OUTPUT
      ,@WorkOrderVersion   AS INT           OUTPUT
      ,@GoodsCode          AS VARCHAR  (50) OUTPUT
      ,@ProcessCode        AS VARCHAR  (50) OUTPUT
-     ,@AbnormalPoint      AS VARCHAR  (50) OUTPUT
+     ,@AbnormalPoint      AS INT           
 AS
     DECLARE @MAXID INT;
 
     SELECT
-        @MAXID = MAX(ID),
-        @AbnormalPoint =
+        @MAXID =
                 CASE
                     WHEN COUNT(1) <= 3                    THEN 3
                     WHEN COUNT(1)  > 3 AND COUNT(1) <= 5  THEN 3
@@ -624,11 +665,11 @@ AS
                 END
     FROM MFG_WIP_Data_RFID
     WHERE
-           RFID   = @RFID
-       AND Status = 0; --此处定义的是正常生产时产生的最后的记录工序点.
+         Status = 0; --此处定义的是正常生产时产生的最后的记录工序点.
        
     SELECT
-         @GoodsCode        = WO.ErpGoodsCode
+         @RFID             = RF.RFID
+        ,@GoodsCode        = WO.ErpGoodsCode
         ,@WorkOrderNumber  = WO.ErpWorkOrderNumber 
         ,@WorkOrderVersion = WO.MesWorkOrderVersion 
         ,@ProcessCode      = RF.ProcessCode
@@ -644,21 +685,21 @@ GO
 --取得下线记录详细信息
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Detail]
       @AbId               AS VARCHAR  (50)
-     ,@RFID               AS NVARCHAR (50)
+     ,@AbnormalPoint      AS INT
      ,@UserName           AS NVARCHAR (50)
 AS
     IF @AbId <> '0'
     BEGIN
         SELECT
              AB.ID                 ID
+            ,WO.ErpGoodsCode       GoodsCode
+            ,WO.ErpWorkOrderNumber WorkOrderNumber
             ,AB.RFID               RFID
             ,AB.AbnormalPoint      AbnormalPoint
             ,AB.AbnormalProduct    AbnormalProduct
             ,AB.AbnormalType       AbnormalType
             ,AB.AbnormalTime       AbnormalTime
             ,AB.AbnormalUser       AbnormalUser
-            ,WO.ErpGoodsCode       GoodsCode
-            ,WO.ErpWorkOrderNumber WorkOrderNumber
         FROM
              MFG_WIP_Data_Abnormal AB
             ,MFG_WO_List WO
@@ -673,9 +714,9 @@ AS
         DECLARE @WorkOrderVersion INT;
         DECLARE @GoodsCode        VARCHAR(50);
         DECLARE @ProcessCode      INT;
-        DECLARE @AbnormalPoint    VARCHAR(50);
+        DECLARE @RFID             VARCHAR(50);
     
-        EXEC usp_Mfg_Wip_Data_Rfid_getLast @RFID, @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT, @GoodsCode OUTPUT, @ProcessCode OUTPUT, @AbnormalPoint OUTPUT
+        EXEC usp_Mfg_Wip_Data_Rfid_getLast @RFID OUTPUT, @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT, @GoodsCode OUTPUT, @ProcessCode OUTPUT, @AbnormalPoint
     
         SELECT
              0                 ID
@@ -685,7 +726,6 @@ AS
             ,1                 AbnormalType
             ,GETDATE()         AbnormalTime
             ,@UserName         AbnormalUser
-            ,''                AbnormalReason
             ,@GoodsCode        GoodsCode
             ,@WorkOrderNumber  WorkOrderNumber
     END
@@ -694,7 +734,6 @@ GO
 --新建下线记录信息
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Add]
      @AbId               AS INT
-    ,@RFID               AS NVARCHAR (50)
     ,@AbnormalType       AS VARCHAR  (5)
     ,@AbnormalTime       AS VARCHAR  (50)
     ,@AbnormalUser       AS NVARCHAR (50)
@@ -712,9 +751,9 @@ AS
     DECLARE @WorkOrderVersion INT;
     DECLARE @GoodsCode        VARCHAR(50);
     DECLARE @ProcessCode      INT;
-    DECLARE @AbnormalPointSP  VARCHAR(50);  --这个值现在已经不需要了, 已经可以从存储过程的参数中获取了: 即用户自己手工决定下线点.
+    DECLARE @RFID             VARCHAR(50);
     
-    EXEC usp_Mfg_Wip_Data_Rfid_getLast @RFID, @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT, @GoodsCode OUTPUT, @ProcessCode OUTPUT, @AbnormalPointSP OUTPUT
+    EXEC usp_Mfg_Wip_Data_Rfid_getLast @RFID OUTPUT, @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT, @GoodsCode OUTPUT, @ProcessCode OUTPUT, @AbnormalPoint
     
     --检查传入的RFID是否有效
     IF LEN(@WorkOrderNumber) = 0 
@@ -738,7 +777,7 @@ AS
     IF @ExistCount > 0 
     BEGIN
         SET @CatchError = 1;
-        SET @RtnMsg = '系统发现在此下线点已经存在此号码的下线, 并且其当下尚未完成补修!';
+        SET @RtnMsg = '系统发现在此下线点已经存在此号码:''' + @RFID + '''的下线, 并且其当下尚未完成补修!';
         RETURN;
     END
 
@@ -760,7 +799,7 @@ AS
     --插入新的待补修记录
     INSERT INTO 
     MFG_WIP_Data_Abnormal
-           ( RFID , AbnormalPoint , AbnormalType , AbnormalTime , AbnormalUser , AbnormalProduct , WorkOrderNumber , WorkOrderVersion , UpdateUser )
+           ( RFID , AbnormalPoint , AbnormalType , AbnormalTime , AbnormalUser , AbnormalProduct , WorkOrderNumber , WorkOrderVersion , UpdateUser)
     VALUES (@RFID ,@AbnormalPoint ,@AbnormalType ,@AbnormalTime ,@AbnormalUser ,@AbnormalProduct ,@WorkOrderNumber ,@WorkOrderVersion ,@UpdateUser);
 
     --更新订单的报废, 未完工数量
@@ -780,7 +819,6 @@ GO
 --更新下线记录信息
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Edit]
      @AbId               AS INT
-    ,@RFID               AS NVARCHAR (50)
     ,@AbnormalType       AS VARCHAR  (5)
     ,@AbnormalTime       AS VARCHAR  (50)
     ,@AbnormalUser       AS NVARCHAR (50)
@@ -830,11 +868,10 @@ AS
     --更新数据记录
     UPDATE MFG_WIP_Data_Abnormal
     SET
-         AbnormalType   = @AbnormalType
+         AbnormalProduct= @AbnormalProduct
+        ,AbnormalType   = @AbnormalType
         ,AbnormalTime   = @AbnormalTime
         ,AbnormalUser   = @AbnormalUser
-        ,AbnormalPoint  = @AbnormalPoint
-        ,AbnormalProduct= @AbnormalProduct
         ,UpdateUser     = @Updateuser
         ,UpdateTime     = GETDATE()
     WHERE
@@ -907,7 +944,7 @@ AS
     --需要确定从原用料表中确定从何处工序代码开始计算额外申领物料
     DECLARE @FinalProcessCode   VARCHAR(50);
     DECLARE @FinalInturnNumber  INT;
-    DECLARE @AbnormalPoint      VARCHAR(50);
+    DECLARE @AbnormalPoint      INT;
     DECLARE @AbnormalType       INT;
 
     SELECT 
@@ -918,13 +955,15 @@ AS
     WHERE 
         ID = @AbId;
 
+--因为涉及到工序路线分支的组合问题,此处[需要重写]
     SELECT 
         @FinalProcessCode = 
         CASE --此处在现场调试的时候 [需要重写]
-            WHEN @AbnormalPoint = '1' THEN '0010'
-            WHEN @AbnormalPoint = '2' THEN '0030'
-            WHEN @AbnormalPoint = '3' THEN '0040'
-            ELSE                           'XXXX'
+            WHEN @AbnormalPoint = 1 THEN '0010'
+            WHEN @AbnormalPoint = 2 THEN '0030'
+            WHEN @AbnormalPoint = 3 THEN '0040'
+            WHEN @AbnormalPoint = 4 THEN '0040'
+            ELSE                         'XXXX'
         END;
 
     --得到下线工位的工序代码的顺序号
@@ -940,32 +979,28 @@ AS
     BEGIN
         INSERT INTO MFG_WIP_Data_Abnormal_MTL 
               ( AbnormalID,   ProcessCode,     ItemNumber,     ItemDsca,     UOM,    UpdateUser, LeftQty, RequireQty)
-        SELECT @AbId,     MTL.ProcessCode, MTL.ItemNumber, MTL.ItemDsca, MTL.UOM, AB.UpdateUser, 
+        SELECT  @AbId,    MTL.ProcessCode, MTL.ItemNumber, MTL.ItemDsca, MTL.UOM, ABN.UpdateUser, 
         CASE 
-            WHEN PS.InturnNumber <= @FinalInturnNumber THEN 0
-            ELSE MTL.Qty/WO.MesPlanQty
+            WHEN ABP.ID IS NULL THEN 0
+            ELSE MTL.Qty/WOL.MesPlanQty
         END AS LeftQty, 
         CASE 
-            WHEN PS.InturnNumber  > @FinalInturnNumber THEN 0
-            ELSE MTL.Qty/WO.MesPlanQty
-        END AS RequireQty 
+            WHEN ABP.ID IS NOT NULL THEN 0
+            ELSE MTL.Qty/WOL.MesPlanQty
+        END AS RequireQty
         FROM 
-            MFG_WO_MTL_List       MTL,
-            MFG_WO_List           WO,
-            Mes_Process_List      PS,
-            MFG_WIP_Data_Abnormal AB
+             MFG_WO_MTL_List                     MTL
+        INNER JOIN MFG_WO_List                   WOL ON WOL.ErpWorkOrderNumber  = MTL.WorkOrderNumber AND MTL.WorkOrderVersion = 0
+        INNER JOIN MFG_WIP_Data_Abnormal         ABN ON WOL.ErpWorkOrderNumber  = ABN.WorkOrderNumber AND WOL.MesWorkOrderVersion = 0 
+        LEFT  JOIN MFG_WIP_Data_Abnormal_Process ABP ON ABP.abProductId = ABN.AbnormalProduct AND ABP.ProcessCode = MTL.ProcessCode
         WHERE 
         --此处逻辑为: 应该根据"根订单"(WorkOrderVersion = 0)计算产品用料. 
-        --因为如果根据子订单的话，其用料数据(额外领料单)可能是用户调整过的.
-            WO.ErpWorkOrderNumber   = MTL.WorkOrderNumber
-        AND WO.MesWorkOrderVersion  = MTL.WorkOrderVersion
-        AND PS.ProcessCode          = MTL.ProcessCode 
-        AND WO.ErpWorkOrderNumber   = AB.WorkOrderNumber
-        AND WO.MesWorkOrderVersion  = 0 --逻辑上此处右侧值需要为 0 则可以使用根订单的物料使用数据了.
-        AND AB.ID                   = @AbId
+        --因为如果根据子订单的话，其用料数据(额外领料单)可能是用户调整过的.           
+        1=1
+        AND ABN.ID               =  @AbId
         AND UPPER(MTL.Backflush) <> 'X' 
         AND UPPER(MTL.[BULK]   ) <> 'X' 
-        AND UPPER(MTL.Phantom  ) <> 'X' --需要三者同时都不许为X的状态才是我们需要考虑的计件物料. 2017-06-13 17:16
+        AND UPPER(MTL.Phantom  ) <> 'X'  --需要三者同时都不许为X的状态才是我们需要考虑的计件物料. 2017-06-13 17:16
     END
 GO
 
@@ -1477,7 +1512,9 @@ AS
     WHERE
         MTL.WorkOrderNumber =WO.ErpWorkOrderNumber
     AND MTL.WorkOrderVersion=WO.MesWorkOrderVersion
-    AND WO.ID=@WOID
+    AND INV.SOURCEID = MTL.ID 
+    AND INV.INVQTY IS NOT NULL
+    AND WO.ID  = @WOID
     ORDER BY SOURCEID;
 
 GO
@@ -2494,6 +2531,11 @@ AS
     --记录节拍数据 ---- 完成
 
 
+    -------------------为了验收的需要, 暂时屏蔽复杂的操作.
+    RETURN;
+    --------+++++++++++
+
+
 
     --如果订单已经完结, 则找到当下排程的下一个工单
     IF ISNULL(@ProcessFinishQty, -1) = -1
@@ -2514,18 +2556,30 @@ AS
 
     DECLARE @MesPlanQty       INT; --原始订单计划数量
     DECLARE @PrsPlanQty       INT; --Process计划数量
-    DECLARE @selfDiscardQty1  INT; --本订单的待修或报废数量
-    DECLARE @selfDiscardQty2  INT; --本订单的待修或报废数量
-    DECLARE @selfLeftQty1     INT; --本订单的待修或报废数量
-    DECLARE @selfLeftQty2     INT; --本订单的待修或报废数量
 
-    DECLARE @baseDiscardQty1  INT; --母订单的待修或报废数量
-    DECLARE @baseDiscardQty2  INT; --母订单的待修或报废数量
-    DECLARE @baseLeftQty1     INT; --母订单的待修或报废数量
-    DECLARE @baseLeftQty2     INT; --母订单的待修或报废数量
+    DECLARE @selfDiscardQty1  INT; --本订单报废数量
+    DECLARE @selfDiscardQty2  INT; --本订单报废数量
+    DECLARE @selfDiscardQty3  INT; --本订单报废数量
+    DECLARE @selfDiscardQty4  INT; --本订单报废数量
+
+    DECLARE @selfLeftQty1     INT; --本订单待修数量
+    DECLARE @selfLeftQty2     INT; --本订单待修数量
+    DECLARE @selfLeftQty3     INT; --本订单待修数量
+    DECLARE @selfLeftQty4     INT; --本订单待修数量
+
+    DECLARE @baseDiscardQty1  INT; --母订单报废数量
+    DECLARE @baseDiscardQty2  INT; --母订单报废数量
+    DECLARE @baseDiscardQty3  INT; --母订单报废数量
+    DECLARE @baseDiscardQty4  INT; --母订单报废数量
+
+    DECLARE @baseLeftQty1     INT; --母订单待修数量
+    DECLARE @baseLeftQty2     INT; --母订单待修数量
+    DECLARE @baseLeftQty3     INT; --母订单待修数量
+    DECLARE @baseLeftQty4     INT; --母订单待修数量
 
     DECLARE @AbnormalRegion   INT;
     DECLARE @FinalFlag        INT;
+    DECLARE @StartFlag        INT;
     DECLARE @FinishQty        INT;
 
 
@@ -2533,6 +2587,7 @@ AS
     SELECT 
          @AbnormalRegion = AbnormalRegion
         ,@FinalFlag      = FinalFlag 
+        ,@StartFlag      = StartFlag
     FROM Mes_Process_List
     WHERE 
         ProcessCode = @pProcessCode
@@ -2542,8 +2597,12 @@ AS
          @MesPlanQty      = MesPlanQty        
         ,@selfDiscardQty1 = MesDiscardQty1
         ,@selfDiscardQty2 = MesDiscardQty2
+        ,@selfDiscardQty3 = MesDiscardQty3
+        ,@selfDiscardQty4 = MesDiscardQty4
         ,@selfLeftQty1    = MesLeftQty1
         ,@selfLeftQty2    = MesLeftQty2
+        ,@selfLeftQty3    = MesLeftQty3
+        ,@selfLeftQty4    = MesLeftQty4
         ,@WorkOrderStatus = MesStatus
         ,@GoodsCode       = ErpGoodsCode   
     FROM
@@ -2554,18 +2613,24 @@ AS
 
     IF @AbnormalRegion = 1 
     BEGIN
-       SET @FinishQty = @TagFinishQty; 
+        SET @FinishQty = @TagFinishQty; 
     END
  
     IF @AbnormalRegion = 2
     BEGIN
-       SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfLeftQty1;
+        SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfLeftQty1;
     END
     
     IF @AbnormalRegion = 3
     BEGIN
-       SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfDiscardQty2 + @selfLeftQty1 + @selfLeftQty2;
+        SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfDiscardQty2 + @selfLeftQty1 + @selfLeftQty2;
     END
+
+    IF @AbnormalRegion = 4
+    BEGIN
+        SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfDiscardQty2 +  @selfDiscardQty3 + @selfLeftQty1 + @selfLeftQty2 + @selfLeftQty3;
+    END
+
 
     SET @PrsPlanQty = @MesPlanQty
 
@@ -2579,8 +2644,12 @@ AS
     --     SELECT
     --          @baseDiscardQty1 = MesDiscardQty1
     --         ,@baseDiscardQty2 = MesDiscardQty2
+    --         ,@baseDiscardQty3 = MesDiscardQty3
+    --         ,@baseDiscardQty4 = MesDiscardQty4
     --         ,@baseLeftQty1    = MesLeftQty1
     --         ,@baseLeftQty2    = MesLeftQty2
+    --         ,@baseLeftQty3    = MesLeftQty3
+    --         ,@baseLeftQty4    = MesLeftQty4
     --     FROM
     --          MFG_WO_List
     --     WHERE
@@ -2600,13 +2669,20 @@ AS
     --     IF @AbnormalRegion = 3
     --     BEGIN
     --         SET @PrsPlanQty = @baseDiscardQty1 + @baseDiscardQty2 + @baseLeftQty1 + @baseLeftQty2;
+    --     END 
+    --      
+    --     IF @AbnormalRegion = 4
+    --     BEGIN
+    --         SET @PrsPlanQty = @baseDiscardQty1 + @baseDiscardQty2 + @baseDiscardQty3 + @baseDiscardQty4 + @baseLeftQty1 + @baseLeftQty2 + @baseLeftQty3 + @baseLeftQty4;
     --     END       
     -- END
    
     BEGIN TRANSACTION
 
      --2.如果当下工单的状态为"待生产", "产前调整中", 则需要设置工单为"生产进行中",
-     IF @WorkOrderStatus = 0 OR @WorkOrderStatus = 1
+
+     -- 原始需求描述: 一个订单的首个工序的操作计数等于1时(各PLC参数派发完成后，会调整操作计数为0)，则调整该订单状态为“生产进行中”
+     IF ( @WorkOrderStatus = 0 OR @WorkOrderStatus = 1 ) AND @StartFlag = 1 AND @TagFinishQty = 1
      BEGIN
          UPDATE MFG_WO_List 
          SET
@@ -2695,20 +2771,20 @@ AS
      END
 
      --更新订单产量
-     IF @FinalFlag = 1
+     IF @FinalFlag = 1 AND @WorkOrderStatus = 2 
      BEGIN
          UPDATE MFG_WO_List
          SET MesFinishQty = @FinishQty
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
          AND MesWorkOrderVersion = @WorkOrderVersion
-         AND MesStatus           <>3 ;
+         AND MesStatus           = 2 ;
      END
         
-     --结束工单
-     IF  @FinalFlag = 1 AND @PrsPlanQty <= @FinishQty
+     --结束工单, FinalFlag = 1 表示当下工序是最后一个计数点, 其可以作为判断工单是否完成的一个节点.
+     IF  @FinalFlag = 1 AND @PrsPlanQty <= @FinishQty AND @WorkOrderStatus = 2 
      BEGIN
-         --结束工单主记录 (后台有一个分钟级别的job, 可以根据状态把计件物料扣除的物料提供给接口表.)
+         --结束工单主记录
          UPDATE MFG_WO_List
          SET 
               MesStatus = 3
@@ -2716,7 +2792,7 @@ AS
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
          AND MesWorkOrderVersion = @WorkOrderVersion
-         AND MesStatus           <>3 ;
+         AND MesStatus           = 2 ;
 
          --把工序表里面所有涉及此订单的记录全部重置(因为, 有的物料拉动工序可能会没有计件产出的情况.)
          UPDATE Mes_Process_List

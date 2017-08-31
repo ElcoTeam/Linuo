@@ -1,3 +1,38 @@
+--update MFG_WIP_Data_Abnormal set AbnormalTime =GETDATE();
+--select * from MFG_WIP_Data_Abnormal;
+declare @AbId as INT;
+SET @AbId = 3;
+
+ SELECT  @AbId,     MTL.ProcessCode, MTL.ItemNumber, MTL.ItemDsca, MTL.UOM, ABN.UpdateUser, 
+        CASE 
+            WHEN ABP.ProcessCode IS NULL THEN 0
+            ELSE MTL.Qty/WOL.MesPlanQty
+        END AS LeftQty, 
+        CASE 
+            WHEN ABP.ProcessCode IS NOT NULL THEN 0
+            ELSE MTL.Qty/WOL.MesPlanQty
+        END AS RequireQty 
+
+        FROM 
+             MFG_WO_MTL_List                     MTL
+        INNER JOIN MFG_WO_List                   WOL ON WOL.ErpWorkOrderNumber  = MTL.WorkOrderNumber AND MTL.WorkOrderVersion = 0
+        INNER JOIN MFG_WIP_Data_Abnormal         ABN ON WOL.ErpWorkOrderNumber  = ABN.WorkOrderNumber AND WOL.MesWorkOrderVersion = 0 
+        LEFT  JOIN MFG_WIP_Data_Abnormal_Process ABP ON ABP.abProductId = ABN.AbnormalProduct AND ABP.ProcessCode = MTL.ProcessCode
+        WHERE 
+        --此处逻辑为: 应该根据"根订单"(WorkOrderVersion = 0)计算产品用料. 
+        --因为如果根据子订单的话，其用料数据(额外领料单)可能是用户调整过的.           
+        1=1
+        AND ABN.ID               =  @AbId
+        AND UPPER(MTL.Backflush) <> 'X' 
+        AND UPPER(MTL.[BULK]   ) <> 'X' 
+        AND UPPER(MTL.Phantom  ) <> 'X' 
+
+  --  select * from MFG_WIP_Data_Abnormal_Process where abProductId = 3;
+  --  update MFG_WO_MTL_List set ProcessCode = '1' + right(ProcessCode, 3);
+  --  select * from MFG_WO_MTL_List 
+  --SELECT * FROM MFG_WIP_Data_Abnormal_Process;
+
+
 update ERP_Inventory_List set INVQTY = sourceid;
 select * from ERP_Inventory_List;
 
@@ -245,15 +280,15 @@ insert into Mes_Process_List ( InturnNumber, ProcessCode, AbnormalEnable, Abnorm
 (190,  '2100',0, 3, '边框板芯装配','边框板芯装配'),
 (200,  '3010',0, 3, '玻璃板涂胶','玻璃板涂胶'),
 (210,  '3020',0, 3, '玻璃板安装','玻璃板安装'),
-(220,  '3030',0, 3, '预装压条','预装压条'),
-(230,  '3040',0, 3, '扣条压合','扣条压合'),
-(240,  '3050',1, 3, 'MES码贴标','MES码贴标'),
-(250,  '3060',0, 3, 'PET贴标','PET贴标'),
-(260,  '3070',0, 3, '封边','封边'),
-(270,  '3080',0, 3, '热缩','热缩'),
-(280,  '3090',0, 3, '产品包装','产品包装'),
-(290,  '3100',0, 3, '打包','打包'),
-(300,  '3110',0, 3, '码垛','码垛');
+(220,  '3030',0, 4, '预装压条','预装压条'),
+(230,  '3040',0, 4, '扣条压合','扣条压合'),
+(240,  '3050',1, 4, 'MES码贴标','MES码贴标'),
+(250,  '3060',0, 4, 'PET贴标','PET贴标'),
+(260,  '3070',0, 4, '封边','封边'),
+(270,  '3080',0, 4, '热缩','热缩'),
+(280,  '3090',0, 4, '产品包装','产品包装'),
+(290,  '3100',0, 4, '打包','打包'),
+(300,  '3110',0, 4, '码垛','码垛');
 
 
 

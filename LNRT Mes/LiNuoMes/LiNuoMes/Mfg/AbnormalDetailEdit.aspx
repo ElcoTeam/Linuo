@@ -49,7 +49,7 @@
 <body>
      <script>
          var AbId = "";
-         var RFID = "";
+         var AbnormalPoint = "";
          var OPtype   = "";
          var OPaction = "";
          var ReasonArray = new Array();
@@ -59,30 +59,6 @@
                 $('input').iCheck({
                     checkboxClass: 'icheckbox_square',
                     increaseArea: '20%'
-                });
-
-                initAbPointContent();
-
-                $("#AbnormalType2").on('ifToggled', function (event) {
-                    if ($("#AbnormalType2").is(':checked')) {
-                        $("#AbnormalType3").iCheck('uncheck');
-                    }
-                });
-
-                $("#AbnormalType3").on('ifToggled', function (event) {
-                    if ($("#AbnormalType3").is(':checked')) {
-                        $("#AbnormalType2").iCheck('uncheck');
-                    }
-                });
-
-                $("#RFID").bind("keypress", function (event) {
-                    var keycode = event.keyCode ? event.keyCode : event.which;
-                    if (keycode == 13) {
-                        RFID = $("#RFID").val().toUpperCase().trim();
-                        $("#RFID").val(RFID);
-                        AbId = "0";
-                        InitialPage();
-                    }
                 });
 
                 AbId = request('AbId');
@@ -106,13 +82,33 @@
                     OPaction = "MFG_WIP_DATA_ABNORMAL_ADD";
                 }
 
-                if (OPtype == "EDIT") {
-                    $("#RFID").attr("disabled", true);
-                }
+                initAbPointContent();
+
+                $("#AbnormalType2").on('ifToggled', function (event) {
+                    if ($("#AbnormalType2").is(':checked')) {
+                        $("#AbnormalType3").iCheck('uncheck');
+                    }
+                });
+
+                $("#AbnormalType3").on('ifToggled', function (event) {
+                    if ($("#AbnormalType3").is(':checked')) {
+                        $("#AbnormalType2").iCheck('uncheck');
+                    }
+                });
+
+           //     $("#RFID").bind("keypress", function (event) {
+           //         var keycode = event.keyCode ? event.keyCode : event.which;
+           //         if (keycode == 13) {
+           //             RFID = $("#RFID").val().toUpperCase().trim();
+           //             $("#RFID").val(RFID);
+           //             AbId = "0";
+           //             InitialPage();
+           //         }
+           //     });
 
                 if (OPtype != "ADD") {
-                    InitialPage();
-                }
+                    InitialPage(0);
+               }
                 
                 setPermmit();
                 
@@ -120,21 +116,24 @@
 
          function setPermmit() {
 
-            $(":input").attr("disabled", true);
-
-            if (OPtype != "CHECK") {
-                $("[EDITFLG]").attr("disabled", false);
-            }
+             $(":input").attr("disabled", true);
+             
+             if (OPtype != "CHECK") {
+                 $("[EDITFLG]").attr("disabled", false);
+             }
+             
+             if (OPtype != "ADD") {
+                 $("input:radio[name='AbnormalPoint']").iCheck("disable");
+             }
          }
          
-         function InitialPage() {
-
+         function InitialPage(nPoint) {
              $.ajax({
                  url: "GetSetMfg.ashx",
                  data: {
                      "Action": "MFG_WIP_DATA_ABNORMAL_DETAIL",
                      "AbId": AbId,
-                     "RFID": RFID
+                     "AbnormalPoint": nPoint
                  },
                  type: "post",
                  datatype: "json",
@@ -149,6 +148,7 @@
          }
 
          function InitDataItems(data) {
+
              if (data.AbnormalType == "2") {
                  $("#AbnormalType2").iCheck("check");
              }
@@ -157,15 +157,20 @@
              }
 
              if (OPtype != "CHECK") {
+
+                 // $("#AbnormalType2").iCheck("enable");
+                 // $("#AbnormalType3").iCheck("enable");
+                 /*
                  if (   data.AbnormalPoint == "1"
                      || data.AbnormalPoint == "2") {           //此处有歧义, 需求描述为: "第一、二个下线工位默认不选择，如选择，只允许选择其一"
                      // $("#AbnormalType3").iCheck("disable");  
                  }
                  else if (data.AbnormalPoint == "3") {         //此处有歧义, 需求描述为: "第三个下线工位固定为未完工，不可修改"
-                     $("#AbnormalType2").iCheck("disable");     
-                     $("#AbnormalType3").iCheck("disable");     
+                     //$("#AbnormalType2").iCheck("disable");     
+                     //$("#AbnormalType3").iCheck("disable");     
                      $("#AbnormalType3").iCheck("check");      //这项选中只是需求的字面意思, 其实实际是很不合理的.
                  }
+                 */
              }
 
              $("#RFID").val(data.RFID);
@@ -198,14 +203,14 @@
 
                      $("input:radio[name='AbnormalPoint']").iCheck({
                          radioClass: 'iradio_square',
-                         increaseArea: '20%'
-                     });    
-                     
+                         increaseArea: '20%',
+                     }); 
 
                      $("input:radio[name='AbnormalPoint']").on("ifToggled", function (event) {
                             $("#tdAbnormalReason").html("");
                             var nPoint = $("input:radio[name='AbnormalPoint']:checked").val();
-                            initAbProuctContent(nPoint);                     
+                            initAbProuctContent(nPoint);
+                            InitialPage(nPoint);
                      });
 
                      setPermmit();
@@ -322,7 +327,7 @@
                  return;
              }
 
-             var RFID = $("#RFID").val().toUpperCase().trim();
+             var RFID            = $("#RFID").val().toUpperCase().trim();
              var AbnormalPoint   = $("input[name='AbnormalPoint']:checked").val();
              var AbnormalProduct = $("input[name='AbnormalProduct']:checked").val();
              var AbnormalTime    = $("#AbnormalTime").val().trim();
@@ -413,9 +418,13 @@
     <div style="margin-left: 10px; margin-top: 10px; margin-right: 10px;">
             <table class="form" style="margin-top:2px; padding:5px"  border="0"  >
                 <tr>
+                    <td class="formTitle">下线工序:</td>
+                    <td colspan="3" id="tdAbnormalPoint"></td>
+                </tr>
+                <tr>
                     <td class="formTitle">MES码:</td>
                     <td colspan="3">
-                        <input EDITFLG="true" type="text" class="form-control" id="RFID" />
+                        <input type="text" class="form-control" id="RFID" />
                     </td>
 
                 </tr>
@@ -448,9 +457,6 @@
                         <input EDITFLG="true" type="checkbox" id="AbnormalType3" value="3" >
                         <label for="AbnormalType3" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >未完工</label>
                    </td>
-                </tr>
-                    <td class="formTitle">下线工序:</td>
-                    <td colspan="3" id="tdAbnormalPoint"></td>
                 </tr>
                 <tr>
                     <td class="formTitle">下线产品:</td>

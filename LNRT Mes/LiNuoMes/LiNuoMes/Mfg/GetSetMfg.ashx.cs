@@ -395,6 +395,7 @@ namespace LiNuoMes.Mfg
                 {
                     dataEntity.WorkOrderNumber = dt.Rows[0]["WorkOrderNumber"].ToString();
                     dataEntity.GoodsCode = dt.Rows[0]["GoodsCode"].ToString();
+                    dataEntity.GoodsDsca = dt.Rows[0]["GoodsDsca"].ToString();
                     dataEntity.WorkOrderType = dt.Rows[0]["WorkOrderType"].ToString();
                     dataEntity.PlanQty = dt.Rows[0]["PlanQty"].ToString();
                     dataEntity.PlanStartTime = dt.Rows[0]["PlanStartTime"].ToString();
@@ -414,7 +415,7 @@ namespace LiNuoMes.Mfg
         public WipAbnormalEntity getWipAbnormalDetail(WipAbnormalEntity dataEntity)
         {
             String AbId = RequstString("AbId");
-            String RFID = RequstString("RFID");
+            String AbnormalPoint = RequstString("AbnormalPoint");
             DataTable dt = new DataTable();
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -425,7 +426,7 @@ namespace LiNuoMes.Mfg
                 cmd.CommandText = "usp_Mfg_Wip_Data_Abnormal_Detail";
                 SqlParameter[] sqlPara = new SqlParameter[3];
                 sqlPara[0] = new SqlParameter("@AbId", AbId);
-                sqlPara[1] = new SqlParameter("@RFID", RFID);
+                sqlPara[1] = new SqlParameter("@AbnormalPoint", AbnormalPoint);
                 sqlPara[2] = new SqlParameter("@UserName", UserName);
                 cmd.Parameters.Add(sqlPara[0]);
                 cmd.Parameters.Add(sqlPara[1]);
@@ -437,13 +438,13 @@ namespace LiNuoMes.Mfg
                     if (dt.Rows.Count > 0)
                     {
                         dataEntity.WorkOrderNumber = dt.Rows[0]["WorkOrderNumber"].ToString();
-                        dataEntity.GoodsCode = dt.Rows[0]["GoodsCode"].ToString();
-                        dataEntity.RFID = dt.Rows[0]["RFID"].ToString();
-                        dataEntity.AbnormalPoint = dt.Rows[0]["AbnormalPoint"].ToString();
-                        dataEntity.AbnormalType = dt.Rows[0]["AbnormalType"].ToString();
-                        dataEntity.AbnormalTime = dt.Rows[0]["AbnormalTime"].ToString();
-                        dataEntity.AbnormalUser = dt.Rows[0]["AbnormalUser"].ToString();
+                        dataEntity.GoodsCode       = dt.Rows[0]["GoodsCode"].ToString();
+                        dataEntity.RFID            = dt.Rows[0]["RFID"].ToString();
+                        dataEntity.AbnormalPoint   = dt.Rows[0]["AbnormalPoint"].ToString();
                         dataEntity.AbnormalProduct = dt.Rows[0]["AbnormalProduct"].ToString();
+                        dataEntity.AbnormalType    = dt.Rows[0]["AbnormalType"].ToString();
+                        dataEntity.AbnormalTime    = dt.Rows[0]["AbnormalTime"].ToString();
+                        dataEntity.AbnormalUser    = dt.Rows[0]["AbnormalUser"].ToString();
                     }
                 }
             }
@@ -1241,24 +1242,24 @@ namespace LiNuoMes.Mfg
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
 
-                    SqlParameter[] sqlPara = new SqlParameter[11];
+                    SqlParameter[] sqlPara = new SqlParameter[10];
 
                     sqlPara[0] = new SqlParameter("@AbID", Convert.ToInt32(dataEntity.ID));
-                    sqlPara[1] = new SqlParameter("@RFID", dataEntity.RFID);
-                    sqlPara[2] = new SqlParameter("@AbnormalType", dataEntity.AbnormalType);
-                    sqlPara[3] = new SqlParameter("@AbnormalTime", dataEntity.AbnormalTime);
-                    sqlPara[4] = new SqlParameter("@AbnormalUser", dataEntity.AbnormalUser);
-                    sqlPara[5] = new SqlParameter("@AbnormalPoint", Convert.ToInt32(dataEntity.AbnormalPoint));
-                    sqlPara[6] = new SqlParameter("@AbnormalProduct", Convert.ToInt32(dataEntity.AbnormalProduct));
-                    sqlPara[7] = new SqlParameter("@UpdateUser", UserName);
-                    sqlPara[8] = new SqlParameter("@AbIdOperate", 0);
-                    sqlPara[9] = new SqlParameter("@CatchError", 0);
-                    sqlPara[10] = new SqlParameter("@RtnMsg", "");
+                    sqlPara[1] = new SqlParameter("@AbnormalType", dataEntity.AbnormalType);
+                    sqlPara[2] = new SqlParameter("@AbnormalTime", dataEntity.AbnormalTime);
+                    sqlPara[3] = new SqlParameter("@AbnormalUser", dataEntity.AbnormalUser);
+                    sqlPara[4] = new SqlParameter("@AbnormalPoint", Convert.ToInt32(dataEntity.AbnormalPoint));
+                    sqlPara[5] = new SqlParameter("@AbnormalProduct", Convert.ToInt32(dataEntity.AbnormalProduct));
+                    sqlPara[6] = new SqlParameter("@UpdateUser", UserName);
+                    sqlPara[7] = new SqlParameter("@AbIdOperate", 0);
+                    sqlPara[8] = new SqlParameter("@CatchError", 0);
+                    sqlPara[9] = new SqlParameter("@RtnMsg", "");
 
+
+                    sqlPara[7].Direction = ParameterDirection.Output;
                     sqlPara[8].Direction = ParameterDirection.Output;
                     sqlPara[9].Direction = ParameterDirection.Output;
-                    sqlPara[10].Direction = ParameterDirection.Output;
-                    sqlPara[10].Size = 100;
+                    sqlPara[9].Size = 100;
 
                     cmd.CommandType = CommandType.StoredProcedure;
 
@@ -1278,17 +1279,17 @@ namespace LiNuoMes.Mfg
 
                     cmd.ExecuteNonQuery();
 
-                    if (sqlPara[9].Value.ToString() != "0")
+                    if (sqlPara[8].Value.ToString() != "0")
                     {
                         transaction.Rollback();
                         result.result = "failed";
-                        result.msg = sqlPara[10].Value.ToString();
+                        result.msg = sqlPara[9].Value.ToString();
                         cmd.Dispose();
                         return result;
                     }
                     else
                     {
-                        string abId = sqlPara[8].Value.ToString();
+                        string abId = sqlPara[7].Value.ToString();
                         cmd.CommandType = CommandType.Text;
                         cmd.Parameters.Clear();
                         cmd.CommandText = "DELETE FROM MFG_WIP_Data_Abnormal_Reason WHERE AbnormalID = " + abId;

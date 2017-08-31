@@ -221,7 +221,7 @@
             dialogOpen({
                 id: "Form",
                 title: sTitle,
-                url: sUrl + "?RFCName=" + "ERP_GOODSMVT_CREATE" + "&StdCode=" + StdCode,
+                url: sUrl + "?RFCName=" + "ZME_GOODSMVT_CREATE" + "&StdCode=" + StdCode,
                 width: sWidth,
                 height: sHeight,
                 callBack: function (iframeId) {

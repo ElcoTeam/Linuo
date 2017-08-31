@@ -44,11 +44,12 @@
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
-            $('#areascontent').height($(window).height() - 106);
+
+            $('#areascontent').height($(window).height() - 116);
             var areaheight = $("#areascontent").height();
             $(window).resize(function (e) {
                 window.setTimeout(function () {
-                    $('#areascontent').height($(window).height() - 106);
+                    $('#areascontent').height($(window).height() - 116);
                 //    $('#areascontent').width($(window).width() - 20);  //此处隐藏的两项不要加入,如果加入会引起死机:原因:貌似引起了递归调用.
                     $('#gridTable').setGridWidth(($('#areascontent').width()) - 10);
                 //    $('#gridTable').setGridHeight($('#areascontent').height() - 200);
@@ -157,7 +158,7 @@
                     "ToTime": $("#ToTime").val()
                 },
                 datatype: "json",
-                height: $('#areascontent').height() - 200,
+                height: $('#areascontent').height() - 310,
                 width: $('#areascontent').width,
                 rowNum: -1,
                 jsonReader: {
@@ -320,6 +321,7 @@
             }
             return format;
         }
+
         Date.prototype.DateAdd = function (strInterval, Number) {
             var dtTmp = this;
             switch (strInterval) {

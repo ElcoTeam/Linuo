@@ -104,6 +104,7 @@
                      data = JSON.parse(data);
                      $("#WorkOrderNumber").val(data.WorkOrderNumber);
                      $("#GoodsCode").val(data.GoodsCode);
+                     $("#GoodsDsca").val(data.GoodsDsca);
                      $("#WorkOrderType").val(
                            data.WorkOrderType == "0" ? "正常订单"
                          : data.WorkOrderType == "1" ? "下线补单"
@@ -338,6 +339,12 @@
                     <th class="formTitle">产品物料编码<font color="red">*</font></th>
                     <td class="formValue">
                         <input type="text" class="form-control" id="GoodsCode" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">产品物料描述<font color="red">*</font></th>
+                    <td class="formValue" colspan="3">
+                        <input type="text" class="form-control" id="GoodsDsca" isvalid="yes" checkexpession="NotNull" />
                     </td>
                 </tr>
                 <tr>

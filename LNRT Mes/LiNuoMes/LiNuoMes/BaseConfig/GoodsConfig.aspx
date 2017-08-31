@@ -60,7 +60,7 @@
                 url: "GetSetBaseConfig.ashx",
                 postData: { Action: "MES_GOODS_CONFIG_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() *0.60,
+                height: $('#areascontent').height() - 300,
                 colModel: [
                     { label: 'ID',          name: 'ID', hidden: true },
                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: tWidth * 5 / 100, align: 'center', sortable: false },
@@ -283,10 +283,10 @@
                                     <td class="formValue">
                                         <input type="text" class="form-control" id="DimHeight" placeholder="宽度">
                                     </td>
-                                    <td class="formValue">                                           
+                                    <td class="formValue" style="padding-right: 5px;text-align:right">                                           
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>
-                                        </td>
+                                    </td>
                                 </tr>
                             </table>
                         </div>
@@ -327,17 +327,21 @@
            }
        } 
        @media screen and (min-width: 1400px) { 
-          .formTitle {
-              font-size:30px;
-              width:250px;
-          } 
-          .form-control {
-               font-size:30px;
-               width:400px;
-               height:45px;
+           .formTitle {
+               font-size:15px;
+               width:200px;
+           } 
+           .form-control {
+               font-size:15px;
+               width:200px;
+               height:30px;
+           }
+           .aa{
+               width:200px;
+               height:30px;
            }
            #form1{
-               margin: 0px 0px 0px 150px;
+               margin-left:0px;
            }
        } 
      </style>

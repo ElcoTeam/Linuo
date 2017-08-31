@@ -47,7 +47,7 @@
                 url: "../BaseConfig/GetSetBaseConfig.ashx",
                 postData: { Action: "MES_CUSTOMER_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() - 80,
+                height: $('#areascontent').height() - 150,
                 width:  $('#areascontent').width() - 20,
                 rowNum: -1,
                 jsonReader: {
@@ -56,8 +56,8 @@
                 },
                 colModel: [
                     { label: '序号', name: 'CustomerID', index: 'CustomerID', width: 50, align: 'center', sortable: false },
-                    { label: '客户名称', name: 'CustomerName', index: 'CustomerName', width: 220, align: 'center', sortable: false },
-                    { label: '客户Logo', name: 'CustomerLogo', index: 'CustomerLogo', width: 220, align: 'center', sortable: false },
+                    { label: '客户名称', name: 'CustomerName', index: 'CustomerName', width: 120, align: 'center', sortable: false },
+                    { label: '客户Logo文件', name: 'CustomerLogo', index: 'CustomerLogo', width: 220, align: 'center', sortable: false },
                     {
                         label: '操 作', width: 110, align: 'center', sortable: false,
                     formatter: function (cellvalue, options, rowObject) {
@@ -69,7 +69,7 @@
                 autowidth: true,
                 scrollrows: true,
                 gridview: true,
-                viewsortcols:[false, false, false],
+         //       viewsortcols:[false, false, false],
                 onSelectRow: function () {
                     selectedRowIndex = $("#" + this.id).getGridParam('selrow');
                 },

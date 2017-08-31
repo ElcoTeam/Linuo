@@ -617,6 +617,8 @@ namespace LiNuoMes.Mfg
                         itemList.DiscardQty = dt.Rows[i]["DiscardQty"].ToString();
                         itemList.LeftQty1 = dt.Rows[i]["LeftQty1"].ToString();
                         itemList.LeftQty2 = dt.Rows[i]["LeftQty2"].ToString();
+                        itemList.LeftQty3 = dt.Rows[i]["LeftQty3"].ToString();
+                        itemList.LeftQty4 = dt.Rows[i]["LeftQty4"].ToString();
                         itemList.Status = dt.Rows[i]["Status"].ToString();
                         itemList.SubPlanFlag = dt.Rows[i]["SubPlanFlag"].ToString();
                         dataEntity.Add(itemList);
@@ -1687,7 +1689,9 @@ namespace LiNuoMes.Mfg
         public string DiscardQty       { set; get; }
         public string LeftQty1         { set; get; }
         public string LeftQty2         { set; get; }
-        public string WorkOrderType    { set; get; }
+        public string LeftQty3         { set; get; }
+        public string LeftQty4         { set; get; }
+        public string WorkOrderType { set; get; }
         public string FinishQty        { set; get; }
         public string StartPoint       { set; get; }
         public string Status           { set; get; }

@@ -126,8 +126,11 @@
                     { label: '计划完成时间', name: 'PlanFinishTime', index: 'PlanFinishTime', width: panelwidth * 0.12, align: 'center', sortable: false },
                     { label: '订单数量', name: 'PlanQty', index: 'PlanQty', width: panelwidth * 0.04, align: 'center', sortable: false },
                     { label: '报废数量', name: 'DiscardQty', index: 'DiscardQty', width: panelwidth * 0.04, align: 'center', sortable: false },
-                    { label: '第一下线点未完工数量', name: 'LeftQty1', index: 'LeftQty1', width: panelwidth * 0.06, align: 'center', sortable: false },
-                    { label: '第二下线点未完工数量', name: 'LeftQty2', index: 'LeftQty2', width: panelwidth * 0.06, align: 'center', sortable: false },
+                    { label: '铜排气密性检测<br>未完工数', name: 'LeftQty1', index: 'LeftQty1', width: panelwidth * 0.06, align: 'center', sortable: false },
+                    { label: '板芯气密性检测<br>未完工数', name: 'LeftQty2', index: 'LeftQty2', width: panelwidth * 0.06, align: 'center', sortable: false },
+                    { label: '板芯装配<br>未完工数', name: 'LeftQty3', index: 'LeftQty3', width: panelwidth * 0.06, align: 'center', sortable: false },
+                    { label: '终检(预装压条)<br>未完工数', name: 'LeftQty4', index: 'LeftQty4', width: panelwidth * 0.06, align: 'center', sortable: false },
+
                     {
                         label: '操 作', width: panelwidth * 0.15, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {

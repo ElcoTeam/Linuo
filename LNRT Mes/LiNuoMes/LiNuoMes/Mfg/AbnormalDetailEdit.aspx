@@ -96,16 +96,6 @@
                     }
                 });
 
-           //     $("#RFID").bind("keypress", function (event) {
-           //         var keycode = event.keyCode ? event.keyCode : event.which;
-           //         if (keycode == 13) {
-           //             RFID = $("#RFID").val().toUpperCase().trim();
-           //             $("#RFID").val(RFID);
-           //             AbId = "0";
-           //             InitialPage();
-           //         }
-           //     });
-
                 if (OPtype != "ADD") {
                     InitialPage(0);
                }
@@ -122,8 +112,8 @@
                  $("[EDITFLG]").attr("disabled", false);
              }
              
-             if (OPtype != "ADD") {
-                 $("input:radio[name='AbnormalPoint']").iCheck("disable");
+             if (OPtype == "ADD") {
+                 $("[ADDFLG]").attr("disabled", false);
              }
          }
          
@@ -196,7 +186,7 @@
                      var strListContent = "";
                      for (i in data) {
                          strListContent +=
-                               '<input EDITFLG="true" type="radio" name="AbnormalPoint" value ="' + data[i].ID + '" id="AbnormalPoint' + data[i].ID + '" class="form-control"/>'
+                               '<input ADDFLG="true" type="radio" name="AbnormalPoint" value ="' + data[i].ID + '" id="AbnormalPoint' + data[i].ID + '" class="form-control"/>'
                              + '<label for="AbnormalPoint' + data[i].ID + '" class="rTitle">' + data[i].DisplayValue + '</label>';
                      }
                      $("#tdAbnormalPoint").html(strListContent);

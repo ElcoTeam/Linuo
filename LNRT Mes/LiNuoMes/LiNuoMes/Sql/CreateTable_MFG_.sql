@@ -164,8 +164,12 @@ CREATE TABLE [dbo].[MFG_WO_List] (
     [MesFinishQty]          INT             NOT NULL DEFAULT (0),         --已经完成产量
     [MesDiscardQty1]        INT             NOT NULL DEFAULT (0),         --下线数量:下线工位1报废计数
     [MesDiscardQty2]        INT             NOT NULL DEFAULT (0),         --下线数量:下线工位2报废计数
+    [MesDiscardQty3]        INT             NOT NULL DEFAULT (0),         --下线数量:下线工位3报废计数
+    [MesDiscardQty4]        INT             NOT NULL DEFAULT (0),         --下线数量:下线工位4报废计数
     [MesLeftQty1]           INT             NOT NULL DEFAULT (0),         --下线数量:下线工位1未完工数量, 只统计本工位"未完工"下线的值 
     [MesLeftQty2]           INT             NOT NULL DEFAULT (0),         --下线数量:下线工位2未完工数量, 只统计本工位"未完工"下线的值  
+    [MesLeftQty3]           INT             NOT NULL DEFAULT (0),         --下线数量:下线工位3未完工数量, 只统计本工位"未完工"下线的值  
+    [MesLeftQty4]           INT             NOT NULL DEFAULT (0),         --下线数量:下线工位4未完工数量, 只统计本工位"未完工"下线的值  
     [MesCreateTime]         DATETIME        NOT NULL DEFAULT GETDATE(),   --创建时间(或MES导入时间)
     [MesCreateUser]         NVARCHAR (50)   NOT NULL DEFAULT ('MES_SYS'), --创建用户
     [MesModifyTime]         DATETIME        NOT NULL DEFAULT GETDATE(),   --更新时间
@@ -253,8 +257,6 @@ CREATE TABLE [dbo].[MFG_WIP_BKF_Item_List] (
     [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:新增, -1:修改, -2:删除
 );
 
-
-
 --产线的反冲物料拉动记录表
 IF OBJECT_ID('MFG_WIP_BKF_MTL_Record') is not null
 DROP TABLE MFG_WIP_BKF_MTL_Record;
@@ -275,7 +277,6 @@ CREATE TABLE [dbo].[MFG_WIP_BKF_MTL_Record] (
     [OTFlag]             INT             NOT NULL DEFAULT (0),            --是否超时: 0:未超时; 1:超时
     [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:待响应; 1:待确认; 2:已完成
 );
-
 
 --产线下线工序类型表
 IF OBJECT_ID('MFG_WIP_Data_Abnormal_Point') is not null
@@ -331,8 +332,8 @@ IF OBJECT_ID('MFG_WIP_Data_Abnormal_Reason_Template') is not null
 DROP TABLE MFG_WIP_Data_Abnormal_Reason_Template;
 CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Reason_Template] (
     [ID]                 INT             NOT NULL,                    -- (系统自动生成)
-    [abProductID]        INT             NOT NULL DEFAULT(0),             --下线产品阶段ID
-    [DisplayValue]       VARCHAR  (50)   NOT NULL                         --显示内容
+    [abProductID]        INT             NOT NULL DEFAULT(0),         --下线产品阶段ID
+    [DisplayValue]       VARCHAR  (50)   NOT NULL                     --显示内容
 );
 
 INSERT INTO MFG_WIP_Data_Abnormal_Reason_Template (ID, abProductID, DisplayValue)
@@ -371,6 +372,42 @@ VALUES
 (506, 5, N'边框四角间隙过大'),
 (599, 5, N'其它');
 
+--产线下线时需要计算的Process清单(这里面暗含一个路由的概念, 可以定义工序分支的情形)
+IF OBJECT_ID('MFG_WIP_Data_Abnormal_Process') is not null
+DROP TABLE MFG_WIP_Data_Abnormal_Process;
+CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Process] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [abPointID]          INT                 NULL,                        --下线工序ID, 亦即下线点: AbnormalPoint
+    [abProductID]        INT                 NULL,                        --下线产品阶段ID
+    [ProcessCode]        NVARCHAR (50)   NOT NULL DEFAULT (N''),          --工序编号
+    [ParaType]           INT             NOT NULL DEFAULT (0),            --0:下线时已经耗料的Process;
+    [UpdateTime]         DATETIME        NOT NULL DEFAULT GETDATE(),      --更新时间
+    [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:新增, -1:修改, -2:删除;
+);
+
+INSERT INTO MFG_WIP_Data_Abnormal_Process (abProductId, ProcessCode) 
+VALUES
+(1, '1010'),(1, '1020'),(1, '1030'),(1, '1040'),(1, '1050'),(1, '1060'), --铜排
+(2, '1010'),(2, '1020'),(2, '1030'),(2, '1040'),(2, '1050'),(2, '1060'),(2, '1070'),(2, '1080'),(2, '1090'), --板芯
+(3, '2010'),(3, '2020'),(3, '2030'),(3, '2040'),(3, '2050'),(3, '2060'),(3, '2070'),(3, '2080'),(3, '2090'),(3, '2100'); --外框
+
+INSERT INTO MFG_WIP_Data_Abnormal_Process (abProductId, ProcessCode) 
+SELECT 4, ProcessCode
+FROM MFG_WIP_Data_Abnormal_Process 
+WHERE abProductId = 2 OR abProductId = 3     --半成品 (板芯 + 外框)
+
+
+INSERT INTO MFG_WIP_Data_Abnormal_Process (abProductId, ProcessCode) 
+SELECT 5, ProcessCode
+FROM MFG_WIP_Data_Abnormal_Process 
+WHERE abProductId = 4     --成品(终检) (半成品 + 3个工序)
+
+INSERT INTO MFG_WIP_Data_Abnormal_Process (abProductId, ProcessCode) 
+VALUES
+(5, '3010'),
+(5, '3020'),
+(5, '3030');
+
 
 --产线下线数据记录表, 每一个RFID对应一个条下线记录(相同RFID可能会有多条记录, 因为可能存在重复下线的可能)
 IF OBJECT_ID('MFG_WIP_Data_Abnormal') is not null
@@ -380,7 +417,7 @@ CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal] (
     [RFID]               NVARCHAR (50)   NOT NULL DEFAULT (N''),          --RFID值
     [WorkOrderNumber]    VARCHAR  (50)   NOT NULL,                        --订单编码
     [WorkOrderVersion]   INT             NOT NULL DEFAULT (0),            --订单版本: 目的是为了区分开来补单的补单, 0:正常订单; >0: 其余补单顺次+1
-    [AbnormalPoint]      INT             NOT NULL DEFAULT (3),            --下线点编号: 只允许指定的三个下线工序: 1.火焰焊后的气密性检测后;2.激光焊接后的气密性检测后;3.质检后(具体名称待定)
+    [AbnormalPoint]      INT             NOT NULL DEFAULT (3),            --下线点编号: 只允许指定的四个下线工序: 1.铜排气密性检测;2.板芯气密性检测;3.板芯装配;4:终检(预装压条)
     [AbnormalProduct]    INT             NOT NULL DEFAULT (0),            --下线产品阶段
     [AbnormalType]       INT             NOT NULL DEFAULT (1),            --下线类型: 1:补修; 2:报废; 3:未完工
     [AbnormalTime]       DATETIME        NOT NULL DEFAULT GETDATE(),      --下线时间
@@ -548,7 +585,8 @@ CREATE TABLE [dbo].[Mes_Process_List] (
     [ParamValue]         VARCHAR  (50)   NOT NULL DEFAULT (''),           --PLC参数数值
     [AbnormalRegion]     INT             NOT NULL DEFAULT (3),            --所属的下线区的下线点编号
     [AbnormalEnable]     INT             NOT NULL DEFAULT (0),            --允许下线点标志: 0: 不允许; 1: 允许
-    [FinalFlag]          INT             NOT NULL DEFAULT (0)             --工序结单标志(即:本工序如果数量满足要求, 则要结束订单动作): 0: 否; 1: 是
+    [FinalFlag]          INT             NOT NULL DEFAULT (0),            --工序结单标志(即:本工序如果数量满足要求, 则要结束订单动作): 0: 否; 1: 是
+    [StartFlag]          INT             NOT NULL DEFAULT (0)             --工序首序标志(即:本工序是否是第一个工序, 则要改变工单状态): 0: 否; 1: 是
 
 );
 

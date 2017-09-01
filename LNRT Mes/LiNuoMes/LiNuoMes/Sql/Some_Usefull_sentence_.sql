@@ -33,11 +33,14 @@ SET @AbId = 3;
   --SELECT * FROM MFG_WIP_Data_Abnormal_Process;
 
 
-update ERP_Inventory_List set INVQTY = sourceid;
-select * from ERP_Inventory_List;
-
-update mes_config set ERP_INVENTORY_DATA =3;
-select * from mes_config;
+UPDATE Mes_Process_List SET AbnormalEnable = 0;
+UPDATE Mes_Process_List SET AbnormalEnable = 1 WHERE ProcessCode IN ('1060','1090','2100','3030');
+update Mes_Process_List SET AbnormalRegion = 0 WHERE ProcessCode BETWEEN '2010' AND '2090' OR ProcessCode BETWEEN '1010' AND '1050';
+update Mes_Process_List SET AbnormalRegion = 1 WHERE ProcessCode BETWEEN '1060' AND '1080'; 
+update Mes_Process_List SET AbnormalRegion = 2 WHERE ProcessCode BETWEEN '1090' AND '1090'; 
+update Mes_Process_List SET AbnormalRegion = 3 WHERE ProcessCode BETWEEN '3010' AND '3020' OR ProcessCode BETWEEN '2100' AND '2100'; 
+update Mes_Process_List SET AbnormalRegion = 4 WHERE ProcessCode BETWEEN '3030' AND '3100'; 
+update Mes_Process_List SET AbnormalRegion = 5 WHERE ProcessCode BETWEEN '3110' AND '3110';
 
 
 --SELECT * FROM ERP_Inventory_List;

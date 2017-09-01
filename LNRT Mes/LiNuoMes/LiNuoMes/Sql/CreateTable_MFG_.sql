@@ -394,13 +394,13 @@ VALUES
 INSERT INTO MFG_WIP_Data_Abnormal_Process (abProductId, ProcessCode) 
 SELECT 4, ProcessCode
 FROM MFG_WIP_Data_Abnormal_Process 
-WHERE abProductId = 2 OR abProductId = 3     --半成品 (板芯 + 外框)
+WHERE abProductId = 2 -- OR abProductId = 3     --半成品 (=板芯), 原来把外框也计算在内了, 后来发现半成品原因不包含外框项目, 因此去除.
 
 
 INSERT INTO MFG_WIP_Data_Abnormal_Process (abProductId, ProcessCode) 
 SELECT 5, ProcessCode
 FROM MFG_WIP_Data_Abnormal_Process 
-WHERE abProductId = 4     --成品(终检) (半成品 + 3个工序)
+WHERE abProductId = 2 OR abProductId = 3     --成品(终检) (板芯 + 外框 + 3个额外工序)
 
 INSERT INTO MFG_WIP_Data_Abnormal_Process (abProductId, ProcessCode) 
 VALUES

@@ -165,10 +165,10 @@ AS
         ,MesPlanQty PlanQty
         ,Mes2ErpMVTStatus Mes2ErpMVTStatus
         ,CASE Mes2ErpMVTStatus
-             WHEN  3 THEN '发料完成'    
-             WHEN  2 THEN '发料失败!!!'
-             WHEN  1 THEN '发料进行中...'
-             WHEN  0 THEN '等待发料...'
+             WHEN  3 THEN '按单发料完成'    
+             WHEN  2 THEN '按单发料失败!!!'
+             WHEN  1 THEN '按单发料进行中...'
+             WHEN  0 THEN '等待按单发料...'
              WHEN -1 THEN ''            -- 新ERP工单或者补单产生的初始化时是这个状态, 此时没有必要给用户提示任何信息
              ELSE         '系统未知'     -- 备用
          END AS MVTMsg
@@ -2295,18 +2295,18 @@ AS
     COMMIT;
 GO
 
+--更新物料拉动响应是否超时标志.
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_Mtl_Pull_Update_OTFlag]
 AS
     UPDATE MFG_WO_MTL_Pull 
-    SET MFG_WO_MTL_Pull.OTFlag = 
-    CASE 
-       WHEN DATEDIFF(MINUTE, MTL.PullTime , GETDATE()) - ISNULL(HH.MinTrigQty,30) > 0 THEN 1
-       ELSE 0
-    END
+    SET MFG_WO_MTL_Pull.OTFlag = 1    
     FROM 
     MFG_WO_MTL_Pull MTL
-    LEFT JOIN Mes_Threshold_List HH on mtl.ItemNumber = HH.ItemNumber 
-    WHERE MTL.Status = 0
+    LEFT JOIN Mes_Threshold_List HH on MTL.ItemNumber = HH.ItemNumber 
+    WHERE 
+         MTL.Status = 0
+     AND MTL.OTFlag = 0
+     AND DATEDIFF(MINUTE, MTL.PullTime , GETDATE()) - ISNULL(HH.MinTrigQty,30) > 0
 GO
 
 -- PLC 触发了动作
@@ -2534,9 +2534,7 @@ AS
     -------------------为了验收的需要, 暂时屏蔽复杂的操作.
     RETURN;
     --------+++++++++++
-
-
-
+    
     --如果订单已经完结, 则找到当下排程的下一个工单
     IF ISNULL(@ProcessFinishQty, -1) = -1
     BEGIN
@@ -2604,35 +2602,48 @@ AS
         ,@selfLeftQty3    = MesLeftQty3
         ,@selfLeftQty4    = MesLeftQty4
         ,@WorkOrderStatus = MesStatus
-        ,@GoodsCode       = ErpGoodsCode   
+        ,@GoodsCode       = ErpGoodsCode
     FROM
          MFG_WO_List
     WHERE
         ErpWorkOrderNumber  = @WorkOrderNumber
     AND MesWorkOrderVersion = @WorkOrderVersion;
 
-    IF @AbnormalRegion = 1 
+    IF @AbnormalRegion >= 0
     BEGIN
         SET @FinishQty = @TagFinishQty; 
     END
  
-    IF @AbnormalRegion = 2
+    IF @AbnormalRegion >= 1
     BEGIN
-        SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfLeftQty1;
+        SET @FinishQty = @FinishQty + @selfDiscardQty1 + @selfLeftQty1;
     END
     
-    IF @AbnormalRegion = 3
+    IF @AbnormalRegion >= 2
     BEGIN
-        SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfDiscardQty2 + @selfLeftQty1 + @selfLeftQty2;
+        SET @FinishQty = @FinishQty + @selfDiscardQty2 + @selfLeftQty2;
     END
 
-    IF @AbnormalRegion = 4
+    IF @AbnormalRegion >= 3
     BEGIN
-        SET @FinishQty = @TagFinishQty + @selfDiscardQty1 + @selfDiscardQty2 +  @selfDiscardQty3 + @selfLeftQty1 + @selfLeftQty2 + @selfLeftQty3;
+        SET @FinishQty = @FinishQty + @selfDiscardQty3 + @selfLeftQty3;
     END
 
+    IF @AbnormalRegion >= 4
+    BEGIN
+        SET @FinishQty = @FinishQty + @selfDiscardQty4 + @selfLeftQty4;
+    END
+
+    IF @AbnormalRegion >= 0
+    BEGIN
+        SET @FinishQty = @FinishQty + 0;
+    END
 
     SET @PrsPlanQty = @MesPlanQty
+
+   /*    
+    --此处原意是把当下的工位的计划数量调整一下, 其根据其父订单的计划数量减去当时其在此工位之前的下线数量.
+    --如下的代码就是当时的计算逻辑, 因为其比较繁琐并且不可靠, 因此这里没有坚持继续使用此原则.
 
     --此段代码的意义是当下订单为补单的情况下, 需要计算当下工序的计划数量.
     -- IF @WorkOrderVersion = 0 
@@ -2676,7 +2687,8 @@ AS
     --         SET @PrsPlanQty = @baseDiscardQty1 + @baseDiscardQty2 + @baseDiscardQty3 + @baseDiscardQty4 + @baseLeftQty1 + @baseLeftQty2 + @baseLeftQty3 + @baseLeftQty4;
     --     END       
     -- END
-   
+   */
+
     BEGIN TRANSACTION
 
      --2.如果当下工单的状态为"待生产", "产前调整中", 则需要设置工单为"生产进行中",
@@ -2702,7 +2714,7 @@ AS
           WorkOrderNumber  = @WorkOrderNumber
          ,WorkOrderVersion = @WorkOrderVersion
          ,FinishQty        = @TagFinishQty
-         ,PlanQty          = @PrsPlanQty
+    --   ,PlanQty          = @PrsPlanQty  --为了简单起见, 这里不再重新计算此数量
          ,ParamTime        = GETDATE() 
          ,ParamName        = @TagName   
          ,ParamValue       = @TagValue 
@@ -2720,7 +2732,7 @@ AS
             ,ParamValue  = @TagValue 
          WHERE 
              ProcessCode = @pProcessCode
-
+      /*
       -- 此处的需求有变化, 不需要进行完工更换产品需求的自动完成动作了.
       -- 新加入了一个页面, 其专门用于手动发送换更产品请求.
       -- 触发: 换更产品请求动作: 'CS', 'Cutover Send')
@@ -2767,7 +2779,7 @@ AS
       --                                PARM.PLCID = PLC.ID  --查找TAG
       --                            AND PARM.ParamName = @TagName
       --                            AND PLC.GoodsCode = '0000000000');
-
+      */
      END
 
      --更新订单产量
@@ -2778,7 +2790,7 @@ AS
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
          AND MesWorkOrderVersion = @WorkOrderVersion
-         AND MesStatus           = 2 ;
+         AND MesStatus           = 2;
      END
         
      --结束工单, FinalFlag = 1 表示当下工序是最后一个计数点, 其可以作为判断工单是否完成的一个节点.
@@ -2794,7 +2806,7 @@ AS
          AND MesWorkOrderVersion = @WorkOrderVersion
          AND MesStatus           = 2 ;
 
-         --把工序表里面所有涉及此订单的记录全部重置(因为, 有的物料拉动工序可能会没有计件产出的情况.)
+         --把所有涉及此订单的工序表记录全部重置(因为, 有的物料拉动工序可能会没有计件产出的情况.)
          UPDATE Mes_Process_List
          SET    
               FinishQty  = -1

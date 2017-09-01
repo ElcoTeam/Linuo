@@ -95,7 +95,7 @@
                         formatter: function (cellvalue, options, rowObject) {
                             var msg;
                             if (rowObject.EnableMVT == 'DOMVT') {
-                                msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>发料</button>';
+                                msg = '<button onclick=\"onBtnOk(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\"  style=\"' + strBtnStyle + '"><i class="fa fa-exchange" ></i>按单发料</button>';
                             }
                             else if (rowObject.EnableMVT == 'REDO') {
                                 msg = rowObject.MVTMsg;
@@ -250,7 +250,7 @@
                         <div class="panel-heading">
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-shopping-cart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">发料</strong></th>
+                                    <th><i class="fa fa-shopping-cart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">按单发料</strong></th>
                                     <td></td>
                                 </tr>
                             </table>

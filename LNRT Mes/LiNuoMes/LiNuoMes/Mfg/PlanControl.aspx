@@ -451,7 +451,7 @@
                                     <td class="formValue" style="text-align:right">                                           
                                         <strong id="msg_Rfs"  style="font-size:14px;padding:5px; vertical-align:central; text-align:right"></strong>
                                         <a id="btn_Rfs"     class="btn btn-primary"><i class="fa fa-refresh"></i>&nbsp;刷新订单</a>
-                                        <a id="btn_Mtl"     class="btn btn-primary"><i class="fa fa-shopping-cart"></i>&nbsp;发&nbsp;&nbsp;料</a>
+                                        <a id="btn_Mtl"     class="btn btn-primary"><i class="fa fa-shopping-cart"></i>&nbsp;按单发料</a>
                                         <a id="btn_Roc"     class="btn btn-primary"><i class="fa fa-check"></i>&nbsp;报&nbsp;&nbsp;工</a>
                                         <a id="btn_Add"     class="btn btn-primary"><i class="fa fa-plus"></i>&nbsp;补&nbsp;&nbsp;单</a>
                                     </td>

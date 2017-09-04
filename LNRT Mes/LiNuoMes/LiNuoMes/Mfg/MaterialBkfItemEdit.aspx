@@ -53,27 +53,27 @@
          var OPaction = "";
          $(function () {
                 
-                ItemId = request('ItemId');
-                OPtype = request('OPtype');
-
-                if (ItemId == undefined) {
-                    ItemId = 0;
-                }
-
-                if (OPtype == undefined) {
-                    OPtype = "CHECK";
-                }
-
-                if (OPtype == "EDIT") {
-                    OPaction = "MFG_WIP_DATA_ABNORMAL_EDIT";
-                }
-                else if (OPtype == "ADD") {
-                    OPaction = "MFG_WIP_DATA_ABNORMAL_ADD";
-                }
-
-                if (OPtype == "EDIT") {
-                    InitialPage();
-                }
+             ItemId = request('ItemId');
+             OPtype = request('OPtype');
+        
+             if (ItemId == undefined) {
+                 ItemId = 0;
+             }
+        
+             if (OPtype == undefined) {
+                 OPtype = "CHECK";
+             }
+        
+             if (OPtype == "EDIT") {
+                 OPaction = "MFG_WIP_BKF_ITEM_LIST_EDIT";
+             }
+             else if (OPtype == "ADD") {
+                 OPaction = "MFG_WIP_BKF_ITEM_LIST_ADD";
+             }
+        
+             if (OPtype == "EDIT") {
+                 InitialPage();
+             }
                 
          });
 
@@ -131,10 +131,11 @@
              $.ajax({
                  url: "GetSetMfg.ashx",
                  data: {
-                     "Action"   : OPaction,
-                     "ItemId"   : ItemId,
-                     "ItemDsca" : AbnormalPoint,
-                     "UOM"      : AbnormalProduct,
+                     "Action"     : OPaction,
+                     "ItemId"     : ItemId,
+                     "ItemNumber" : ItemNumber,
+                     "ItemDsca"   : ItemDsca,
+                     "UOM"        : UOM
                  },
                  async: true,
                  type: "post",
@@ -143,9 +144,19 @@
                      Loading(false);
                      data = JSON.parse(data);
                      if (data.result == "success") {
-                         dialogMsg("保存成功", 1);
                          grid.trigger("reloadGrid");
-                      //   dialogClose();
+                         if (OPtype == "EDIT") {
+                             dialogMsg("修改数据保存成功", 1);
+                             dialogClose();
+                         }
+                         else if (OPtype == "ADD") {
+                             dialogMsg("新增数据保存成功", 1);
+                             $("#ItemNumber").val("").focus();
+                             $("#ItemDsca").val("");
+                             $("#UOM").val("");
+
+                         }
+
                      }
                      else if (data.result == "failed") {
                          dialogMsg(data.msg, -1);

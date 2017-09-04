@@ -53,14 +53,13 @@
             });
 
             InitPage();
-            initAbPointContent();
-
-            $('#AbnormalPoint,#AbnormalType').change(function () {
-                 $('#btn_Search').trigger("click");
-            });
 
             $("#btn_Create").click(function () {
                 showdlg("ADD","0");
+            });
+
+            $("#btn_Reload").click(function () {
+                $('#gridTable').trigger("reloadGrid");
             });
 
         });
@@ -152,30 +151,50 @@
             });
         }
 
-        function initAbPointContent() {
-            $.ajax({
-                url: "GetSetMfg.ashx",
-                data: {
-                    "Action": "MFG_WIP_DATA_ABNORMAL_POINT"
-                },
-                type: "post",
-                async: false,
-                datatype: "json",
-                success: function (data) {
-                    data = JSON.parse(data);
-                    var strListContent  = '';
-                    for (i in data) {
-                        strListContent += '<option value ="' + data[i].ID + '">' + data[i].DisplayValue + '</option>';
-                    }
-                    $("#AbnormalPoint").append(strListContent);
-                },
-                error: function (msg) {
-                    alert(msg.responseText);
+        //删除信息
+        function btnDelete(ItemId) {
+            if (ItemId == undefined) {
+                ItemId = $("#gridTable").jqGridRowValue("ID");
+            }
+            dialogConfirm("注：您确定要删除吗？该操作将无法恢复", function (r) {
+                if (r) {
+                    Loading(true, "正在删除数据...");
+                    window.setTimeout(function () {
+                        $.ajax({
+                            url: "GetSetMfg.ashx",
+                            data: {
+                                "Action": "MFG_WIP_BKF_ITEM_LIST_DELETE",
+                                "ItemId":ItemId
+                            },
+                            type: "post",
+                            datatype: "json",
+                            success: function (data) {
+                                data = JSON.parse(data);
+                                if (data.result == "success") {
+                                    Loading(false);
+                                    dialogMsg("删除成功", 1);
+                                    $('#gridTable').trigger("reloadGrid");
+                                }
+                                else if (data.result == "failed") {
+                                    dialogMsg(data.msg, -1);
+                                }
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                Loading(false);
+                                dialogMsg(errorThrown, -1);
+                            },
+                            beforeSend: function () {
+                                Loading(true, "正在删除数据");
+                            },
+                            complete: function () {
+                                Loading(false);
+                            }
+                        });
+                    }, 500);
                 }
             });
         }
 
-       
     </script>
 </head>
 <body data-spy="scroll" data-target=".navbar-example" id="body1" class="body">
@@ -202,9 +221,10 @@
                             </table>
                         </div>
                         <div class="panel-body" style="text-align:left">
-                            <table class="form" border="0" style="width:100%">
+                            <table class="form" style="width:100%">
                                 <tr>                                  
-                                    <td class="formValue" style="text-align:right" colspan="1">                                           
+                                    <td class="formValue" style="text-align:right;" colspan="1">                                           
+                                        <a id="btn_Reload" class="btn btn-primary"><i class="fa fa-refresh"></i>刷新</a>
                                         <a id="btn_Create" class="btn btn-primary"><i class="fa fa-plus"></i>新建</a>
                                     </td>
                                 </tr>

@@ -202,6 +202,20 @@ namespace LiNuoMes.Mfg
                 result = saveWoRocRedoDataInDB(dataEntity, result);
                 context.Response.Write(jsc.Serialize(result));
             }
+            else if (Action == "MFG_WIP_BKF_ITEM_LIST_DELETE" )
+            {
+                WipBkfItemEntity dataEntity = new WipBkfItemEntity();
+                ResultMsg result = new ResultMsg();
+                result = deleteWipBkfItemInDB(dataEntity, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+            else if (Action == "MFG_WIP_BKF_ITEM_LIST_EDIT" || Action == "MFG_WIP_BKF_ITEM_LIST_ADD")
+            {
+                WipBkfItemEntity dataEntity = new WipBkfItemEntity();
+                ResultMsg result = new ResultMsg();
+                result = saveWipBkfItemListDataInDB(dataEntity, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MFG_WIP_DATA_ABNORMAL_EDIT" || Action == "MFG_WIP_DATA_ABNORMAL_ADD")
             {
                 WipAbnormalEntity dataEntity = new WipAbnormalEntity();
@@ -1212,6 +1226,154 @@ namespace LiNuoMes.Mfg
             return result;
         }
 
+        public ResultMsg saveWipBkfItemListDataInDB(WipBkfItemEntity dataEntity, ResultMsg result)
+        {
+            WipAbnormalReason[] abReason;
+            abReason = jsc.Deserialize<WipAbnormalReason[]>(RequstString("AbnormalReasonJson"));
+
+            dataEntity.ID         = RequstString("ItemId");
+            dataEntity.ItemNumber = RequstString("ItemNumber");
+            dataEntity.ItemDsca   = RequstString("ItemDsca");
+            dataEntity.UOM        = RequstString("UOM");
+
+            if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
+            if (dataEntity.ItemNumber.Length == 0) dataEntity.ItemNumber = "";
+            if (dataEntity.ItemDsca.Length == 0) dataEntity.ItemDsca = "";
+            if (dataEntity.UOM.Length == 0) dataEntity.UOM = "";
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+
+                    SqlParameter[] sqlPara = new SqlParameter[7];
+
+                    sqlPara[0] = new SqlParameter("@ItemId", Convert.ToInt32(dataEntity.ID));
+                    sqlPara[1] = new SqlParameter("@ItemNumber", dataEntity.ItemNumber);
+                    sqlPara[2] = new SqlParameter("@ItemDsca", dataEntity.ItemDsca);
+                    sqlPara[3] = new SqlParameter("@UOM", dataEntity.UOM);
+                    sqlPara[4] = new SqlParameter("@UserName", UserName);
+                    sqlPara[5] = new SqlParameter("@CatchError", 0);
+                    sqlPara[6] = new SqlParameter("@RtnMsg", "");
+
+                    sqlPara[5].Direction = ParameterDirection.Output;
+                    sqlPara[6].Direction = ParameterDirection.Output;
+                    sqlPara[6].Size = 100;
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    if (Action == "MFG_WIP_BKF_ITEM_LIST_EDIT")
+                    {
+                        cmd.CommandText = "usp_Mfg_Wip_Bkf_Item_List_Edit";
+                    }
+                    else if (Action == "MFG_WIP_BKF_ITEM_LIST_ADD")
+                    {
+                        cmd.CommandText = "usp_Mfg_Wip_Bkf_Item_List_Add";
+                    }
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+
+                    cmd.ExecuteNonQuery();
+
+                    if (sqlPara[5].Value.ToString() != "0")
+                    {
+                        transaction.Rollback();
+                        result.result = "failed";
+                        result.msg = sqlPara[6].Value.ToString();
+                        cmd.Dispose();
+                        return result;
+                    }
+                    else
+                    {
+                        transaction.Commit();
+                        result.result = "success";
+                        result.msg = "保存数据成功!";
+                        cmd.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            
+            return result;
+        }
+
+        public ResultMsg deleteWipBkfItemInDB(WipBkfItemEntity dataEntity, ResultMsg result)
+        {
+            dataEntity.ID = RequstString("ItemId");
+            if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+
+                    SqlParameter[] sqlPara = new SqlParameter[3];
+
+                    sqlPara[0] = new SqlParameter("@ItemID", Convert.ToInt32(dataEntity.ID));
+                    sqlPara[1] = new SqlParameter("@CatchError", 0);
+                    sqlPara[2] = new SqlParameter("@RtnMsg", "");
+
+                    sqlPara[1].Direction = ParameterDirection.Output;
+                    sqlPara[2].Direction = ParameterDirection.Output;
+                    sqlPara[2].Size = 100;
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mfg_Wip_Bkf_Item_List_Delete";
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+
+                    cmd.ExecuteNonQuery();
+
+                    if (sqlPara[1].Value.ToString() != "0")
+                    {
+                        transaction.Rollback();
+                        result.result = "failed";
+                        result.msg = sqlPara[2].Value.ToString();
+                        cmd.Dispose();
+                        return result;
+                    }
+                    else
+                    {
+                        transaction.Commit();
+                        cmd.Dispose();
+                        result.result = "success";
+                        result.msg = "保存数据成功!";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+
+            return result;
+        }
+
         public ResultMsg saveWipAbnormalDataInDB(WipAbnormalEntity dataEntity, ResultMsg result)
         {
             WipAbnormalReason[] abReason;
@@ -1228,7 +1390,7 @@ namespace LiNuoMes.Mfg
             if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
             if (dataEntity.RFID.Length == 0) dataEntity.RFID = "";
             if (dataEntity.AbnormalType.Length == 0) dataEntity.AbnormalType = "1";
-            if (dataEntity.AbnormalTime.Length == 0) dataEntity.AbnormalTime = DateTime.Now.ToLocalTime().ToString(); ;
+            if (dataEntity.AbnormalTime.Length == 0) dataEntity.AbnormalTime = DateTime.Now.ToLocalTime().ToString();
             if (dataEntity.AbnormalUser.Length == 0) dataEntity.AbnormalUser = UserName;
             if (dataEntity.AbnormalPoint.Length == 0) dataEntity.AbnormalPoint = "0";
             if (dataEntity.AbnormalProduct.Length == 0) dataEntity.AbnormalProduct = "0";

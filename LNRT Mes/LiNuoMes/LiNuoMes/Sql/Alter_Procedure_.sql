@@ -32,6 +32,137 @@ AS
     ORDER BY ItemNumber
 GO
 
+--编辑反冲物料料号的详细信息
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Bkf_Item_List_Add]
+     @ItemId           AS INT
+    ,@ItemNumber       AS VARCHAR  (50)
+    ,@ItemDsca         AS NVARCHAR (50)
+    ,@UOM              AS VARCHAR  (15)
+    ,@UserName         AS VARCHAR  (50)
+    ,@CatchError       AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg           AS NVARCHAR(100) OUTPUT --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+
+    --检查此Item的ID是否存在.
+    DECLARE @ExistCount   INT;
+
+    SELECT @ItemNumber = UPPER(LTRIM(RTRIM(@ItemNumber))), @ItemDsca = LTRIM(RTRIM(@ItemDsca)), @UOM = UPPER(LTRIM(RTRIM(@UOM)));
+
+    SELECT 
+        @ExistCount = COUNT(1) 
+    FROM 
+        MFG_WIP_BKF_Item_List
+    WHERE 
+        ItemNumber = @ItemNumber
+                           
+    IF @ExistCount > 0 
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg = '您刚刚录入的料号在系统中已经存在, 请您确认是否发生了重复!';
+        RETURN;
+    END
+
+    INSERT INTO MFG_WIP_BKF_Item_List 
+            (ItemNumber, ItemDsca,  UOM,  CreateTime, CreateUser)
+    VALUES( @ItemNumber, @ItemDsca, @UOM, GETDATE(),  @UserName);
+GO
+
+
+--编辑反冲物料料号的详细信息
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Bkf_Item_List_Edit]
+     @ItemId           AS INT
+    ,@ItemNumber       AS VARCHAR  (50)
+    ,@ItemDsca         AS NVARCHAR (50)
+    ,@UOM              AS VARCHAR  (15)
+    ,@UserName         AS VARCHAR  (50)
+    ,@CatchError       AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg           AS NVARCHAR(100) OUTPUT --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+
+    --检查此Item的ID是否存在.
+    DECLARE @ExistCount   INT;
+
+    SELECT @ItemNumber = UPPER(LTRIM(RTRIM(@ItemNumber))), @ItemDsca = LTRIM(RTRIM(@ItemDsca)), @UOM = UPPER(LTRIM(RTRIM(@UOM)));
+
+    SELECT 
+        @ExistCount = COUNT(1) 
+    FROM 
+        MFG_WIP_BKF_Item_List
+    WHERE 
+        ID = @ItemId
+                            
+    IF @ExistCount = 0 
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg = '系统没有发现您要更改的料![ID=' + CONVERT(VARCHAR, @ItemId) + ']';
+        RETURN;
+    END
+
+    SELECT 
+        @ExistCount = COUNT(1) 
+    FROM 
+        MFG_WIP_BKF_Item_List
+    WHERE 
+        ItemNumber = @ItemNumber
+    AND ID <> @ItemId
+                            
+    IF @ExistCount > 0 
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg = '您刚刚录入的料号在系统中已经存在, 请您确认是否发生了重复!';
+        RETURN;
+    END
+
+    UPDATE MFG_WIP_BKF_Item_List
+    SET ItemNumber = @ItemNumber
+       ,ItemDsca   = @ItemDsca
+       ,UOM        = @UOM
+       ,ModifyTime = GETDATE()
+       ,ModifyUser = @UserName
+    WHERE 
+        ID = @ItemId 
+GO
+
+--删除反冲物料料号的详细信息
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Bkf_Item_List_Delete]
+     @ItemId             AS INT                  --待删除记录的ID
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+
+    BEGIN TRANSACTION
+
+    DECLARE @GoodsCode VARCHAR(50);
+
+    IF (SELECT COUNT(1) FROM MFG_WIP_BKF_Item_List WHERE ID = @ItemId) > 0
+    BEGIN
+        DELETE FROM MFG_WIP_BKF_Item_List WHERE ID = @ItemId;
+    END
+
+    COMMIT TRANSACTION
+    RETURN
+GO
+
+--取得反冲料物料料号建议的描述信息: 此存储过程在新增反冲物料的时候会建议用户使用.
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Bkf_Item_Suggest_Dsca]
+    @ItemNumber       AS VARCHAR  (50)
+AS
+    SELECT
+        DISTINCT ItemNumber, ItemDsca
+    FROM 
+        MFG_WO_MTL_List
+    WHERE
+         ItemNumber = @ItemNumber
+     AND Backflush = 'X'
+    ORDER BY ItemNumber
+GO
+
 --取得反冲料物料料号的详细信息
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Bkf_Item_Detail]
     @ItemId    AS INT=0 
@@ -43,7 +174,6 @@ AS
         ID = @ItemId
     ORDER BY ItemNumber
 GO
-
 
 --取得当日生产排程计划
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_get_today]
@@ -2513,7 +2643,8 @@ AS
         ,@WorkOrderVersion = WorkOrderVersion
         ,@ProcessFinishQty = FinishQty
     FROM Mes_Process_List 
-    WHERE ProcessCode = @pProcessCode; --此处和物料拉动不同, 产量计数是基于PLC为单位的.
+    WHERE ProcessCode = @pProcessCode; --此处和物料拉动不同, 产量计数是基于PLC为单位的. 
+                                       --现在觉得可以统一都使用PLC参数的ProcessCode, 也便于记忆和理解, 也许适用性更强些.
 
     --记录一下节拍数据 ---- 开始
     DECLARE @PreValue AS DATETIME;
@@ -2530,11 +2661,6 @@ AS
     VALUES (ISNULL(@pProcessCode, @mProcessCode), @TagName, @TagFinishQty,  DATEDIFF(SECOND, @PreValue, GETDATE()));
     --记录节拍数据 ---- 完成
 
-
-    -------------------为了验收的需要, 暂时屏蔽复杂的操作.
-    RETURN;
-    --------+++++++++++
-    
     --如果订单已经完结, 则找到当下排程的下一个工单
     IF ISNULL(@ProcessFinishQty, -1) = -1
     BEGIN
@@ -2545,6 +2671,16 @@ AS
         END
         EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT; 
     END
+
+    ---------- 为了调试存储过程而临时加入的这一段记录中间值, 便于分析.
+    --INSERT INTO [dbo].[Log_QT_List] (ProcessCode, WorkOrderNumber, WorkOrderVersion, FinishQty, PlanQty, Comment)
+    --VALUES (@ProcessCode, @WorkOrderNumber, @WorkOrderVersion, 0, 0, 
+    --  'line code: 2548;'
+    --+ 'TagName:'   + @TagName  + ';'
+    --+ 'TagValue:'  + @TagValue + ';'
+    --);
+    --++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
     IF ISNULL(@WorkOrderNumber, '') = ''
     BEGIN
@@ -2580,6 +2716,34 @@ AS
     DECLARE @StartFlag        INT;
     DECLARE @FinishQty        INT;
 
+    SELECT 
+         @MesPlanQty      = 0      
+        ,@PrsPlanQty      = 0     
+        
+        ,@selfDiscardQty1 = 0 
+        ,@selfDiscardQty2 = 0 
+        ,@selfDiscardQty3 = 0 
+        ,@selfDiscardQty4 = 0 
+        
+        ,@selfLeftQty1    = 0    
+        ,@selfLeftQty2    = 0    
+        ,@selfLeftQty3    = 0    
+        ,@selfLeftQty4    = 0    
+        
+        ,@baseDiscardQty1 = 0  
+        ,@baseDiscardQty2 = 0  
+        ,@baseDiscardQty3 = 0  
+        ,@baseDiscardQty4 = 0  
+        
+        ,@baseLeftQty1    = 0    
+        ,@baseLeftQty2    = 0 
+        ,@baseLeftQty3    = 0 
+        ,@baseLeftQty4    = 0 
+                         
+        ,@AbnormalRegion  = 0 
+        ,@FinalFlag       = 0 
+        ,@StartFlag       = 0 
+        ,@FinishQty       = 0 ;
 
     --取得本工序的基本配置信息
     SELECT 
@@ -2639,62 +2803,45 @@ AS
         SET @FinishQty = @FinishQty + 0;
     END
 
-    SET @PrsPlanQty = @MesPlanQty
+    ---------- 为了调试存储过程而临时加入的这一段记录中间值, 便于分析.
+    INSERT INTO [dbo].[Log_QT_List] (ProcessCode, WorkOrderNumber, WorkOrderVersion, FinishQty, PlanQty, Comment)
+    VALUES (@pProcessCode, @WorkOrderNumber, @WorkOrderVersion, @FinishQty, @PrsPlanQty, 
+      ''
+    + 'TagName;'   + @TagName  + ';'
+    + 'TagValue;'  + @TagValue + ';'
+    + 'Region;'    + convert(varchar, @AbnormalRegion) + ';'
+    + 'WOStatus;'  + convert(varchar, @WorkOrderStatus) + ';'
+    + 'FinalFlag;' + convert(varchar, @FinalFlag) + ';'
+    + 'StartFlag;' + convert(varchar, @StartFlag) + ';'
+    + 'DiscQty1;'  + convert(varchar, @selfDiscardQty1) + ';'
+    + 'DiscQty2;'  + convert(varchar, @selfDiscardQty2) + ';'
+    + 'DiscQty3;'  + convert(varchar, @selfDiscardQty3) + ';'
+    + 'DiscQty4;'  + convert(varchar, @selfDiscardQty4) + ';'
+    + 'LeftQty1;'  + convert(varchar, @selfLeftQty1) + ';'
+    + 'LeftQty2;'  + convert(varchar, @selfLeftQty2) + ';'
+    + 'LeftQty3;'  + convert(varchar, @selfLeftQty3) + ';'
+    + 'LeftQty4;'  + convert(varchar, @selfLeftQty4) + ';'
+    );
+    --++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-   /*    
+    -------------------为了验收的需要, 暂时屏蔽复杂的操作.
+    RETURN;
+    --------+++++++++++
+
+
+    SET @PrsPlanQty = @MesPlanQty
     --此处原意是把当下的工位的计划数量调整一下, 其根据其父订单的计划数量减去当时其在此工位之前的下线数量.
     --如下的代码就是当时的计算逻辑, 因为其比较繁琐并且不可靠, 因此这里没有坚持继续使用此原则.
-
     --此段代码的意义是当下订单为补单的情况下, 需要计算当下工序的计划数量.
-    -- IF @WorkOrderVersion = 0 
-    -- BEGIN  --正常订单的情况
-    --     SET @PrsPlanQty = @MesPlanQty
-    -- END 
-    -- ELSE  
-    -- BEGIN  --下线补单的情况
-    --     SELECT
-    --          @baseDiscardQty1 = MesDiscardQty1
-    --         ,@baseDiscardQty2 = MesDiscardQty2
-    --         ,@baseDiscardQty3 = MesDiscardQty3
-    --         ,@baseDiscardQty4 = MesDiscardQty4
-    --         ,@baseLeftQty1    = MesLeftQty1
-    --         ,@baseLeftQty2    = MesLeftQty2
-    --         ,@baseLeftQty3    = MesLeftQty3
-    --         ,@baseLeftQty4    = MesLeftQty4
-    --     FROM
-    --          MFG_WO_List
-    --     WHERE
-    --          ErpWorkOrderNumber  = @WorkOrderNumber
-    --      AND MesWorkOrderVersion = @WorkOrderVersion - 1;
-    -- 
-    --     IF @AbnormalRegion = 1
-    --     BEGIN
-    --         SET @PrsPlanQty = @baseDiscardQty1 + @baseDiscardQty2;
-    --     END
-    -- 
-    --     IF @AbnormalRegion = 2
-    --     BEGIN
-    --         SET @PrsPlanQty = @baseDiscardQty1 + @baseDiscardQty2 + @baseLeftQty1;
-    --     END  
-    -- 
-    --     IF @AbnormalRegion = 3
-    --     BEGIN
-    --         SET @PrsPlanQty = @baseDiscardQty1 + @baseDiscardQty2 + @baseLeftQty1 + @baseLeftQty2;
-    --     END 
-    --      
-    --     IF @AbnormalRegion = 4
-    --     BEGIN
-    --         SET @PrsPlanQty = @baseDiscardQty1 + @baseDiscardQty2 + @baseDiscardQty3 + @baseDiscardQty4 + @baseLeftQty1 + @baseLeftQty2 + @baseLeftQty3 + @baseLeftQty4;
-    --     END       
-    -- END
-   */
+    --为了看清现有流程, 此处的不需要的代码已经删除, 如有查看需要, 可以从SVN的较低版本查看早于本版本日期的即有之: 2017-09-04.
 
     BEGIN TRANSACTION
 
      --2.如果当下工单的状态为"待生产", "产前调整中", 则需要设置工单为"生产进行中",
 
-     -- 原始需求描述: 一个订单的首个工序的操作计数等于1时(各PLC参数派发完成后，会调整操作计数为0)，则调整该订单状态为“生产进行中”
-     IF ( @WorkOrderStatus = 0 OR @WorkOrderStatus = 1 ) AND @StartFlag = 1 AND @TagFinishQty = 1
+     -- 需求文档描述原文文本: 一个订单的首个工序的操作计数等于1时(各PLC参数派发完成后，会调整操作计数为0)，则调整该订单状态为“生产进行中”
+     -- 个人觉得: 产量为1的限制条件可以去掉, 这样可以防止生产线的某些漏操作, 造成系统一直没有更改工单状态的严重事故, 如果条件去除, 则可以给工单状态重大的延后的弥补机会.
+     IF ( @WorkOrderStatus = 0 OR @WorkOrderStatus = 1 ) AND @StartFlag = 1 --AND @TagFinishQty = 1
      BEGIN
          UPDATE MFG_WO_List 
          SET
@@ -2702,7 +2849,8 @@ AS
             ,MesActualStartTime = GETDATE()
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
-         AND MesWorkOrderVersion = @WorkOrderVersion;
+         AND MesWorkOrderVersion = @WorkOrderVersion
+         AND ( MesStatus = 0 OR MesStatus = 1 );
      END
 
      --3. 更新当下工序的实际产出数量, 
@@ -2714,7 +2862,6 @@ AS
           WorkOrderNumber  = @WorkOrderNumber
          ,WorkOrderVersion = @WorkOrderVersion
          ,FinishQty        = @TagFinishQty
-    --   ,PlanQty          = @PrsPlanQty  --为了简单起见, 这里不再重新计算此数量
          ,ParamTime        = GETDATE() 
          ,ParamName        = @TagName   
          ,ParamValue       = @TagValue 
@@ -2727,59 +2874,8 @@ AS
          UPDATE Mes_Process_List
          SET    
              FinishQty   = -1
-            ,ParamTime   = GETDATE() 
-            ,ParamName   = @TagName   
-            ,ParamValue  = @TagValue 
          WHERE 
              ProcessCode = @pProcessCode
-      /*
-      -- 此处的需求有变化, 不需要进行完工更换产品需求的自动完成动作了.
-      -- 新加入了一个页面, 其专门用于手动发送换更产品请求.
-      -- 触发: 换更产品请求动作: 'CS', 'Cutover Send')
-      -- 需要的步骤有: 1.找到本工序对应的TAG, 2.写入换更动作    
-      
-      --   DECLARE @BatchNo   AS VARCHAR(15); 
-      --   EXEC usp_Mes_GetNewSerialNo_Output 'WIP2PLC','W2P', 10, @BatchNo OUTPUT;
-      --
-      --   INSERT INTO Mes_PLC_TransInterface( 
-      --         BATCHNUM
-      --       , PLCID
-      --       , SOURCEID
-      --       , ParamName
-      --       , ParamType
-      --       , ParamValue
-      --       , OperateCommand
-      --       , OperateUser
-      --       , [Status])
-      --   SELECT    
-      --         @BatchNo
-      --       , Mes_PLC_Parameters.PLCID
-      --       , Mes_PLC_Parameters.ID
-      --       , Mes_PLC_Parameters.ParamName
-      --       , Mes_PLC_Parameters.ParamType            
-      --       , CASE UPPER(Mes_PLC_Parameters.ParamType)   --此处电话和海亮确认不需要参数类型, MES都传送1值作为停机参数.
-      --              WHEN 'WORD'  THEN '1'
-      --              WHEN 'DWORD' THEN '1'
-      --              WHEN 'BOOL'  THEN '1'
-      --         END
-      --       , Mes_PLC_Parameters.OperateCommand
-      --       , 'MES'
-      --       , 0          
-      --   FROM 
-      --       Mes_PLC_Parameters, Mes_PLC_List 
-      --   WHERE 
-      --       Mes_PLC_Parameters.PLCID = Mes_PLC_List.ID --因为加入了PLC ID的限制, 此Mes_PLC_List表其实完全可以不需要参与进来. 
-      --   AND Mes_PLC_Parameters.ApplModel = 'CS'
-      ---- AND Mes_PLC_List.GoodsCode = '0000000000'      --因为加入了PLC ID的限制, 因此这两个条件暂时不再需要
-      ---- AND Mes_PLC_List.ProcessCode = @pProcessCode   --因为加入了PLC ID的限制, 因此这两个条件暂时不再需要
-      --   AND MES_PLC_List.ID = ( SELECT PLC.ID          --这是基于假定: 同一个PLC只有一个何其计数对应的更换产品请求的控制参数, 有统一工序多个PLC同时存在的情况.
-      --                           FROM Mes_PLC_List PLC  
-      --                              , Mes_PLC_Parameters PARM 
-      --                           WHERE 
-      --                                PARM.PLCID = PLC.ID  --查找TAG
-      --                            AND PARM.ParamName = @TagName
-      --                            AND PLC.GoodsCode = '0000000000');
-      */
      END
 
      --更新订单产量
@@ -2806,7 +2902,7 @@ AS
          AND MesWorkOrderVersion = @WorkOrderVersion
          AND MesStatus           = 2 ;
 
-         --把所有涉及此订单的工序表记录全部重置(因为, 有的物料拉动工序可能会没有计件产出的情况.)
+         --把所有涉及此订单的工序表记录全部重置(因为, 有的工序只有物料拉动, 但却不进行产出计数的情况.)
          UPDATE Mes_Process_List
          SET    
               FinishQty  = -1

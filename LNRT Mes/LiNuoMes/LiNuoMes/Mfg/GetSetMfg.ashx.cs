@@ -112,6 +112,13 @@ namespace LiNuoMes.Mfg
                 dataEntity = getWipBkfItemDetail(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
             }
+            else if (Action == "MFG_WIP_BKF_ITEM_SUGGEST_DSCA")
+            {
+                WipBkfItemEntity dataEntity;
+                dataEntity = new WipBkfItemEntity();
+                dataEntity = getWipBkfItemSuggestDsca(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
             else if (Action == "MFG_WIP_DATA_ABNORMAL")
             {
                 List<WipAbnormalEntity> dataEntity;
@@ -698,6 +705,39 @@ namespace LiNuoMes.Mfg
                 }
             }
 
+            return dataEntity;
+        }
+
+        public WipBkfItemEntity getWipBkfItemSuggestDsca(WipBkfItemEntity dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                string ItemNumber = RequstString("ItemNumber");
+                ItemNumber = ItemNumber.Trim();
+                if (ItemNumber.Length > 0)
+                {
+                    SqlCommand cmd = new SqlCommand();
+                    conn.Open();
+                    cmd.Connection = conn;
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "usp_Mfg_Wip_Bkf_Item_Suggest_Dsca '" + ItemNumber + "'";
+                    SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                    Datapter.Fill(dt);
+                    if (dt != null && dt.Rows.Count>0)
+                    {
+                        dataEntity.ItemDsca = dt.Rows[0]["ItemDsca"].ToString();
+                    }
+                    else
+                    {
+                        dataEntity.ItemDsca = "";
+                    }
+                }
+                else
+                {
+                    dataEntity.ItemDsca = "";                
+                }
+            }
             return dataEntity;
         }
 

@@ -74,7 +74,7 @@
                     "Action": "MFG_WIP_BKF_ITEM_LIST"
                 },
                 datatype: "json",
-                height: $('#areascontent').height() - 160,
+                height: $('#areascontent').height() - 170,
                 width: $('#areascontent').width,
                 rowNum: -1,
                 jsonReader: {

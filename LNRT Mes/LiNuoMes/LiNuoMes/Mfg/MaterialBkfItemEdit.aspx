@@ -66,15 +66,34 @@
         
              if (OPtype == "EDIT") {
                  OPaction = "MFG_WIP_BKF_ITEM_LIST_EDIT";
+                 InitialPage();
              }
              else if (OPtype == "ADD") {
                  OPaction = "MFG_WIP_BKF_ITEM_LIST_ADD";
              }
-        
-             if (OPtype == "EDIT") {
-                 InitialPage();
-             }
-                
+
+             $('#ItemNumber').bind('keypress', function (event) {
+                 if (event.keyCode == "13") {
+                     if (OPtype == "EDIT") {
+                         $("#ItemDsca").focus();
+                     } 
+                     else if (OPtype == "ADD") {
+                         getSuggestDsca();
+                     }
+                 }
+             });
+
+             $('#ItemDsca').bind('keypress', function (event) {
+                 if (event.keyCode == "13") {
+                     $("#UOM").focus();
+                 }
+             });
+
+             $('#UOM').bind('keypress', function (event) {
+                 if (event.keyCode == "13") {
+                     //AcceptClick($("#gridTable"))
+                 }
+             });               
          });
 
          function InitialPage() {
@@ -97,12 +116,37 @@
              });
          }
 
+         function getSuggestDsca() {
+             ItemNumber = $("#ItemNumber").val();
+             $.ajax({
+                 url: "GetSetMfg.ashx",
+                 data: {
+                     "Action": "MFG_WIP_BKF_ITEM_SUGGEST_DSCA",
+                     "ItemNumber": ItemNumber
+                 },
+                 type: "post",
+                 datatype: "json",
+                 success: function (data) {
+                     $("#ItemDsca").val(JSON.parse(data).ItemDsca);
+                     if ($("#ItemDsca").val().length > 0) {
+                         $("#UOM").focus();
+                     }
+                     else {
+                         $("#ItemDsca").focus();
+                     }
+                 },
+
+                 error: function (msg) {
+                     alert(msg.responseText);
+                 }
+             });
+         }
+
          function InitDataItems(data) {
              $("#ItemNumber").val(data.ItemNumber);
              $("#ItemDsca").val(data.ItemDsca);
              $("#UOM").val(data.UOM);
-         }
-        
+         }        
 
          function AcceptClick(grid) {
 
@@ -150,13 +194,11 @@
                              dialogClose();
                          }
                          else if (OPtype == "ADD") {
-                             dialogMsg("新增数据保存成功", 1);
+                         //    dialogMsg("新增数据保存成功", 1);
                              $("#ItemNumber").val("").focus();
                              $("#ItemDsca").val("");
                              $("#UOM").val("");
-
                          }
-
                      }
                      else if (data.result == "failed") {
                          dialogMsg(data.msg, -1);

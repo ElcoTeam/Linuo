@@ -113,7 +113,7 @@
                          _html += '    <div id="' + row.PmPlanCode + '" class="card-box-content">';
                          _html += '        <p>工序名称：' + row.ProcessName + '</p>';
                          _html += '        <p>设备名称：' + row.DeviceName + '</p>';
-                         _html += '        <p>保养计划：<a id="btn_Search1" class="btn btn-link" onclick=\"btn_look(\'' + row.PmSpecCode + '\')\" >' + row.PmPlanName + '</a></p>';
+                         _html += '        <p>保养计划：<a id="btn_Search1" class=" btn-link" onclick=\"btn_look(\'' + row.PmSpecCode + '\')\" >' + row.PmPlanName + '</a></p>';
                          _html += '    </div><i></i>';
                          _html += '</div>';
                      });
@@ -178,7 +178,11 @@
              });
 
              var PmOper = $("#PmOper").val();
-             var PmComment = $("#PmComment").val();
+             var PmComment = $("#PmProblem").val();
+
+             var FindProblem = $("#FindProblem").val();
+             var RepairProblem = $("#RepairProblem").val();
+             var ReaminProblem = $("#ReaminProblem").val();
 
              if (userIds.length==0)
              {
@@ -194,9 +198,11 @@
                  traditional: true,
                  data:{
                      Action: "ExcuteFirstLevelEquMaintenceMan",
-                     
                      PmOper: PmOper,
                      PmComment: PmComment,
+                     FindProblem: FindProblem,
+                     RepairProblem: RepairProblem,
+                     ReaminProblem: ReaminProblem,
                      PmList: userIds
                  },
                  async: true,
@@ -289,9 +295,9 @@
                         
                     <td colspan="3" >
                         <ul>
-                            <li style="padding-top:10px;">设备进行点检发现问题共<input id="FindProblem" type="text" class="problemcount" isvalid="yes"/>次</li>
-                            <li style="padding-top:10px;">维修解决问题共<input id="RepairProblem"  type="text" class="problemcount" isvalid="yes"/>次</li>
-                            <li style="padding-top:10px;">遗留问题存在<input id="ReaminProblem"  type="text" class="problemcount" isvalid="yes"/>次</li>
+                            <li style="padding-top:10px;">设备进行点检发现问题共<input id="FindProblem" type="text" class="problemcount" isvalid="yes" checkexpession="PositiveNumOrNull" />次</li>
+                            <li style="padding-top:10px;">维修解决问题共<input id="RepairProblem"  type="text" class="problemcount" isvalid="yes"/ checkexpession="PositiveNumOrNull" >次</li>
+                            <li style="padding-top:10px;">遗留问题存在<input id="ReaminProblem"  type="text" class="problemcount" isvalid="yes" checkexpession="PositiveNumOrNull"/>次</li>
                         </ul>
                     </td>
                 </tr>

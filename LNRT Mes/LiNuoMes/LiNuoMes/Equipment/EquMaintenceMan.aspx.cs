@@ -80,7 +80,7 @@ namespace LiNuoMes.Equipment
                     //if (Convert.ToInt32(dt.Rows[0][0]) != Convert.ToInt32(dt1.Rows[0][0]))
                     if (Convert.ToInt32(dt1.Rows[0][0])!=0)
                     {
-                        string str3 = "select PmPlanCode,PmPlanName from Equ_PmPlanList where PmLevel='二级保养' and CONVERT(varchar(100), GETDATE(), 23) between  DATEADD(DAY,-PmPreAlarmDates, PmFirstDate) and  DATEADD(MONTH,PmCycleTime,PmFirstDate) and PmPlanCode not in (select PmPlanCode from Equ_PmRecordList where PmLevel='二级保养')";
+                        string str3 = "select PmPlanCode,PmPlanName from Equ_PmPlanList where PmLevel='二级保养' and CONVERT(varchar(100), GETDATE(), 23) between  DATEADD(DAY,-PmPreAlarmDates, PmFirstDate) and  DATEADD(DAY,PmCycleTime,PmFirstDate) and PmPlanCode not in (select PmPlanCode from Equ_PmRecordList where PmLevel='二级保养')";
                         cmd.CommandType = CommandType.Text;
                         cmd.CommandText = str3;
                         SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);

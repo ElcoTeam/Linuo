@@ -56,7 +56,7 @@ namespace LiNuoMes.LineMonitor
             string ReturnValue = string.Empty;
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
-                 SqlCommand cmd = new SqlCommand();
+                SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -82,7 +82,7 @@ namespace LiNuoMes.LineMonitor
         /// <param name="lineno"></param>
         /// <returns></returns>
         [WebMethod]
-        public static string SetNextLineInfo(string lineno)
+        public static string SetNextLineInfo(string lineno, string orderversion)
         {
             DataTable tb = new DataTable();
             string ReturnValue = string.Empty;
@@ -91,9 +91,16 @@ namespace LiNuoMes.LineMonitor
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
-                string str1 = "select top(1) ErpWorkOrderNumber,ErpGoodsCode,ErpPlanQty,ErpPlanStartTime,ErpGoodsDsca  from MFG_WO_List where MesInturnNumber > (select MesInturnNumber from MFG_WO_List where ErpWorkOrderNumber = '" + lineno.Trim() + "') order by MesInturnNumber  ";
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = str1;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_LineNextMonitor";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@lineno", lineno);
+                sqlPara[1] = new SqlParameter("@orderversion", orderversion);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
                 Datapter.Fill(tb);
                 ReturnValue = DataTableJson(tb);

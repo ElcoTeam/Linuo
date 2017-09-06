@@ -54,6 +54,7 @@
 
             //一级保养 执行维护
             $("#btn_FirstLevel").click(function () {
+               
                 $.ajax({
                     url: "EquMaintenceMan.aspx/GetFirstMaintenceInfo",
                     type: "post",
@@ -62,19 +63,21 @@
                     contentType: "application/json;charset=utf-8",
                     success: function (data) {
                         var data1 = JSON.parse(data.d);
-                        console.log(data1.length);
+                       
                         if (data1.length==0) {
                             dialogAlert("当前无一级保养计划", 0);
                         }
                         else {
                             dialogOpen({
                                 id: "Form",
-                                title: '一级保养信息维护--执行',
+                                title: '一级保养信息维护',
                                 url: '../Equipment/EquFirstLevelMaintence.aspx',
-                                width: "900px",
+                                //url: '../Equipment/EquSecondLevelMaintence.aspx',
+                                width: "1200px",
                                 height: "800px",
+                                //btn: null,
                                 callBack: function (iframeId) {
-                                     top.frames[iframeId].AcceptClick($("#gridTable"));
+                                    top.frames[iframeId].AcceptClick($("#gridTable"));
                                 }
                             });    
                         }
@@ -107,10 +110,10 @@
                                 id: "Form",
                                 title: '二级保养信息维护--执行',
                                 url: '../Equipment/EquSecondLevelMaintence.aspx',
-                                width: "900px",
-                                height: "500px",
+                                width: "1300px",
+                                height: "800px",
                                 callBack: function (iframeId) {
-                                    top.frames[iframeId].AcceptClick($("#gridTable"));
+                                    top.frames[iframeId].AcceptClick1($("#gridTable"));
                                 }
                             });
                         }
@@ -170,8 +173,13 @@
                     {
                         label: '操作', name: '', index: '', width: 100, align: 'left', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                            if (rowObject[3] == '计划外保养') {
+                            if (rowObject[3] == '计划外保养')
+                            {
                                 return '<span onclick=\"btn_look(\'' + rowObject[0] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\"><i class="fa fa-eye"></i>查看</span>' + '<span onclick=\"btn_edit(\'' + rowObject[0] + '\')\" class=\"label label-success\" style=\"cursor: pointer;margin-left:10px;\"><i class="fa fa-edit"></i>修改</span>' + '<span onclick=\"btn_delete(\'' + rowObject[0] + '\')\" class=\"label label-success\" style=\"cursor: pointer;margin-left:10px;\"><i class="fa fa-trash-o"></i>删除</span>';
+                            }
+                            else if (rowObject[9] == '已完成' && rowObject[4] == '一级保养')
+                            {
+                                return '<span onclick=\"btn_lookfirstlevel(\'' + rowObject[0] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\"><i class="fa fa-eye"></i>查看保养记录</span>';
                             }
                                 //else if (rowObject[9]=='已完成') {
                                 //    return '<span onclick=\"btn_searchman1(\'' + rowObject[0] + '\',\'' + rowObject[10] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\"><i class="fa fa-eye"></i>查看</span>';
@@ -386,76 +394,22 @@
             });
         }
 
-        //查看计划内保养已完成  1:查看
-        function btn_searchman1(equid,plandate) {
-            if (equid == undefined) {
-                equid = $("#gridTable").jqGridRowValue("ID");
-                plandate = $("#gridTable").jqGridRowValue("PmPlanDate");
-            }
-            dialogOpen({
-                id: "Form",
-                title: '计划内保养信息维护--查看',
-                url: '../Equipment/EquMaintenceManEdit.aspx?actionname=1&equid=' + equid + '&plandate=' + plandate + '',
-                width: "750px",
-                height: "500px",
-                btn: null
-            });
-        }
-
-        //编辑计划内保养已完成  2：编辑
-        function btn_editman1(equid, plandate) {
-            if (equid == undefined) {
-                equid = $("#gridTable").jqGridRowValue("ID");
-                plandate = $("#gridTable").jqGridRowValue("PmPlanDate");
-            }
-            dialogOpen({
-                id: "Form",
-                title: '计划内保养信息维护--修改',
-                url: '../Equipment/EquMaintenceManEdit.aspx?actionname=2&equid=' + equid + '&plandate=' + plandate + '',
-                width: "750px",
-                height: "500px",
-                callBack: function (iframeId) {
-                    top.frames[iframeId].AcceptClick($("#gridTable"));
-                }
-            });
-        }
-
-        //查看计划内保养未完成  4:查看
-        function btn_searchman(equid, plandate) {
-            if (equid == undefined) {
-                equid = $("#gridTable").jqGridRowValue("ID");
-                plandate = $("#gridTable").jqGridRowValue("PmPlanDate");
-            }
-            dialogOpen({
-                id: "Form",
-                title: '计划内保养信息维护--查看',
-                url: '../Equipment/EquMaintenceManEdit.aspx?actionname=4&equid=' + equid + '&plandate=' + plandate + '',
-                width: "750px",
-                height: "500px",
-                btn: null
-            });
-        }
-
        
-        //执行计划内保养  3：执行
-        function btn_executeman(equid, dotimes, plandate) {
+
+        //查看一级保养信息
+        function btn_lookfirstlevel(equid) {
             if (equid == undefined) {
                 equid = $("#gridTable").jqGridRowValue("ID");
-                plandate = $("#gridTable").jqGridRowValue("PmPlanDate");
-                dotimes = $("#gridTable").jqGridRowValue("PmPlanCount");
             }
             dialogOpen({
                 id: "Form",
-                title: '计划内保养信息维护--执行',
-                url: '../Equipment/EquFirstLevelMaintence.aspx?actionname=3&equid=' + equid + '&plandate=' + plandate + '&dotimes=' + dotimes + '',
+                title: '一级保养信息维护--查看',
+                url: '../Equipment/EquFirstLevelManEdit.aspx?equid=' + equid + '',
                 width: "750px",
                 height: "500px",
-                callBack: function (iframeId) {
-                    top.frames[iframeId].AcceptClick($("#gridTable"));
-                }
+                btn: null
             });
         }
-
 
         //查看操作规范文档
         function btn_look(objID, filepath) {
@@ -476,6 +430,43 @@
                 height: "800px",
                 btn: null
             });
+        }
+
+        //登陆时间
+        function fnDate() {
+            var xhr = null;
+            if (window.XMLHttpRequest) {
+                xhr = new window.XMLHttpRequest();
+            } else { // ie
+                xhr = new ActiveObject("Microsoft")
+            }
+            // 通过get的方式请求当前文件
+            xhr.open("get", "/");
+            xhr.send(null);
+            // 监听请求状态变化
+            xhr.onreadystatechange = function () {
+                var time = null,
+                    curDate = null;
+
+                if (xhr.readyState === 2) {
+                    var seperator1 = "-";
+
+                    // 获取请求头里的时间戳
+                    time = xhr.getResponseHeader("Date");
+                    //console.log(xhr.getAllResponseHeaders())
+                    curDate = new Date(time);
+                    var month = curDate.getMonth() + 1;
+                    var strDate = curDate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    return currentdate;
+                }
+            }
         }
 
     </script>

@@ -148,7 +148,7 @@ namespace LiNuoMes.Equipment.hs
             {
                 List<Equ_PmFisrtLevelRecordInfo> dataEntity = new List<Equ_PmFisrtLevelRecordInfo>();
                 string[] PmList = RequstString("PmList").Split(',');
-
+                
                 for (int i = 0; i < PmList.Length; i++)
                 {
                     Equ_PmFisrtLevelRecordInfo ep = new Equ_PmFisrtLevelRecordInfo();
@@ -157,6 +157,10 @@ namespace LiNuoMes.Equipment.hs
                     //ep.PmFinishDate = RequstString("PmFinishDate");
                     ep.PmComment = RequstString("PmComment");
                     ep.PmOper = RequstString("PmOper");
+
+                    ep.FindProblem = RequstString("FindProblem") =="" ? 0 :Convert.ToInt16(RequstString("FindProblem"));
+                    ep.RepairProblem = RequstString("RepairProblem") == "" ? 0 : Convert.ToInt16(RequstString("RepairProblem"));
+                    ep.ReaminProblem = RequstString("ReaminProblem") == "" ? 0 : Convert.ToInt16(RequstString("ReaminProblem"));
                     dataEntity.Add(ep);
                 }
 
@@ -171,6 +175,35 @@ namespace LiNuoMes.Equipment.hs
                 result = CheckFirstLevelMaintence(result);
                 context.Response.Write(jsc.Serialize(result));
             }
+
+            else if (Action == "EquFirstLevelMaintenceMan_Detail")
+            {
+                Equ_PmFisrtLevelRecordDetail result = new Equ_PmFisrtLevelRecordDetail();
+                result.ID= RequstString("EquID");
+                result = GetFirstLevelDetail(result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+
+            else if (Action == "AddSecondLevelProblem")
+            {
+                Equ_PmSecondLevelProblem dataEntity = new Equ_PmSecondLevelProblem();
+                //dataEntity.ID = RequstString("EquID");
+                dataEntity.PmOper = RequstString("PmOper");
+                dataEntity.PmDate = RequstString("PmDate");
+                dataEntity.DeviceCode = RequstString("DeviceCode");
+                dataEntity.MaintenceTime = RequstString("MaintenceTime");
+                dataEntity.PowerLine = RequstString("PowerLine");
+                dataEntity.GroundLead = RequstString("GroundLead");
+                dataEntity.ReplacePart = RequstString("ReplacePart");
+                dataEntity.ReplaceName = RequstString("ReplaceName");
+                dataEntity.ReplaceCount = RequstString("ReplaceCount");
+                dataEntity.InspectionProblem = RequstString("InspectionProblem");
+
+                ResultMsg_Equ_PmFirstLevelRecord result = new ResultMsg_Equ_PmFirstLevelRecord();
+                result = AddSecondLevelProblem(dataEntity, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+           
         }
 
         public Equ_PmRecordInfo GetEquPmRecordDetailObj(Equ_PmRecordInfo equinfo, Equ_PmRecordInfo result)
@@ -481,22 +514,24 @@ namespace LiNuoMes.Equipment.hs
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
                     cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    SqlParameter[] sqlPara = new SqlParameter[3];
+                    SqlParameter[] sqlPara = new SqlParameter[6];
                     for (int i = 0; i < dataEntity.Count; i++ )
                     {
                         if (i == 0)
                         {
                             sqlPara[0] = new SqlParameter("@PmPlanCode", dataEntity[i].PmPlanCode);
                             sqlPara[0].Direction = System.Data.ParameterDirection.Input;
-                            //sqlPara[1] = new SqlParameter("@PmStartDate", dataEntity[i].PmStartDate);
-                            //sqlPara[1].Direction = System.Data.ParameterDirection.Input;
-                            //sqlPara[2] = new SqlParameter("@PmFinishDate", dataEntity[i].PmFinishDate);
-                            //sqlPara[2].Direction = System.Data.ParameterDirection.Input;
+                            
                             sqlPara[1] = new SqlParameter("@PmOper", dataEntity[i].PmOper);
                             sqlPara[1].Direction = System.Data.ParameterDirection.Input;
                             sqlPara[2] = new SqlParameter("@PmComment", dataEntity[i].PmComment);
                             sqlPara[2].Direction = System.Data.ParameterDirection.Input;
-
+                            sqlPara[3] = new SqlParameter("@FindProblem", dataEntity[i].FindProblem);
+                            sqlPara[3].Direction = System.Data.ParameterDirection.Input;
+                            sqlPara[4] = new SqlParameter("@RepairProblem", dataEntity[i].RepairProblem);
+                            sqlPara[4].Direction = System.Data.ParameterDirection.Input;
+                            sqlPara[5] = new SqlParameter("@ReaminProblem", dataEntity[i].ReaminProblem);
+                            sqlPara[5].Direction = System.Data.ParameterDirection.Input;
                             foreach (SqlParameter para in sqlPara)
                             {
                                 cmd.Parameters.Add(para);
@@ -556,6 +591,7 @@ namespace LiNuoMes.Equipment.hs
                             sqlPara[1].Direction = System.Data.ParameterDirection.Input;
                             sqlPara[2] = new SqlParameter("@PmComment", dataEntity[i].PmComment);
                             sqlPara[2].Direction = System.Data.ParameterDirection.Input;
+                          
 
                             foreach (SqlParameter para in sqlPara)
                             {
@@ -633,6 +669,90 @@ namespace LiNuoMes.Equipment.hs
             return result;
         }
 
+
+        public Equ_PmFisrtLevelRecordDetail GetFirstLevelDetail(Equ_PmFisrtLevelRecordDetail result)
+        {
+            DataTable dt = new DataTable();
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = "select c.ProcessName,a.DeviceName,a.PmOper,b.InspectionProblem,b.FindProblem,b.RepairProblem,b.ReaminProblem from Equ_PmRecordList a left join Equ_FirstLevelInspectionProblem b on a.ID=b.PmRecordID left join Mes_Process_List c on a.ProcessCode =c.ProcessCode";
+                if (result.ID != "")
+                {
+                    str1 += " WHERE a.ID = " + result.ID + " ";
+                }
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    
+                    result.ProcessCode = dt.Rows[0]["ProcessName"].ToString();
+                    result.DeviceName = dt.Rows[0]["DeviceName"].ToString();
+                    result.PmOper = dt.Rows[0]["PmOper"].ToString();
+                    result.PmComment = dt.Rows[0]["InspectionProblem"].ToString();
+
+                    result.FindProblem = dt.Rows[0]["FindProblem"].ToString() == "" ? 0 : Convert.ToInt16(dt.Rows[0]["FindProblem"].ToString());
+                    result.RepairProblem = dt.Rows[0]["RepairProblem"].ToString() == "" ? 0 : Convert.ToInt16(dt.Rows[0]["RepairProblem"].ToString());
+                    result.ReaminProblem = dt.Rows[0]["ReaminProblem"].ToString() == "" ? 0 : Convert.ToInt16(dt.Rows[0]["ReaminProblem"].ToString());
+                }
+            }
+            return result;
+        }
+
+
+        public ResultMsg_Equ_PmFirstLevelRecord AddSecondLevelProblem(Equ_PmSecondLevelProblem dataEntity, ResultMsg_Equ_PmFirstLevelRecord result)
+        {
+            
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    string strSql = "";
+
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+
+                    strSql = string.Format(
+                         @" INSERT INTO Equ_SecondLevelInspectionProblem  
+                    (  InspectionProblem, InspectionDate,DeviceCode,MaintenceTime,PowerLine,GroundLead,ReplacePart,ReplaceName,ReplaceCount)VALUES (
+                      '{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')",
+                             dataEntity.InspectionProblem,
+                             dataEntity.PmDate,
+                             dataEntity.DeviceCode,
+                             dataEntity.MaintenceTime,
+                             dataEntity.PowerLine,
+                             dataEntity.GroundLead,
+                             dataEntity.ReplacePart,
+                             dataEntity.ReplaceName,
+                             dataEntity.ReplaceCount
+                         );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
         public bool IsReusable
         {
             get
@@ -670,8 +790,41 @@ namespace LiNuoMes.Equipment.hs
         public string PmFinishDate { set; get; }
         public string PmOper { set; get; }
         public string PmComment { set; get; }
+        public int FindProblem { set; get; }
+        public int RepairProblem { set; get; }
+        public int ReaminProblem { set; get; }
 
     }
+    public class Equ_PmFisrtLevelRecordDetail
+    {
+        public string ID { get; set; }
+        public string ProcessCode { set; get; }
+        public string DeviceName { set; get; }
+      
+        public string PmOper { set; get; }
+        public string PmComment { set; get; }
+        public int FindProblem { set; get; }
+        public int RepairProblem { set; get; }
+        public int ReaminProblem { set; get; }
+
+    }
+
+    public class Equ_PmSecondLevelProblem
+    {
+        public string PmOper { get; set; }
+        public string PmDate { set; get; }
+        public string DeviceCode { set; get; }
+
+        public string MaintenceTime { set; get; }
+        public string PowerLine { set; get; }
+        public string GroundLead { set; get; }
+        public string ReplacePart { set; get; }
+        public string ReplaceName { set; get; }
+        public string ReplaceCount { set; get; }
+        public string InspectionProblem { set; get; }
+
+    }
+
 
     public class ResultMsg_Equ_PmRecord
     {

@@ -189,6 +189,7 @@
                 width: "600px",
                 height: "400px",
                 callBack: function (iframeId) {
+                    console.log(top.frames[iframeId]);
                     top.frames[iframeId].AcceptClick($("#gridTable"));
                 }
             });

@@ -828,6 +828,7 @@ dialogMsg = function (content, type) {
     }
     top.layer.msg(content, { icon: type, time: 4000, shift: 5 });
 }
+
 dialogClose = function () {
     try {
         var index = top.layer.getFrameIndex(window.name); //先得到当前iframe层的索引jsonca2 
@@ -957,10 +958,10 @@ $.currentIframe = function () {
     if ((top.frames[tabiframeId()].contentWindow != undefined) && ($.isbrowsername() == "Chrome" || $.isbrowsername() == "FF")) {
         return top.frames[tabiframeId()].contentWindow;
     }
-    //else {
-    //    //console.log($(top.frames[tabiframeId()].document).find("gridTable"));
-    //    return top.frames[tabiframeId()];
-    //}
+    else {
+        //console.log($(top.frames[tabiframeId()].document).find("gridTable"));
+        return top.frames[tabiframeId()];
+    }
 }
 $.isbrowsername = function () {
     var userAgent = navigator.userAgent; //取得浏览器的userAgent字符串

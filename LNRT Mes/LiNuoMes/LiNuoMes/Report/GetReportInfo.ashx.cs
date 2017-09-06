@@ -694,6 +694,178 @@ namespace LiNuoMes.Report
                 context.Response.Write(jsc.Serialize(materialPull));
             }
 
+            //一级保养点检表
+            if (Action == "FirstLevelInspectionReport")
+            {
+                FirstLevelMaintence firstLevelMaintence = new FirstLevelMaintence();
+                firstLevelMaintence = GetFirstLevelMaintence(firstLevelMaintence);
+                string strJson = "";
+                strJson = "{\"page\":1,\"total\": 7 ,\"records\":7,\"rows\":[";
+                for (int j = 0; j < 7; j++)
+                {
+                    strJson += "{";
+                    strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                    strJson += "\"cell\":";
+                    strJson += "[";
+
+                    if (j == 0)
+                    {
+                        for (int i = 0; i < firstLevelMaintence.InspectionStandrad1.Count() - 1; i++)
+                        {
+                            strJson += "\"" + firstLevelMaintence.InspectionStandrad1[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + firstLevelMaintence.InspectionStandrad1[firstLevelMaintence.InspectionStandrad1.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 1)
+                    {
+                        for (int i = 0; i < firstLevelMaintence.InspectionStandrad2.Count() - 1; i++)
+                        {
+                            strJson += "\"" + firstLevelMaintence.InspectionStandrad2[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + firstLevelMaintence.InspectionStandrad2[firstLevelMaintence.InspectionStandrad2.Count() - 1].ToString().Trim() + "\"";
+                    }
+                    if (j == 2)
+                    {
+                        for (int i = 0; i < firstLevelMaintence.InspectionStandrad3.Count() - 1; i++)
+                        {
+                            strJson += "\"" + firstLevelMaintence.InspectionStandrad3[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + firstLevelMaintence.InspectionStandrad3[firstLevelMaintence.InspectionStandrad3.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 3)
+                    {
+                        for (int i = 0; i < firstLevelMaintence.InspectionStandrad4.Count() - 1; i++)
+                        {
+                            strJson += "\"" + firstLevelMaintence.InspectionStandrad4[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + firstLevelMaintence.InspectionStandrad4[firstLevelMaintence.InspectionStandrad4.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 4)
+                    {
+                        for (int i = 0; i < firstLevelMaintence.InspectionStandrad5.Count() - 1; i++)
+                        {
+                            strJson += "\"" + firstLevelMaintence.InspectionStandrad5[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + firstLevelMaintence.InspectionStandrad5[firstLevelMaintence.InspectionStandrad5.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 5)
+                    {
+                        for (int i = 0; i < firstLevelMaintence.InspectionStandrad6.Count() - 1; i++)
+                        {
+                            strJson += "\"" + firstLevelMaintence.InspectionStandrad6[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + firstLevelMaintence.InspectionStandrad6[firstLevelMaintence.InspectionStandrad6.Count() - 1].ToString() + "\"";
+                    }
+                    if (j == 6)
+                    {
+                        for (int i = 0; i < firstLevelMaintence.InspectionStandrad7.Count() - 1; i++)
+                        {
+                            strJson += "\"" + firstLevelMaintence.InspectionStandrad7[i].ToString().Trim() + "\",";
+                        }
+                        strJson += "\"" + firstLevelMaintence.InspectionStandrad7[firstLevelMaintence.InspectionStandrad7.Count() - 1].ToString() + "\"";
+                    }
+                    
+                    strJson += "]";
+                    strJson += "}";
+                    strJson += ",";
+
+                }
+                strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                strJson += "]}";
+                context.Response.Write(strJson);
+            }
+
+            //一级点检问题记录
+            if (Action == "FirstLevelInspectionProblemReport")
+            {
+                List<FirstLevelMaintenceProblem> problem = new List<FirstLevelMaintenceProblem>();
+                problem = GetFirstLevelMaintenceProblem(problem);
+                if(problem.Count==0)
+                {
+                    string strJson = "";
+                    strJson = "{\"page\":1,\"total\": 1 ,\"records\":1,\"rows\":[";
+                   
+                    strJson += "{";
+                    strJson += "\"id\":\"1\",";
+                    strJson += "\"cell\":";
+                    strJson += "[";
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        strJson += "\"\",";
+                    }
+                    strJson += "\"\"";
+                   
+                    strJson += "]";
+                    strJson += "}";
+                    strJson += ",";
+                    strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                    strJson += "]}";
+                    context.Response.Write(strJson);
+                }
+                else
+                {
+                    context.Response.Write(jsc.Serialize(problem));
+                }
+                
+            }
+
+            //节拍统计表
+            if (Action == "ProcessBeatReport")
+            {
+                List<ProcessBeat> processBeat = new List<ProcessBeat>();
+                processBeat = GetProcessBeat(processBeat);
+                context.Response.Write(jsc.Serialize(processBeat));
+            }
+
+            //节拍统计图
+            if (Action == "ProcessBeatChart")
+            {
+                List<ProcessBeat> processBeat = new List<ProcessBeat>();
+                processBeat = GetProcessBeat(processBeat);
+                //List<string> list = new List<string>();
+                //list = processBeat.Select(p => p.Process).Distinct().ToList();
+
+                List<Chart> chart = new List<Chart>();
+                List<string> catagory = new List<string>();
+                List<double> datavalueMin = new List<double>();
+                List<double> datavalueMax = new List<double>();
+                List<double> datavalueDefalut = new List<double>();
+                List<double> datavalueAvg = new List<double>();
+                processBeat=  processBeat.Where((x, i) => processBeat.FindIndex(z => z.Process == x.Process) == i).ToList();  
+                //catagory = list;
+                for (int i = 0; i < processBeat.Count() ; i++)
+                {
+                    catagory.Add( processBeat[i].Process.ToString());
+                    datavalueMin.Add(Convert.ToDouble(processBeat[i].BeatMin == "" ? "0" : processBeat[i].BeatMin.ToString()));
+                    datavalueMax.Add(Convert.ToDouble(processBeat[i].BeatMax == "" ? "0" : processBeat[i].BeatMax.ToString()));
+                    datavalueDefalut.Add(Convert.ToDouble(processBeat[i].Number == "" ? "0" : processBeat[i].Number.ToString()));
+                    datavalueAvg.Add(Convert.ToDouble(processBeat[i].BeatPer == "" ? "0" : processBeat[i].BeatPer.ToString()));
+                }
+
+                chart.Add(new Chart()
+                {
+                    catagory = catagory,
+                    datavalue = datavalueMin
+                });
+                chart.Add(new Chart()
+                {
+                    catagory = catagory,
+                    datavalue = datavalueMax
+                });
+                chart.Add(new Chart()
+                {
+                    catagory = catagory,
+                    datavalue = datavalueDefalut
+                });
+                chart.Add(new Chart()
+                {
+                    catagory = catagory,
+                    datavalue = datavalueAvg
+                });
+
+                context.Response.Write(jsc.Serialize(chart));
+            }
         }
 
         public bool IsReusable
@@ -1814,8 +1986,6 @@ namespace LiNuoMes.Report
             return dataEntity;
         }
 
-
-
         /// <summary>
         /// 下线情况(生产统计报表)
         /// </summary>
@@ -1861,5 +2031,177 @@ namespace LiNuoMes.Report
             }
             return dataEntity;
         }
+
+
+        /// <summary>
+        /// 一级保养点检表
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public FirstLevelMaintence GetFirstLevelMaintence(FirstLevelMaintence user)
+        {
+            string date = RequstString("YEAR");
+            string processcode = RequstString("ProcessCode");
+            string DeviceName = RequstString("DeviceName");
+
+            DataTable dt = new DataTable();
+            DataTable selectdt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_FirstLevelInspectionReport";
+                SqlParameter[] sqlPara = new SqlParameter[3];
+                sqlPara[0] = new SqlParameter("@date", date);
+                sqlPara[1] = new SqlParameter("@processcode", processcode);
+                sqlPara[2] = new SqlParameter("@devicename", DeviceName);
+
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                List<string> InspectionStandrad1 = new List<string>();
+                List<string> InspectionStandrad2 = new List<string>();
+                List<string> InspectionStandrad3 = new List<string>();
+                List<string> InspectionStandrad4 = new List<string>();
+                List<string> InspectionStandrad5 = new List<string>();
+                List<string> InspectionStandrad6 = new List<string>();
+                List<string> InspectionStandrad7 = new List<string>();
+                InspectionStandrad1.Add("1");
+                InspectionStandrad2.Add("2");
+                InspectionStandrad3.Add("3");
+                InspectionStandrad4.Add("4");
+                InspectionStandrad5.Add("5");
+                InspectionStandrad6.Add("6");
+                InspectionStandrad7.Add("7");
+
+                InspectionStandrad1.Add("设备操作机构灵活可靠");
+                InspectionStandrad2.Add("配合间隙传动正常");
+                InspectionStandrad3.Add("工装夹具安装及使用良好");
+                InspectionStandrad4.Add("安全装置、照明设施良好");
+                InspectionStandrad5.Add("润滑系统清洁畅通、润滑良好");
+                InspectionStandrad6.Add("电器装置绝缘良好安全可靠");
+                InspectionStandrad7.Add("电器箱内外清洁无灰尘");
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        InspectionStandrad1.Add(dt.Rows[i]["InspectionStandrad1"].ToString());
+                        InspectionStandrad2.Add(dt.Rows[i]["InspectionStandrad2"].ToString());
+                        InspectionStandrad3.Add(dt.Rows[i]["InspectionStandrad3"].ToString());
+                        InspectionStandrad4.Add(dt.Rows[i]["InspectionStandrad4"].ToString());
+                        InspectionStandrad5.Add(dt.Rows[i]["InspectionStandrad5"].ToString());
+                        InspectionStandrad6.Add(dt.Rows[i]["InspectionStandrad6"].ToString());
+                        InspectionStandrad7.Add(dt.Rows[i]["InspectionStandrad7"].ToString());
+                       
+                    }
+                }
+                user.InspectionStandrad1 = InspectionStandrad1;
+                user.InspectionStandrad2 = InspectionStandrad2;
+                user.InspectionStandrad3 = InspectionStandrad3;
+                user.InspectionStandrad4 = InspectionStandrad4;
+                user.InspectionStandrad5 = InspectionStandrad5;
+                user.InspectionStandrad6 = InspectionStandrad6;
+                user.InspectionStandrad7 = InspectionStandrad7;
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 一级保养点检问题记录表
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public List<FirstLevelMaintenceProblem> GetFirstLevelMaintenceProblem(List<FirstLevelMaintenceProblem> user)
+        {
+            string date = RequstString("YEAR");
+            string DeviceName = RequstString("DeviceName");
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = string.Empty;
+                str1 = "select InspectionProblem,FORMAT(InspectionDate,'yyyy-MM-dd') as InspectionDate,FindProblem,RepairProblem,ReaminProblem from Equ_FirstLevelInspectionProblem where FORMAT(InspectionDate,'yyyy-MM')='" + date + "' and DeviceCode='" + DeviceName.Trim() + "' and InspectionProblem!='' or FindProblem!='0' or RepairProblem!='0' or ReaminProblem!='0'";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        FirstLevelMaintenceProblem problem = new 
+                            FirstLevelMaintenceProblem();
+                        problem.ProblemID = (i + 1).ToString();
+                        problem.InspectionDate = dt.Rows[i]["InspectionDate"].ToString();
+                        problem.InspectionProblem = dt.Rows[i]["InspectionProblem"].ToString();
+                        problem.FindProblem = dt.Rows[i]["FindProblem"].ToString();
+                        problem.RepairProblem = dt.Rows[i]["RepairProblem"].ToString();
+                        problem.ReaminProblem = dt.Rows[i]["ReaminProblem"].ToString();
+                        user.Add(problem);
+                    }
+                }
+                
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 节拍统计报表
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public List<ProcessBeat> GetProcessBeat(List<ProcessBeat> user)
+        {
+            string date = RequstString("SelectDate");
+            string processcode = RequstString("ProcessCode");
+            string DeviceName = RequstString("DeviceName");
+
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_ReportProcessBeat";
+                SqlParameter[] sqlPara = new SqlParameter[3];
+                sqlPara[0] = new SqlParameter("@SelectDate", date);
+                sqlPara[1] = new SqlParameter("@ProcessCode", processcode);
+                sqlPara[2] = new SqlParameter("@DeviceName", DeviceName);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        ProcessBeat pro = new ProcessBeat();
+                        pro.Date = dt.Rows[i]["datevalue"].ToString();
+                        pro.Process = dt.Rows[i]["ProcessName"].ToString();
+                        pro.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        pro.BeatMin = dt.Rows[i]["BeatMin"].ToString();
+                        pro.BeatMax = dt.Rows[i]["BeatMax"].ToString();
+                        pro.BeatPer = dt.Rows[i]["BeatPer"].ToString();
+                        pro.Number = dt.Rows[i]["ProcessBeat"].ToString();
+                        user.Add(pro);
+                    }
+                }
+            }
+            return user;
+        }
+
     }
 }

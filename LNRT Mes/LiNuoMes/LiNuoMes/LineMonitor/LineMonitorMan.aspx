@@ -129,24 +129,19 @@
                         for (i in data1) {
 
                             $("#OrderNo").html(data1[i].WorkOrderNumber);
+                            $("#OrderVersion").html(data1[i].MesWorkOrderVersion);
                             $("#MaterialCode").html(data1[i].ErpGoodsCode);
                             $("#MaterialDSCA").html(data1[i].ErpGoodsDsca);
                             $("#Order_Qty").html(data1[i].ErpPlanQty);
                             $("#StartTime").html(data1[i].MesActualStartTime);
-
                             $("#CompletedOrder_Qty").html(data1[i].MesFinishQty);
                             $("#CompletedStation_Qty").html(data1[i].ProcessFinishNum);
                             $("#Line_Takt").html(data1[i].LineBeat);
                             $("#Station_Takt").html(data1[i].ProcessBeat);
-
-                            //$("#OrderNo_Next").html(data1[i].OrderNo_Next);
-                            //$("#OrderQty_Next").html(data1[i].OrderQty_Next);
-                            //$("#MaterialCode_Next").html(data1[i].MaterialCode_Next);
-                            //$("#Planned_StartTime").html(data1[i].Planned_StartTime);                        
                             $("#CountDown").html(data1[i].ProcessBeat);
-                            //PDFObject.embed(data1[i].WI_Path, "#example1", options);
+                            
                         }
-                        IntialNext($("#OrderNo").html());
+                        IntialNext($("#OrderNo").html(),$("#OrderVersion").html());
                     }
                     else
                     {
@@ -169,14 +164,14 @@
             });
         }
 
-        function IntialNext(data)
+        function IntialNext(data,orderversion)
         {
     
             $.ajax({
                 url: "LineMonitorMan.aspx/SetNextLineInfo",    //后台webservice里的方法名称  
                 type: "post",
                 dataType: "json",
-                data: "{lineno:'" + data + "'}",
+                data: "{lineno:'" + data + "',orderversion:'" + orderversion + "'}",
                 contentType: "application/json;charset=utf-8",
                 success: function (data) {
                     console.log(data);
@@ -190,7 +185,6 @@
                             $("#MaterialDSCA_Next").html(data1[i].ErpGoodsDsca);
                             $("#OrderQty_Next").html(data1[i].ErpPlanQty);
                             $("#Planned_StartTime").html(data1[i].ErpPlanStartTime);
-
                         }
                     }
                     else
@@ -322,10 +316,12 @@
                                    <th class="formTitle">订单编号：</th>
                                    <td class="formValue">
                                        <label id="OrderNo" class="form-control" style="border: 0px;"></label>
+                                       <label id="OrderVersion" class="form-control" style="border: 0px; display: none" ></label>
                                    </td>   
                                    <th class="formTitle">物料编号：</th>
                                    <td class="formValue">
                                        <label id="MaterialCode" class="form-control" style="border: 0px;"></label>
+                                       
                                    </td>                               
                                </tr>
                                <tr>

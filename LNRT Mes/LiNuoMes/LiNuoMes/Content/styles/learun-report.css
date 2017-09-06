@@ -24,8 +24,8 @@
 
 @media print {
     @page {
-        margin: 1cm;
-        margin-top:.2cm;
+        margin: 20mm;
+        margin-top: 20mm;
         /*background: url(../../images/logo.png) no-repeat right top;*/ 
     }
 
@@ -36,6 +36,7 @@
         text-shadow: none !important;
         filter: 0 !important;
         -ms-filter: 0 !important;
+         font-size: 10px;
     }
 
     thead {
@@ -83,45 +84,50 @@
         width: 100%;
         border-collapse: collapse;
         border-spacing: 0;
-        font-size: 20px;
+        font-size: 10px;
         margin: 1px -1px 0 1px;
         border: 1px solid #666;
     }
 
         .ui-table-print th,
         .ui-table-print td {
-            padding: 5px 6px;
+            padding: 5px 5px;
             border: 1px solid;
             border-color: #666 !important;
             height: auto !important;
             vertical-align: top;
             color: #444;
             width: auto !important;
+            font-size: 10px;
         }
 
         .ui-table-print th {
             text-align: center;
             vertical-align: middle;
             font-weight: normal;
+            font-size: 10px;
         }
 
         .ui-table-print .jqgrid-rownum {
             width: auto !important;
+            font-size: 10px;
         }
 
         .ui-table-print .jqg-first-row-header {
             display: none;
+            font-size: 10px;
         }
 
         .ui-table-print .ui-th-column-header {
             border-top: 1px solid !important;
+            font-size: 10px;
         }
 
     .ui-area-print {
         width: 100% !important;
         border-collapse: collapse;
         border-spacing: 0;
-        font-size: 12px;
+        font-size: 10px;
         margin: 1px -1px 0 1px;
         border: 1px solid #666;
     }

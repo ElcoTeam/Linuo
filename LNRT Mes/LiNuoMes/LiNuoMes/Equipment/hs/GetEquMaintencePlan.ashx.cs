@@ -105,7 +105,7 @@ namespace LiNuoMes.Equipment.hs
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
-                str = "select a.ID,d.ID as PmSpecCode,c.ProcessName,a.DeviceName,d.PmSpecName,a.PmLevel,d.PmSpecFile,a.PmPlanCode,a.PmPlanName,FORMAT( a.PmFirstDate,'yyyy-MM-dd') as PmFirstDate,FORMAT(max(b.UpdateTime),'yyyy-MM-dd') as PmFinishDate,COUNT(b.PmDoTimes) as PmRecord from Equ_PmPlanList a left join Equ_PmRecordList b on a.ProcessCode=b.ProcessCode and a.DeviceName=b.DeviceName left join Mes_Process_List c on a.ProcessCode=c.ProcessCode left join Equ_PmSpecList d on a.PmSpecCode=d.PmSpecCode where a.DeviceName like '%" + deviceName.Trim() + "%' and a.PmPlanName like '%" + pmPlanName.Trim() + "%'";
+                str = "select a.ID,d.ID as PmSpecCode,c.ProcessName,a.DeviceName,d.PmSpecName,a.PmLevel,d.PmSpecFile,a.PmPlanCode,a.PmPlanName,FORMAT( a.PmFirstDate,'yyyy-MM-dd') as PmFirstDate,FORMAT(max(b.UpdateTime),'yyyy-MM-dd') as PmFinishDate,COUNT(b.PmDoTimes) as PmRecord from Equ_PmPlanList a left join Equ_PmRecordList b on a.ProcessCode=b.ProcessCode and a.PmPlanCode=b.PmPlanCode left join Mes_Process_List c on a.ProcessCode=c.ProcessCode left join Equ_PmSpecList d on a.PmSpecCode=d.PmSpecCode where a.DeviceName like '%" + deviceName.Trim() + "%' and a.PmPlanName like '%" + pmPlanName.Trim() + "%'";
                 if (processName != "")
                 {
                     str += " and a.ProcessCode='" + processName.Trim() + "'";
@@ -118,7 +118,7 @@ namespace LiNuoMes.Equipment.hs
                 {
                     str += " and a.PmPlanCode='" + pmPlanCode.Trim() + "'";
                 }
-                str += " group by a.ID,d.ID,c.ProcessName,a.DeviceName,d.PmSpecName,a.PmLevel,d.PmSpecFile,a.PmPlanCode,a.PmPlanName,a.PmFirstDate ";
+                str += " group by a.ID,d.ID,c.ProcessName,a.DeviceName,d.PmSpecName,a.PmLevel,d.PmSpecFile,a.PmPlanCode,a.PmPlanName,a.PmFirstDate order by a.PmLevel desc,FORMAT(max(b.UpdateTime),'yyyy-MM-dd') desc";
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str;
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);

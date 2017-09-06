@@ -65,7 +65,6 @@
                 datatype: "local",
                 height: $('#areascontent').height() *0.7,
                 colModel: [
-                    { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
                     { label: '日期', name: 'Date', index: 'Date', width: panelwidth*0.15, align: 'center' },
                     {
                         label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth * 0.1, align: 'center'
@@ -201,7 +200,7 @@
               <div class="gridPanel" id="gridPanel">
                   <div class="printArea">
                       <div class="grid-title"> 
-                          <h2 style="text-align:center;" id="title">生产统计报表</h2> 
+                          <h2 style="text-align:center;" id="title">产品直通率报表</h2> 
                       </div> 
                       <table id="gridTable"></table>                      
                   </div>

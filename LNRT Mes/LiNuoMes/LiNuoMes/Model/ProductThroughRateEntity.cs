@@ -7,7 +7,7 @@ namespace LiNuoMes.Model
 {
     public class ProductThroughRateEntity
     {
-        public string Number { set; get; }
+       
         public string Date { set; get; }
         public string ProcessName { set; get; }
         public string ProcessQty { set; get; }

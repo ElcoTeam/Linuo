@@ -867,15 +867,51 @@ VALUES
 --设备一级保养问题记录表
 IF OBJECT_ID('Equ_FirstLevelInspectionProblem') is not null
 DROP TABLE Equ_FirstLevelInspectionProblem;
-CREATE TABLE [dbo].[Equ_FirstLevelInspectionProblem] (
-    [ID]                 INT             NOT NULL,                         -- (系统自动生成)
-    [InspectionProblem]  NVARCHAR  (MAX)     NULL,	--点检内容
-    [InspectionDate]     DATETIME            NULL,
-	[DeviceCode]         VARCHAR  (20)       NULL,
-	[FindProblem]        INT                 NULL,
-	[RepairProblem]      INT                 NULL,
-	[ReaminProblem]      INT                 NULL
+CREATE TABLE [dbo].[Equ_FirstLevelInspectionProblem](
+	[ID]                [int] IDENTITY(1,1) NOT NULL,
+	[InspectionProblem] [nvarchar](max) NULL,
+	[InspectionDate]    [datetime] NULL,
+	[DeviceCode]        [varchar](20) NULL,
+	[FindProblem]       [int] NULL,
+	[RepairProblem]     [int] NULL,
+	[ReaminProblem]     [int] NULL,
+	[PmRecordID]        [int] NULL
 );
+
+--设备二级保养点检内容表
+IF OBJECT_ID('Equ_SecondLevelTestContent') is not null
+DROP TABLE Equ_SecondLevelTestContent;
+CREATE TABLE [dbo].[Equ_SecondLevelTestContent] (
+    [ID]                 INT             NOT NULL,                         -- (系统自动生成)
+    [InspectionContent]  NVARCHAR  (50)   NULL                          --点检内容
+);
+INSERT INTO Equ_SecondLevelTestContent (ID, InspectionContent)
+VALUES
+(1, N'检查液压站、油管、油缸有无漏油现象；清理润滑，各滑轨润滑、调整'),
+(2, N'模具、各紧固螺栓是否缺失、松动，配齐各螺栓紧固件'),
+(3, N'检查检测电气绝缘、接地保护、电线防护等电器安全设施是否齐全有效'),
+(4, N'清理电气配电箱内各元器件上灰尘，检查并紧固各接线端子、接线排及电气机械部分，检查电器冷却系统'),
+(5, N'各按钮开关、光电开关灵敏齐全有效');
+
+
+--设备二级保养问题记录表
+IF OBJECT_ID('Equ_SecondLevelInspectionProblem') is not null
+DROP TABLE Equ_SecondLevelInspectionProblem;
+CREATE TABLE [dbo].[Equ_SecondLevelInspectionProblem](
+	[ID]                [int] IDENTITY(1,1) NOT NULL,
+	[InspectionProblem] [nvarchar](max) NULL,    --保养前存在的问题
+	[InspectionDate]    [datetime] NULL,         --保养日期
+	[DeviceCode]        [varchar](20) NULL,      --设备编号
+	[MaintenceTime]     [int] NULL,              --保养耗时2
+	[PowerLine]         [varchar] NULL,          --电源线绝缘值
+	[GroundLead]        [varchar] NULL,          --接地线
+	[ReplacePart]       [nvarchar](max) NULL,    --更换部位
+	[ReplaceName]       [nvarchar](max) NULL,    --更换名称
+	[ReplaceCount]      [int] NULL,              --更换件数
+	[PmRecordID]        [int] NULL
+);
+
+
 
 --每月预算产量表
 IF OBJECT_ID('Report_MonthBudget') is not null

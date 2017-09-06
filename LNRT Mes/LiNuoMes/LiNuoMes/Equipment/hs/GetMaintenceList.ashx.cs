@@ -9,10 +9,11 @@ using System.Web;
 namespace LiNuoMes.Equipment.hs
 {
     /// <summary>
-    /// GetEquDeviceInfo 的摘要说明
+    /// GetMaintenceList 的摘要说明
     /// </summary>
-    public class GetEquDeviceInfo : IHttpHandler
+    public class GetMaintenceList : IHttpHandler
     {
+
         clsSql.Sql cSql = new clsSql.Sql();
         public void ProcessRequest(HttpContext context)
         {
@@ -36,12 +37,10 @@ namespace LiNuoMes.Equipment.hs
         public string GetDataJson()
         {
             string strJson = "";
-            string processName = RequstString("ProcessName");
-            string deviceCode = RequstString("DeviceCode");
-            string deviceName = RequstString("DeviceName");
+            string processName = RequstString("DeviceCode");
 
             DataTable dt = new DataTable();
-            dt = GetUserData(processName, deviceCode, deviceName);
+            dt = GetUserData(processName);
             //int i = 0;
             if (dt != null)
             {
@@ -61,13 +60,16 @@ namespace LiNuoMes.Equipment.hs
                     strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
                     strJson += "\"cell\":";
                     strJson += "[";
-                    strJson += "\"" + dt.Rows[j]["ID"].ToString() + "\",";
+                    strJson += "\"" + dt.Rows[j]["PmDate"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["DeviceCode"].ToString().Trim() + "\",";
                     strJson += "\"" + dt.Rows[j]["DeviceName"].ToString().Trim() + "\",";
-                    strJson += "\"" + dt.Rows[j]["ProcessName"].ToString().Trim() + "\",";
-                    strJson += "\"" + dt.Rows[j]["DevicePartsFile"].ToString().Trim() + "\",";
-                    strJson += "\"" + dt.Rows[j]["DeviceManualFile"].ToString().Trim() + "\"";
-
+                    strJson += "\"" + dt.Rows[j]["MaintenceTime"].ToString().Trim() + "\",";
+                    strJson += "\"" + dt.Rows[j]["InspectionProblem"].ToString().Trim() + "\",";
+                    strJson += "\"" + dt.Rows[j]["PowerLine"].ToString().Trim() + "\",";
+                    strJson += "\"" + dt.Rows[j]["GroundLead"].ToString().Trim() + "\",";
+                    strJson += "\"" + dt.Rows[j]["ReplacePart"].ToString().Trim() + "\",";
+                    strJson += "\"" + dt.Rows[j]["ReplaceName"].ToString().Trim() + "\",";
+                    strJson += "\"" + dt.Rows[j]["ReplaceCount"].ToString().Trim() + "\"";
                     strJson += "]";
                     strJson += "}";
                     if (j != pageSize + index - 1 && j != totalRecord - 1)
@@ -85,21 +87,31 @@ namespace LiNuoMes.Equipment.hs
             return strJson;
         }
 
-        public DataTable GetUserData(string processName, string deviceCode, string deviceName)
+        public DataTable GetUserData(string processName)
         {
             string str = "";
             DataTable dt = new DataTable();
+            string[] deviceList = processName.Split(',');
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
-                str = "select a.ID,a.DeviceCode,a.DeviceName,b.ProcessName,a.DevicePartsFile,a.DeviceManualFile from Equ_DeviceInfoList a left join Mes_Process_List b on a.ProcessCode=b.ProcessCode where a.DeviceCode like '%" + deviceCode.Trim() + "%' and a.DeviceName like '%" + deviceName.Trim() + "%'";
-                if (processName != "")
+
+                if (deviceList.Count() > 1)
                 {
-                    str += " and b.ProcessCode='" + processName.Trim() + "'";
+                    str = "select  a.InspectionDate as PmDate ,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode where a.DeviceCode='" + deviceList[0] + "' and FORMAT(a.InspectionDate,'yyyy-MM-dd')=FORMAT(getdate(),'yyyy-MM-dd') and and a.PmRecordID is null";
+                    for (int i = 1; i < deviceList.Count(); i++)
+                    {
+                        str = str + " union all select  a.InspectionDate as PmDate,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode where a.DeviceCode='" + deviceList[i] + "' and and a.PmRecordID is null";
+                    }
                 }
-                //str += "order by a.DeviceCode asc";
+                else
+                {
+                    str = "select  a.InspectionDate as PmDate,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode where a.DeviceCode='" + deviceList[0] + "' and FORMAT(a.InspectionDate,'yyyy-MM-dd')=FORMAT(getdate(),'yyyy-MM-dd') and and a.PmRecordID is null";
+                }
+
+                str += "order by a.InspectionDate,a.DeviceCode";
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str;
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
@@ -107,12 +119,5 @@ namespace LiNuoMes.Equipment.hs
                 return dt;
             }
         }
-      
     }
 }
-
-
-
-
-
-

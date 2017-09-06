@@ -282,7 +282,7 @@ CREATE TABLE [dbo].[MFG_WIP_BKF_MTL_Record] (
 IF OBJECT_ID('MFG_WIP_Data_Abnormal_Point') is not null
 DROP TABLE MFG_WIP_Data_Abnormal_Point;
 CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Point] (
-    [ID]                 INT             NOT NULL,                        -- (系统自动生成)
+    [ID]                 INT             NOT NULL,                        --非系统生成
     [DisplayValue]       NVARCHAR  (50)  NOT NULL                         --显示内容
 );
 
@@ -297,7 +297,7 @@ VALUES
 IF OBJECT_ID('MFG_WIP_Data_Abnormal_Product') is not null
 DROP TABLE MFG_WIP_Data_Abnormal_Product;
 CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Product] (
-    [ID]                 INT             NOT NULL,                        -- (系统自动生成)
+    [ID]                 INT             NOT NULL,                        --非系统生成
     [DisplayValue]       NVARCHAR  (50)  NOT NULL                         --显示内容
 );
 
@@ -314,8 +314,8 @@ VALUES
 IF OBJECT_ID('MFG_WIP_Data_Abnormal_Point_Product') is not null
 DROP TABLE MFG_WIP_Data_Abnormal_Point_Product;
 CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Point_Product] (
-    [abPointID]          INT             NOT NULL,                       --下线工序ID
-    [abProductID]        INT             NOT NULL                        --下线产品阶段ID
+    [abPointID]          INT             NOT NULL,                        --下线工序ID
+    [abProductID]        INT             NOT NULL                         --下线产品阶段ID
 );
 
 INSERT INTO MFG_WIP_Data_Abnormal_Point_Product (abPointID, abProductID)
@@ -331,9 +331,9 @@ VALUES
 IF OBJECT_ID('MFG_WIP_Data_Abnormal_Reason_Template') is not null
 DROP TABLE MFG_WIP_Data_Abnormal_Reason_Template;
 CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Reason_Template] (
-    [ID]                 INT             NOT NULL,                    -- (系统自动生成)
-    [abProductID]        INT             NOT NULL DEFAULT(0),         --下线产品阶段ID
-    [DisplayValue]       VARCHAR  (50)   NOT NULL                     --显示内容
+    [ID]                 INT             NOT NULL,                        --非系统生成
+    [abProductID]        INT             NOT NULL DEFAULT(0),             --下线产品阶段ID
+    [DisplayValue]       VARCHAR  (50)   NOT NULL                         --显示内容
 );
 
 INSERT INTO MFG_WIP_Data_Abnormal_Reason_Template (ID, abProductID, DisplayValue)

@@ -179,6 +179,8 @@
         }
 
         function getSendResult() {
+            var stopTimerFlag = 0;
+            window.clearInterval(timerID);
             $.ajax({
                 url: "..\\BaseConfig\\GetSetBaseConfig.ashx",
                 data: {
@@ -220,7 +222,10 @@
                             }
                         }
                         if (completeCount == PlcList.length) {
-                            stopMonitor();
+                            $('#btn_SD').attr("disabled", false);
+                            $("#CHK_ALL").iCheck('enable');
+                            $("#TimerTip").text("");
+                            stopTimerFlag = 1;
                         }
                     }
                     else {
@@ -232,6 +237,9 @@
                 }
             });
 
+            if (stopTimerFlag != 1){
+                 timerID = window.setInterval(refreshStatus, 1 * 1000);
+            }
             return;
         }
 
@@ -249,13 +257,6 @@
                 getSendResult();
             }
             timeCount--;
-        }
-
-        function stopMonitor() {
-            $('#btn_SD').attr("disabled", false);
-            $("#CHK_ALL").iCheck('enable');
-            $("#TimerTip").text("");
-            window.clearInterval(timerID);
         }
 
         function initPLCContent(data) {

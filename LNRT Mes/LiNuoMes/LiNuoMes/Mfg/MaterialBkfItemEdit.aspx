@@ -91,7 +91,7 @@
 
              $('#UOM').bind('keypress', function (event) {
                  if (event.keyCode == "13") {
-                     //AcceptClick($("#gridTable"))
+                     AcceptClick($("#gridTable"));
                  }
              });               
          });
@@ -188,13 +188,13 @@
                      Loading(false);
                      data = JSON.parse(data);
                      if (data.result == "success") {
-                         grid.trigger("reloadGrid");
+                         window.parent.$('#gridTable').trigger("reloadGrid");
                          if (OPtype == "EDIT") {
                              dialogMsg("修改数据保存成功", 1);
                              dialogClose();
                          }
                          else if (OPtype == "ADD") {
-                         //    dialogMsg("新增数据保存成功", 1);
+                         //  dialogMsg("新增数据保存成功", 1);
                              $("#ItemNumber").val("").focus();
                              $("#ItemDsca").val("");
                              $("#UOM").val("");

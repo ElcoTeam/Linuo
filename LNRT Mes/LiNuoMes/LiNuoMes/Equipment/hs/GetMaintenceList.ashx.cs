@@ -97,21 +97,18 @@ namespace LiNuoMes.Equipment.hs
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
+                str = "select a.InspectionDate as PmDate,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode left join Equ_PmPlanList c on  c.ProcessCode=b.ProcessCode  where c.PmPlanCode='" + deviceList[0] + "' and FORMAT(a.InspectionDate,'yyyy-MM-dd')=FORMAT(getdate(),'yyyy-MM-dd')  and a.PmRecordID is null";
 
                 if (deviceList.Count() > 1)
                 {
-                    str = "select  a.InspectionDate as PmDate ,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode where a.DeviceCode='" + deviceList[0] + "' and FORMAT(a.InspectionDate,'yyyy-MM-dd')=FORMAT(getdate(),'yyyy-MM-dd') and and a.PmRecordID is null";
+                    
                     for (int i = 1; i < deviceList.Count(); i++)
                     {
-                        str = str + " union all select  a.InspectionDate as PmDate,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode where a.DeviceCode='" + deviceList[i] + "' and and a.PmRecordID is null";
+                        str = str + " union all select a.InspectionDate as PmDate,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode left join Equ_PmPlanList c on  c.ProcessCode=b.ProcessCode where c.PmPlanCode='" + deviceList[i] + "' and  a.PmRecordID is null";
                     }
                 }
-                else
-                {
-                    str = "select  a.InspectionDate as PmDate,a.DeviceCode,b.DeviceName,a.MaintenceTime,a.InspectionProblem,a.PowerLine,a.GroundLead,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode = b.DeviceCode where a.DeviceCode='" + deviceList[0] + "' and FORMAT(a.InspectionDate,'yyyy-MM-dd')=FORMAT(getdate(),'yyyy-MM-dd') and and a.PmRecordID is null";
-                }
-
-                str += "order by a.InspectionDate,a.DeviceCode";
+               
+                str += " order by a.InspectionDate,a.DeviceCode";
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str;
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);

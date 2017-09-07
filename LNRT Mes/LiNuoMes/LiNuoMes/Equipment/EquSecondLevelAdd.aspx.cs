@@ -33,9 +33,7 @@ namespace LiNuoMes.Equipment
                 string str1 = "";
                 for (int i = 0; i < PmList.Count();i++ )
                 {
-
-                    str1 = "select a.DeviceName,b.DeviceCode from Equ_PmPlanList a left join Equ_DeviceInfoList b on a.ProcessCode=b.ProcessCode where a.PmPlanCode='" + PmList[0] + "' or PmPlanCode='" + PmList[i] + "'";
-                    
+                    str1 = "select a.DeviceName,b.DeviceCode from Equ_PmPlanList a left join Equ_DeviceInfoList b on a.ProcessCode=b.ProcessCode and a.DeviceName=b.DeviceName where a.PmPlanCode='" + PmList[0] + "' or PmPlanCode='" + PmList[i] + "'";
                 }
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str1;

@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-       <meta charset="UTF-8" name="viewport" content="width=device-width" />
+   <meta charset="UTF-8" name="viewport" content="width=device-width" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>用户管理</title>
     <%--<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" />--%>
@@ -17,41 +17,24 @@
     <script src="../Content/scripts/plugins/jquery-ui/jquery-ui.min.js"></script>
     <!--框架必需end-->
     <!--bootstrap组件start-->
-   <%-- <link href="../Content/scripts/bootstrap/bootstrap.css" rel="stylesheet" />--%>
-    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="../Content/scripts/bootstrap/bootstrap.css" rel="stylesheet" />
     <%--<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" />--%>
     <script src="../Content/scripts/bootstrap/bootstrap.min.js"></script>
-    <!--bootstrap组件end-->
-    <!--jqgrid表格组件start-->
-
-    <!--表格组件end-->
-    <!--树形组件start-->
-
-    <!--树形组件end-->
-    <!--表单验证组件start-->
-
-    <!--表单验证组件end-->
-    <!--日期组件start-->
-
-    <!--日期组件start-->
-
+   
     <script src="../My97DatePicker/WdatePicker.js"></script>
     <link href="../Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
     <link href="../Content/styles/learun-ui.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="../css/iziModal.css">
-    <link href="../Content/scripts/plugins/wizard/wizard.css" rel="stylesheet" />
     <script src="../Content/scripts/plugins/layout/jquery.layout.js"></script>
     <script src="../Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+
     <script src="../Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
     <script src="../Content/scripts/plugins/tree/tree.js"></script>
     <script src="../Content/scripts/plugins/validator/validator.js"></script>
-    <script src="../Content/scripts/plugins/wizard/wizard.js"></script>
     <script src="../Content/scripts/utils/learun-ui.js"></script>
     <script src="../Content/scripts/utils/learun-form.js"></script>
-    <script src="../js/iziModal.min.js" type="text/javascript"></script>
-    <link href="../css/void_autocomplete.css" rel="stylesheet" />
-    <script src="../js/void_autocomplete.js"></script>
-
+    <link href="../Content/scripts/plugins/wizard/wizard.css" rel="stylesheet" />
+    <script src="../Content/scripts/plugins/wizard/wizard.js"></script>
     <style>
         html, body {
             height: 100%;
@@ -64,12 +47,9 @@
      <script>
 
          var actionname = request('actionname');
-         
+         var id = '<%=Session["UserName"] %>';
          $(function () {
-             var id = '<%=Session["UserName"] %>';
-             $("#PmOper").val(id);
              InitialPage();
-             GetGrid();
              buttonOperation();
          });
          //初始化页面
@@ -79,20 +59,22 @@
              $('#wizard').wizard().on('change', function (e, data) {
                  var $finish = $("#btn_finish");
                  var $next = $("#btn_next");
-                
+                 if (data.direction == "next") {
+                     GetGrid();
+                 }
              });
              
              //resize重设(表格、树形)宽高
              $(window).resize(function (e) {
                  window.setTimeout(function () {
-                     $("#gridTable").setGridHeight($(window).height());
+                     $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                     //$('#areascontent').height($(window).height() - 106);
                  }, 200);
-                 e.stopPropagation();
              });
 
              $.ajax({
-                // url: "EquSecondLevelMaintence.aspx/GetSecondLevelList",
-                 url: "EquFirstLevelMaintence.aspx/GetFirstLevelList",
+                 url: "EquSecondLevelMaintence.aspx/GetSecondLevelList",
+                 //url: "EquFirstLevelMaintence.aspx/GetFirstLevelList",
                  data: "{}",
                  type: "post",
                  dataType: "json",
@@ -122,16 +104,19 @@
                      $(".card-box").click(function () {
                          if (!$(this).hasClass("active")) {
                              $(this).addClass("active")
-                             $("#btn_next").removeAttr('disabled');
-                             
+                             //$("#btn_next").removeAttr('disabled');                            
                          } else {
                              $(this).removeClass("active")
+                             //$("#btn_next").attr('disabled', 'disabled');
+                         }
+                         if ($(".card-box").hasClass("active")) {
+                             $("#btn_next").removeAttr('disabled');
+                         } else {
                              $("#btn_next").attr('disabled', 'disabled');
                          }
                      });
                      Loading(false);
                  }, beforeSend: function () {
-                     
                      Loading(true);
                  }
              });
@@ -152,7 +137,6 @@
 
          }
 
-
          //加载表格
          function GetGrid() {
              var userIds = [];
@@ -161,23 +145,23 @@
              });
              var selectedRowIndex = 0;
              var $gridTable = $('#gridTable');
+            
              $gridTable.jqGrid({
                  url: "hs/GetMaintenceList.ashx",
+                 postData: { DeviceCode: userIds.toString() },
                  datatype: "json",
-                 postData: { DeviceCode: userIds },
                  height: $(window).height() * 0.7,
-                 width: $('#wizard').width(),
+                 width: $('#wizard').width() - 10,
                  colModel: [
-                    
                      {
-                         label: '点检日期', name: 'PmDate', index: 'PmDate', width: 80, align: 'left', sortable: false
+                         label: '点检日期', name: 'PmDate', index: 'PmDate', width: 100, align: 'left', sortable: false
                      },
-                     { label: '设备编号', name: 'DeviceCode', index: 'DeviceCode', width: 80, align: 'left', sortable: false },
+                     { label: '设备编号', name: 'DeviceCode', index: 'DeviceCode', width: 100, align: 'left', sortable: false },
                      {
                          label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 200, align: 'left', sortable: false
                      },
                      {
-                         label: '保养工时', name: 'MaintenceTime', index: 'MaintenceTime', width: 80, align: 'left', sortable: false
+                         label: '保养工时', name: 'MaintenceTime', index: 'MaintenceTime', width: 100, align: 'left', sortable: false
                      },
                      {
                          label: '保养前存在问题', name: 'InspectionProblem', index: 'InspectionProblem', width: 200, align: 'left', sortable: false
@@ -201,15 +185,12 @@
                  shrinkToFit: false,
                  autowidth: false,
                  scroll:true,
-                 gridview: true,
-                 onSelectRow: function () {
-                     selectedRowIndex = $("#" + this.id).getGridParam('selrow');
-                 },
-                 gridComplete: function () {
-                     $("#" + this.id).setSelection(selectedRowIndex, false);
-
-                 }
+                 gridview: true
+                
              });
+             //$gridTable.jqGrid('setGridParam', {
+             //    postData: { "DeviceCode": 56 }
+             //});
 
          }
 
@@ -252,36 +233,23 @@
          }
 
          //保存表单
-         function AcceptClick() {
-             
+         function AcceptClick() {          
              var userIds = [];
-             //var productcatagory = [];
              $('.gridPanel1 .active .card-box-content').each(function () {
                  userIds.push($(this).attr('id'));
-                 //productcatagory.push($(this).find('p:eq(1)').html());
              });
 
-             //var PmStartDate = $("#PmStartDate").val().trim();
-             //var PmFinishDate = $("#PmFinishDate").val();
-             var PmOper = $("#PmOper").val();
-             var PmComment = $("#PmComment").val();
-
-             //if (userIds.length==0)
-             //{
-             //    dialogMsg('当日无需要维护的二级保养计划', 0);
-             //    return false;
-             //}
-
-             if (!$('#ruleinfo').Validform()) {
+             if (userIds.length == 0) {
+                 dialogMsg('请选择保养计划', 0);
                  return false;
              }
+             
              $.ajax({
                  url: "../Equipment/hs/GetEquMaintenceManCRUD.ashx",
                  traditional: true,
                  data:{
                      Action: "ExcuteSecondLevelEquMaintenceMan",
-                     PmOper: PmOper,
-                     PmComment: PmComment,
+                     PmOper: id,
                      PmList: userIds
                  },
                  async: true,
@@ -338,13 +306,11 @@
                  height: "800px",
                  btn: null
              });
-
          }
 
-       
     </script>
 <body>
-    <div class="widget-body">
+    <div class="widget-body ui-layout ui-layout-container ">
          <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
                 <ul class="steps">
                      <li data-target="#step-1" class="active"><span class="step">1</span>基本信息<span class="chevron"></span></li>
@@ -369,14 +335,14 @@
             <div class="toolbar">
                 <div class="btn-group">
                     <a id="lr-add" class="btn btn-default" onclick="btn_add(event)"><i class="fa fa-plus"></i>&nbsp;新增</a>
-                    <a id="lr-delete" class="btn btn-default" onclick="btn_delete(event)"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+                    <%--<a id="lr-delete" class="btn btn-default" onclick="btn_delete(event)"><i class="fa fa-trash-o"></i>&nbsp;删除</a>--%>
                 </div>
             </div>
             </div>
             <div class="rows" style="margin-top:0.5%; overflow: hidden; ">
              
               <div class="gridPanel">
-                   <table id="gridTable"></table>
+                   <table id="gridTable" style="width: 1200px;"></table>
               </div>
              </div>
            
@@ -391,33 +357,38 @@
             <a id="btn_next" disabled  class="btn btn-default btn-next">下一步</a>
             <a id="btn_finish"  class="btn btn-success" style="width:60px;">完成</a>
     </div>
-   <style>
+    <style>
     .form .formValue
     {
         padding-left: 5px;
     }
-    /*.form .form-control {
-        font-size:9pt;
-    }*/
+    
     .form .formTitle { 
         font-size:9pt;
     }
     .card-box-img {
-    line-height:initial;
+        line-height:initial;
     }
     .card-box-img img {
-    width: 58px;
-    height: 58px;
-    border-radius: 0px;
-    margin-left:0px;
+        width: 58px;
+        height: 58px;
+        border-radius: 0px;
+        margin-left:0px;
     }
-    .card-box-content p{
-        height: 20px;
+    .card-box-content p a{
+        font-size:9pt;
     }
      .timeselect{
         width:200px;
         height:30px;
     }
+    .problemcount{
+        width: 40px; 
+        border: none; 
+        border-bottom: 1px solid #000;
+        text-align: center;
+    }
+    
     </style>
 </body>
 </html>

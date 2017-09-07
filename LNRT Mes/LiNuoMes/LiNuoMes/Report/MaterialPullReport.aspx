@@ -63,7 +63,7 @@
                 postData: { Action: "MaterialPullReport" },
                 loadonce: true,
                 datatype: 'json',
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() *0.55,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
@@ -87,7 +87,7 @@
                         label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 100, align: 'center'
                     },
                     { label: '拉动数量', name: 'Qty', index: 'Qty', width: 100, align: 'center' },
-                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 100, align: 'center' },
+                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 200, align: 'center' },
                     {
                         label: '发送情况', name: 'Status', index: 'Status', width: 100, align: 'center',
                         formatter: function (cellvalue, options, rowObject) {
@@ -102,9 +102,9 @@
                             }
                         }
                     },
-                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 100, align: 'center' },
+                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 200, align: 'center' },
                     { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 100, align: 'center' },
-                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 100, align: 'center' },
+                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 200, align: 'center' },
                     { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 100, align: 'center' },
                     { label: '是否超时', name: 'OTFlag', index: 'OTFlag', width: 100, align: 'center' },
                    
@@ -209,8 +209,6 @@
                                     <td class="formValue">
                                         <input type="text" class="form-control" id="materialcode" placeholder="请输入物料编号">
                                     </td> 
-                                </tr>
-                                <tr>
                                     <th class="formTitle">工序名称：</th>
                                     <td class="formValue">
                                          <select class="form-control" id="produce">
@@ -225,14 +223,7 @@
                                             <option value='2'>已完成</option>
                                          </select>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">拉动时间：</th>
-                                    <td class="formValue">
-                                         <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                    <th class="formTitle">是否超时：</th>
+                                     <th class="formTitle">是否超时：</th>
                                     <td class="formValue">
                                          <select class="form-control" id="OTFlag">
                                             <option value=''>请选择...</option>
@@ -241,27 +232,38 @@
                                          </select>
                                     </td>
                                 </tr>
+                                
                                 <tr>
-                                    <th class="formTitle">响应时间：</th>
-                                    <td class="formValue">
-                                         <input id="ActionTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="ActionTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
                                     <th class="formTitle">响应人：</th>
                                     <td class="formValue">
                                          <input type="text" class="form-control" id="ActionUser" placeholder="请输入响应人">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">确认时间：</th>
-                                    <td class="formValue">
-                                         <input id="ConfirmTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ConfirmTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="ConfirmTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ConfirmTimeStart\')}'})" class="Wdate timeselect" /> 
                                     </td>
                                     <th class="formTitle">确认人：</th>
                                     <td class="formValue">
                                          <input type="text" class="form-control" id="ConfirmUser" placeholder="请输入确认人">
                                     </td>
+                                   <th class="formTitle">拉动时间：</th>
+                                    <td class="formValue" colspan="3">
+                                         <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                         <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
+                                    </td>
+                                     
+                                   
+                                </tr>
+                               
+                                <tr>
+                                     
+                                    <th class="formTitle">响应时间：</th>
+                                    <td class="formValue" colspan="3">
+                                         <input id="ActionTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                         <input id="ActionTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate timeselect" /> 
+                                    </td>
+                                    <th class="formTitle">确认时间：</th>
+                                    <td class="formValue" colspan="3">
+                                         <input id="ConfirmTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ConfirmTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                         <input id="ConfirmTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ConfirmTimeStart\')}'})" class="Wdate timeselect" /> 
+                                    </td>
+                                    
                                     <td class="formValue">
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
                                     </td>
@@ -290,12 +292,19 @@
          </div>
     </div>
     <style>
-         .timeselect {
-            width: 135px;
+      .timeselect {
+            width: 200px;
             height: 35px;
             font-size: 25px;
-         }
+      }
+     .formTitle{
+          width: 150px;
+      }
+      .form-control{
+          width: 200px;
+      }
     </style>
+     
 </body>
 </html>
 

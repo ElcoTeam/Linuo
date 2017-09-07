@@ -56,15 +56,13 @@
             $("#btn_FirstLevel").click(function () {
                
                 $.ajax({
-                    url: "EquMaintenceMan.aspx/GetFirstMaintenceInfo",
+                    url: "EquFirstLevelMaintence.aspx/GetFirstLevelList",
                     type: "post",
                     dataType: "json",
                     data: "{}",
                     contentType: "application/json;charset=utf-8",
                     success: function (data) {
-                        var data1 = JSON.parse(data.d);
-                       
-                        if (data1.length==0) {
+                        if (data.d.length == 0) {
                             dialogAlert("当前无一级保养计划", 0);
                         }
                         else {
@@ -73,7 +71,7 @@
                                 title: '一级保养信息维护',
                                 url: '../Equipment/EquFirstLevelMaintence.aspx',
                                 //url: '../Equipment/EquSecondLevelMaintence.aspx',
-                                width: "1200px",
+                                width: "900px",
                                 height: "800px",
                                 //btn: null,
                                 callBack: function (iframeId) {
@@ -112,9 +110,10 @@
                                 url: '../Equipment/EquSecondLevelMaintence.aspx',
                                 width: "1300px",
                                 height: "800px",
-                                callBack: function (iframeId) {
-                                    top.frames[iframeId].AcceptClick1($("#gridTable"));
-                                }
+                                btn: null
+                                //callBack: function (iframeId) {
+                                //    top.frames[iframeId].AcceptClick1($("#gridTable"));
+                                //}
                             });
                         }
                         Loading(false);

@@ -73,15 +73,26 @@ $.fn.printArea = function (opt) {
                     var $data = $_area.find("table.ui-jqgrid-btable").eq(0).find("tbody").clone();
                     var $title = $_area.find("div.grid-title");
                     var $subtitle = $_area.find("div.grid-subtitle");
+                    var $foot = $_area.find("div.grid-foot");
                     var $summary = $_area.find("table.ui-jqgrid-ftable").find("tbody").clone();
 
                     if ($title.length) {
                         $('<caption/>').prependTo($tb).append($title.clone()).append($subtitle.clone());
                     }
+                   
                     $tb.find("th").css("width", "auto");
                     $summary.find("td").css("width", "auto");
+                   
                     $data.children().eq(0).remove();
-                    $tb.append($data).append($summary);
+                    if ($foot.length) {
+                        $tb.append($data).append($summary)
+                            .append($('<tfoot align="right" valign="middle"/>')
+                            .append($('<tr/>').append($('<td colspan="6" style="border: none;"/>').append($foot.clone()))));
+                    }
+                    else {
+                        $tb.append($data).append($summary);
+                    }
+                    
                     $(win.document.body).append($html).append($tb);
                 }
             });

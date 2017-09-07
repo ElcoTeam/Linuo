@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-       <meta charset="UTF-8" name="viewport" content="width=device-width" />
+    <meta charset="UTF-8" name="viewport" content="width=device-width" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>用户管理</title>
     <%--<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" />--%>

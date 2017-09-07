@@ -220,7 +220,7 @@
                 tooltip: {
                     headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                     pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+                    '<td style="padding:0"><b>{point.y:.1f} </b></td></tr>',
                     footerFormat: '</table>',
                     shared: true,
                     useHTML: true
@@ -305,6 +305,12 @@
                                     <td class="formValue">
                                         <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">
                                     </td>
+                                    <th class="formTitle">报警时间：</th>
+                                    <td class="formValue" colspan="2">
+                                          <input id="AlarmStartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'AlarmEndTime\')}'})" class="Wdate timeselect"  readonly/>&nbsp;至&nbsp;
+                                          <input id="AlarmEndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'AlarmStartTime\')}'})" class="Wdate timeselect"  readonly /> 
+                                    </td>
+                                                              
                                 </tr>
                                 <tr>
                                     <th class="formTitle">处理情况：</th>
@@ -314,8 +320,7 @@
                                            <option value='R'>已处理</option>
                                            <option value='N'>未处理</option>
                                        </select>
-                                    </td>
-
+                                    </td>   
                                     <th class="formTitle">报警项：</th>
                                     <td class="formValue">
                                         <select class="form-control" id="AlarmItem">
@@ -323,18 +328,9 @@
                                            <option value='报警'>报警</option>
                                            <option value='物料拉动'>物料拉动</option>
                                        </select>   
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">报警时间：</th>
-                                    <td class="formValue" colspan="3">
-                                          <input id="AlarmStartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'AlarmEndTime\')}'})" class="Wdate timeselect"  readonly/>&nbsp;至&nbsp;
-                                          <input id="AlarmEndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'AlarmStartTime\')}'})" class="Wdate timeselect"  readonly /> 
-                                    </td>
-                                </tr>
-                                 <tr>
+                                    </td>     
                                     <th class="formTitle">处理完成时间：</th>
-                                    <td class="formValue" colspan="3">
+                                    <td class="formValue" colspan="2">
                                           <input id="DealWithStartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'DealWithEndTime\')}'})" class="Wdate timeselect" readonly />&nbsp;至&nbsp;
                                           <input id="DealWithEndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'DealWithStartTime\')}'})" class="Wdate timeselect" readonly /> 
                                     </td> 
@@ -342,6 +338,7 @@
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
                                     </td> 
                                 </tr>
+                                
                             </table>
                         </div>
                     </div>
@@ -371,6 +368,17 @@
                </div>
          </div>
     </div>
+    <style>
+      .timeselect{
+          width: 200px;
+      }
+      .formTitle{
+          width: 200px;
+      }
+      .form-control{
+          width: 250px;
+      }
+   </style> 
 </body>
 </html>
 

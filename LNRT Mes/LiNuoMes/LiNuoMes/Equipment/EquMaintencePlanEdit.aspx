@@ -58,23 +58,78 @@
              if (equid == undefined) {
                  equid = 0;
              }
-             //查看
+             
              if (actionname == 1) {
+                 CreateProcess();
+                 CreateDevice();
+
                  $("#ProcessName").attr("disabled", "disabled");
                  $("#DeviceName").attr("disabled", "disabled");
                  $("#PmSpecName").attr("disabled", "disabled");
                  $("#PmPlanCode").attr("disabled", "disabled");
                  $("#PmPlanName").attr("disabled", "disabled");
-                 $("#PmCycleTime").attr("disabled", true);  
+                 $("#PmCycleTime").attr("disabled", true);
                  $("#PmTimeUsage").attr("disabled", true);
                  $("#PmFirstDate").attr("disabled", true);
                  $("#PmContinueTimes").attr("disabled", true);
                  $("#PmPreAlarmDates").attr("disabled", true);
                  $("#Description").attr("disabled", true);
                  $("#PmLevel").attr("disabled", true);
-             }
+                 $.ajax({
+                     url: "../Equipment/hs/GetEquMaintencePlanCRUD.ashx",
+                     data: {
+                         "Action": "EquMaintencePlan_Detail",
+                         "EquID": equid
+                     },
+                     type: "post",
+                     datatype: "json",
+                     async: true,
+                     success: function (data) {
+                         data = JSON.parse(data);
+                         console.log(data);
+                         $("#ProcessName").val(data.ProcessCode );
+                         $("#PmLevel").val(data.PmLevel);
+                         $("#DeviceName").val("" + data.DeviceName + "");
+                         $("#PmSpecName").val(data.PmSpecName);
+                         $("#PmPlanCode").val(data.PmPlanCode);
+                         $("#PmPlanName").val(data.PmPlanName);
+                         $("#PmFirstDate").val(data.PmFirstDate);
+                         if (data.PmCycleTime == 0) {
+                             $("#PmCycleTime").val("");
+                         }
+                         else {
+                             $("#PmCycleTime").val(data.PmCycleTime);
+                         }
+                         if (data.PmTimeUsage == 0) {
+                             $("#PmTimeUsage").val("");
+                         }
+                         else {
+                             $("#PmTimeUsage").val(data.PmTimeUsage);
+                         }
 
-             if (actionname == 1 || actionname == 2) {
+                         if (data.PmContinueTimes==0) {
+                             $("#PmContinueTimes").val("");
+                         }
+                         else {
+                             $("#PmContinueTimes").val(data.PmContinueTimes);
+                         }
+                         $("#PmPreAlarmDates").val(data.PmPreAlarmDates);
+                         $("#Description").val(data.PmPlanComment);
+                         Loading(false);
+                     }, beforeSend: function () {
+                         Loading(true);
+                     }
+                 });
+             }
+            
+             if (actionname == 0) {
+                 OPaction = "EquMaintencePlan_Add";
+             }
+       
+             if (actionname == 2) {
+                 CreateProcess();
+                 CreateDevice();
+                 OPaction = "EquMaintencePlan_Edit";
                  $.ajax({
                      url: "../Equipment/hs/GetEquMaintencePlanCRUD.ashx",
                      data: {
@@ -92,7 +147,7 @@
 
                          if ($("#PmLevel").val() == '一级保养') {
                              $("#PmLevel").attr("disabled", true);
-                            
+
                              $("#PmCycleTime").attr("disabled", true);
                              $("#PmPreAlarmDates").attr("disabled", true);
                              $("#PmFirstDate").attr("disabled", true);
@@ -125,7 +180,7 @@
                              $("#PmTimeUsage").val(data.PmTimeUsage);
                          }
 
-                         if (data.PmContinueTimes==0) {
+                         if (data.PmContinueTimes == 0) {
                              $("#PmContinueTimes").val("");
                          }
                          else {
@@ -138,14 +193,8 @@
                          Loading(true);
                      }
                  });
-             }
-             if (actionname == 2) {
-                 OPaction = "EquMaintencePlan_Edit";
-             }
-             if (actionname == 0) {
-                 OPaction = "EquMaintencePlan_Add";
-             }
 
+             }
             
 
              //保养规范编号选择
@@ -221,6 +270,13 @@
                              $("#PmContinueTimes").attr("disabled", true);
                              $("#PmPreAlarmDates").val("");
                          }
+                         else {
+                             $("#PmCycleTime").attr("disabled", false);
+                             $("#PmPreAlarmDates").attr("disabled", false);
+                             $("#PmFirstDate").attr("disabled", false);
+                             $("#PmTimeUsage").attr("disabled", false);
+                             $("#PmContinueTimes").attr("disabled", false);
+                         }
                      },
                      error: function (msg) {
                          alert("数据访问异常");
@@ -258,8 +314,6 @@
          
          //构造select
          function CreateSelect() {
-             
-
              //保养规范编号
              $("#ProcessName").empty();
              $("#PmSpecName").empty();
@@ -284,48 +338,54 @@
                      alert("数据访问异常");
                  }
              });
+         }
 
-             //var optionstring = "";
-             //$.ajax({
-             //    url: "EquDeviceInfo.aspx/GetProcessInfo",
-             //    type: "post",
-             //    dataType: "json",
-             //    data: "{deviceid:''}",
-             //    async: true,
-             //    contentType: "application/json;charset=utf-8",
-             //    success: function (data) {
-             //        var data1 = eval('(' + data.d + ')');
-             //        var i = 0;
-             //        for (i in data1) {
-             //            optionstring += "<option value=\"" + data1[i].ProcessCode + "\" >" + data1[i].ProcessName.trim() + "</option>";
-             //        }
-             //        $("#ProcessName").html(optionstring);                
-             //    },
-             //    error: function (msg) {
-             //        alert("数据访问异常");
-             //    }
-             //});
 
-             //var optionstring1 = "";
-             //$.ajax({
-             //    url: "EquDeviceInfo.aspx/GetDeviceName",
-             //    type: "post",
-             //    dataType: "json",
-             //    data: "{deviceid:''}",
-             //    async: true,
-             //    contentType: "application/json;charset=utf-8",
-             //    success: function (data) {
-             //        var data1 = eval('(' + data.d + ')');
-             //        var i = 0;
-             //        for (i in data1) {
-             //            optionstring1 += "<option value=\"" + data1[i].DeviceName + "\" >" + data1[i].DeviceName.trim() + "</option>";
-             //        }
-             //        $("#DeviceName").html(optionstring1);
-             //    },
-             //    error: function (msg) {
-             //        alert("数据访问异常");
-             //    }
-             //});
+         function CreateProcess() {
+             var optionstring = "";
+             $.ajax({
+                 url: "EquDeviceInfo.aspx/GetProcessInfo",
+                 type: "post",
+                 dataType: "json",
+                 data: "{deviceid:''}",
+                 async: true,
+                 contentType: "application/json;charset=utf-8",
+                 success: function (data) {
+                     var data1 = eval('(' + data.d + ')');
+                     var i = 0;
+                     for (i in data1) {
+                         optionstring += "<option value=\"" + data1[i].ProcessCode + "\" >" + data1[i].ProcessName.trim() + "</option>";
+                     }
+                     $("#ProcessName").html(optionstring);                
+                 },
+                 error: function (msg) {
+                     alert("数据访问异常");
+                 }
+             });
+         }
+
+
+         function CreateDevice() {
+             var optionstring1 = "";
+             $.ajax({
+                 url: "EquDeviceInfo.aspx/GetDeviceName",
+                 type: "post",
+                 dataType: "json",
+                 data: "{deviceid:''}",
+                 async: true,
+                 contentType: "application/json;charset=utf-8",
+                 success: function (data) {
+                     var data1 = eval('(' + data.d + ')');
+                     var i = 0;
+                     for (i in data1) {
+                         optionstring1 += "<option value=\"" + data1[i].DeviceName + "\" >" + data1[i].DeviceName.trim() + "</option>";
+                     }
+                     $("#DeviceName").html(optionstring1);
+                 },
+                 error: function (msg) {
+                     alert("数据访问异常");
+                 }
+             });
          }
 
        

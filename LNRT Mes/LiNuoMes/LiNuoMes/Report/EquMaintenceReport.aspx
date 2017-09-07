@@ -62,7 +62,7 @@
                 url: "../Equipment/hs/GetEquMaintenceMan.ashx",
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() *0.55,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '保养规范编号', name: 'PmSpecCode', hidden: true },
@@ -92,7 +92,10 @@
                     { label: '处理时间', name: 'UpdateTime', index: 'UpdateTime', width: 250, align: 'left', sortable: false },
                 ],
                 viewrecords: true,
-                rowNum: "10000",
+                rowNum: 30,
+                rownumWidth: 100,
+                rowList: [30, 50, 100],
+                pager: "#gridPager",
                 shrinkToFit: false,
                 autowidth: true,
                 scrollrows: true,
@@ -121,6 +124,7 @@
                 //var PmFinishDateEnd = $("#PmFinishDateEnd").val();
 
                 $gridTable.jqGrid('setGridParam', {
+                    datatype: 'json',
                     postData: {
                         ProcessName: processName,
                         DeviceName: deviceName,
@@ -228,9 +232,6 @@
                                     <td class="formValue">
                                         <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">
                                     </td>
-                                    
-                                </tr>
-                                <tr>
                                     <th class="formTitle">保养类别：</th>
                                     <td class="formValue">
                                        <select class="form-control" id="PmType">
@@ -239,6 +240,10 @@
                                            <option value='计划外保养'>计划外保养</option>
                                        </select>
                                     </td>
+                                    
+                                </tr>
+                               
+                                <tr>
                                     <th class="formTitle">保养类型：</th>
                                     <td class="formValue">
                                        <select class="form-control" id="PmLevel">
@@ -247,8 +252,6 @@
                                            <option value='二级保养'>二级保养</option>
                                        </select>
                                     </td>
-                                </tr>
-                                <tr>
                                     <th class="formTitle">执行情况：</th>
                                     <td class="formValue">
                                         <select class="form-control" id="Status">
@@ -267,8 +270,6 @@
                                     <td class="formValue">
                                        <input type="text" class="form-control" id="PmPlanName" placeholder="请输入保养计划名称">
                                     </td>
-                                </tr>
-                                <tr>
                                     <th class="formTitle">计划起止日期：</th>
                                     <td class="formValue" colspan="2">
                                           <input id="PmStartDate"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PmFinishDate\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
@@ -280,6 +281,7 @@
                                     </td>
                                     
                                 </tr>
+                                
                             </table>
                         </div>
                     </div>
@@ -297,12 +299,19 @@
          <div class="ui-report" style="margin-top:0.5%; overflow: hidden; ">
               <div class="gridPanel" id="gridPanel">
                   <div class="printArea">
-                      <table id="gridTable"></table>                      
+                      <table id="gridTable"></table>  
+                      <div id="gridPager"></div>                    
                   </div>
               </div>
          </div>
     </div>
+   <style>
+      .timeselect{
+          width: 200px;
+      }
+   </style> 
 </body>
+  
 </html>
 
 

@@ -20,7 +20,7 @@
 .ui-report .gridPanel{background: #fff;padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);border: 1px solid #cfcfcf;}
 .ui-report .grid-title{font-size: 22px;text-align:center;width:100%;color: #444; background: url(../../images/logo.png) no-repeat right top;  background-size:contain;}
 .ui-report .grid-subtitle{width:100%;text-align:left;padding: 5px 0;}
-
+.ui-report .grid-foot{width:100%;text-align:right;padding: 5px 0; border:none;}
 
 @media print {
     @page {
@@ -70,6 +70,12 @@
         width: 100%;
         text-align: left;
         padding: 5px 0;
+    }
+     .ui-table-print .grid-foot {
+        width: 100%;
+        text-align: right;
+        padding: 5px 0;
+        border: none !important;
     }
 
     .ui-jqgrid .ui-jqgrid-bdiv, .ui-jqgrid .ui-jqgrid-bdiv > div {

@@ -133,9 +133,13 @@ namespace LiNuoMes.Equipment.hs
                 {
                     Equ_PmFisrtLevelRecordInfo ep = new Equ_PmFisrtLevelRecordInfo();
                     ep.PmPlanCode = PmList[i].ToString();
-                   
+
                     ep.PmComment = RequstString("PmComment");
                     ep.PmOper = RequstString("PmOper");
+
+                    ep.FindProblem = RequstString("FindProblem") == "" ? 0 : Convert.ToInt16(RequstString("FindProblem"));
+                    ep.RepairProblem = RequstString("RepairProblem") == "" ? 0 : Convert.ToInt16(RequstString("RepairProblem"));
+                    ep.ReaminProblem = RequstString("ReaminProblem") == "" ? 0 : Convert.ToInt16(RequstString("ReaminProblem"));
                     dataEntity.Add(ep);
                 }
 
@@ -153,15 +157,9 @@ namespace LiNuoMes.Equipment.hs
                 {
                     Equ_PmFisrtLevelRecordInfo ep = new Equ_PmFisrtLevelRecordInfo();
                     ep.PmPlanCode = PmList[i].ToString();
-                    //ep.PmStartDate = RequstString("PmStartDate");
-                    //ep.PmFinishDate = RequstString("PmFinishDate");
-                    ep.PmComment = RequstString("PmComment");
                     ep.PmOper = RequstString("PmOper");
-
-                    ep.FindProblem = RequstString("FindProblem") =="" ? 0 :Convert.ToInt16(RequstString("FindProblem"));
-                    ep.RepairProblem = RequstString("RepairProblem") == "" ? 0 : Convert.ToInt16(RequstString("RepairProblem"));
-                    ep.ReaminProblem = RequstString("ReaminProblem") == "" ? 0 : Convert.ToInt16(RequstString("ReaminProblem"));
                     dataEntity.Add(ep);
+                    
                 }
 
                 ResultMsg_Equ_PmFirstLevelRecord result = new ResultMsg_Equ_PmFirstLevelRecord();
@@ -576,7 +574,7 @@ namespace LiNuoMes.Equipment.hs
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
                     cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    SqlParameter[] sqlPara = new SqlParameter[3];
+                    SqlParameter[] sqlPara = new SqlParameter[2];
                     for (int i = 0; i < dataEntity.Count; i++)
                     {
                         if (i == 0)
@@ -589,10 +587,6 @@ namespace LiNuoMes.Equipment.hs
                             //sqlPara[2].Direction = System.Data.ParameterDirection.Input;
                             sqlPara[1] = new SqlParameter("@PmOper", dataEntity[i].PmOper);
                             sqlPara[1].Direction = System.Data.ParameterDirection.Input;
-                            sqlPara[2] = new SqlParameter("@PmComment", dataEntity[i].PmComment);
-                            sqlPara[2].Direction = System.Data.ParameterDirection.Input;
-                          
-
                             foreach (SqlParameter para in sqlPara)
                             {
                                 cmd.Parameters.Add(para);
@@ -795,6 +789,7 @@ namespace LiNuoMes.Equipment.hs
         public int ReaminProblem { set; get; }
 
     }
+
     public class Equ_PmFisrtLevelRecordDetail
     {
         public string ID { get; set; }
@@ -814,7 +809,6 @@ namespace LiNuoMes.Equipment.hs
         public string PmOper { get; set; }
         public string PmDate { set; get; }
         public string DeviceCode { set; get; }
-
         public string MaintenceTime { set; get; }
         public string PowerLine { set; get; }
         public string GroundLead { set; get; }

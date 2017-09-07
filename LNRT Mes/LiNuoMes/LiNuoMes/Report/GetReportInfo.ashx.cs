@@ -694,7 +694,8 @@ namespace LiNuoMes.Report
                 context.Response.Write(jsc.Serialize(materialPull));
             }
 
-            //一级保养点检表
+
+            #region  //一级保养点检表
             if (Action == "FirstLevelInspectionReport")
             {
                 FirstLevelMaintence firstLevelMaintence = new FirstLevelMaintence();
@@ -774,8 +775,9 @@ namespace LiNuoMes.Report
                 strJson += "]}";
                 context.Response.Write(strJson);
             }
+            #endregion
 
-            //一级点检问题记录
+            #region  一级点检问题记录
             if (Action == "FirstLevelInspectionProblemReport")
             {
                 List<FirstLevelMaintenceProblem> problem = new List<FirstLevelMaintenceProblem>();
@@ -784,7 +786,48 @@ namespace LiNuoMes.Report
                 {
                     string strJson = "";
                     strJson = "{\"page\":1,\"total\": 1 ,\"records\":1,\"rows\":[";
-                   
+                    for (int j = 0; j < 3; j++)
+                    {
+                        strJson += "{";
+                        strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                        strJson += "\"cell\":";
+                        strJson += "[";
+                        strJson += "{";
+                        strJson += "\"id\":\"1\",";
+                        strJson += "\"cell\":";
+                        strJson += "[";
+
+                        for (int i = 0; i < 4; i++)
+                        {
+                            strJson += "\"\",";
+                        }
+                        strJson += "\"\"";
+
+                        strJson += "]";
+                        strJson += "}";
+                        strJson += ",";
+                    }
+                    strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                    strJson += "]}";
+                    context.Response.Write(strJson);
+                }
+                else
+                {
+                    context.Response.Write(jsc.Serialize(problem));
+                }
+            }
+            #endregion
+
+            #region 二级点检设备明细
+            if (Action == "SecondLevelInspectionReport")
+            {
+                List<SecondLevelMaintence> problem = new List<SecondLevelMaintence>();
+                problem = GetSecondLevelMaintence(problem);
+                if (problem.Count == 0)
+                {
+                    string strJson = "";
+                    strJson = "{\"page\":1,\"total\": 1 ,\"records\":1,\"rows\":[";
+
                     strJson += "{";
                     strJson += "\"id\":\"1\",";
                     strJson += "\"cell\":";
@@ -795,7 +838,7 @@ namespace LiNuoMes.Report
                         strJson += "\"\",";
                     }
                     strJson += "\"\"";
-                   
+
                     strJson += "]";
                     strJson += "}";
                     strJson += ",";
@@ -807,25 +850,73 @@ namespace LiNuoMes.Report
                 {
                     context.Response.Write(jsc.Serialize(problem));
                 }
-                
             }
+            #endregion
 
-            //节拍统计表
+            #region 二级点检内容
+            if (Action == "SecondLevelInspectionContent")
+            {
+                List<SecondLevelMaintenceContent> problem = new List<SecondLevelMaintenceContent>();
+                problem = GetSecondLevelMaintenceContent(problem);
+                context.Response.Write(jsc.Serialize(problem));
+            }
+            #endregion
+
+            #region 二级点检更换配件明细
+            if (Action == "SecondLevelInspectionReplace")
+            {
+                List<SecondLevelMaintenceReplace> problem = new List<SecondLevelMaintenceReplace>();
+                problem = GetSecondLevelMaintenceReplace(problem);
+                if (problem.Count == 0)
+                {
+                    string strJson = "";
+                    strJson = "{\"page\":1,\"total\": 3 ,\"records\":3,\"rows\":[";
+                    for (int j = 0; j < 3; j++)
+                    {
+                        strJson += "{";
+                        strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
+                        strJson += "\"cell\":";
+                        strJson += "[";
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            strJson += "\"\",";
+                        }
+                        strJson += "\"\"";
+                        
+                        strJson += "]";
+                        strJson += "}";
+                        strJson += ",";
+
+                    }
+                    strJson = strJson.Trim().TrimEnd(new char[] { ',' });
+                    strJson += "]}";
+                    context.Response.Write(strJson);
+                }
+                else
+                {
+                    context.Response.Write(jsc.Serialize(problem));
+                }
+            }
+            #endregion
+
+
+            #region  //节拍统计表
             if (Action == "ProcessBeatReport")
             {
                 List<ProcessBeat> processBeat = new List<ProcessBeat>();
                 processBeat = GetProcessBeat(processBeat);
                 context.Response.Write(jsc.Serialize(processBeat));
             }
+            #endregion
 
-            //节拍统计图
+            #region  //节拍统计图
             if (Action == "ProcessBeatChart")
             {
                 List<ProcessBeat> processBeat = new List<ProcessBeat>();
                 processBeat = GetProcessBeat(processBeat);
                 //List<string> list = new List<string>();
                 //list = processBeat.Select(p => p.Process).Distinct().ToList();
-
                 List<Chart> chart = new List<Chart>();
                 List<string> catagory = new List<string>();
                 List<double> datavalueMin = new List<double>();
@@ -866,7 +957,9 @@ namespace LiNuoMes.Report
 
                 context.Response.Write(jsc.Serialize(chart));
             }
+            #endregion
         }
+           
 
         public bool IsReusable
         {
@@ -1088,7 +1181,7 @@ namespace LiNuoMes.Report
                 conn.Open();
                 cmd.Connection = conn;
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.CommandText = "usp_Report_EquAlarm";
+                cmd.CommandText = "usp_Report_MaterialPull";
                 SqlParameter[] sqlPara = new SqlParameter[13];
                 sqlPara[0] = new SqlParameter("@orderno", orderno);
                 sqlPara[1] = new SqlParameter("@materialCode", materialCode);
@@ -2150,6 +2243,130 @@ namespace LiNuoMes.Report
                     }
                 }
                 
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 二级点检设备明细表
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public List<SecondLevelMaintence> GetSecondLevelMaintence(List<SecondLevelMaintence> user)
+        {
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = string.Empty;
+                str1 = "select FORMAT(a.UpdateTime,'yyyy-MM-dd') as PmDate,b.DeviceCode,a.DeviceName,'' as DeviceKind,c.PowerLine,c.GroundLead,c.MaintenceTime,c.InspectionProblem,a.PmOper,'' as ConfirmPerson from Equ_PmRecordList  a left join Equ_DeviceInfoList b on a.ProcessCode=b.ProcessCode and a.DeviceName=b.DeviceName left join Equ_SecondLevelInspectionProblem c on c.PmRecordID=a.ID where FORMAT(a.UpdateTime,'yyyy-MM-dd') between '" + StartTime.Trim() + "' and '" + EndTime.Trim() + "' and PmLevel='二级保养'  order by a.UpdateTime,b.DeviceCode";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        SecondLevelMaintence problem = new
+                            SecondLevelMaintence();
+                        problem.PmDate = dt.Rows[i]["PmDate"].ToString();
+                        problem.DeviceCode = dt.Rows[i]["DeviceCode"].ToString();
+                        problem.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        problem.DeviceKind = dt.Rows[i]["DeviceKind"].ToString();
+                        problem.PowerLine = dt.Rows[i]["PowerLine"].ToString();
+                        problem.GroundLead = dt.Rows[i]["GroundLead"].ToString();
+                        problem.MaintenceTime = dt.Rows[i]["MaintenceTime"].ToString();
+                        problem.InspectionProblem = dt.Rows[i]["InspectionProblem"].ToString();
+                        problem.PmOper = dt.Rows[i]["PmOper"].ToString();
+                        problem.ConfirmPerson = dt.Rows[i]["ConfirmPerson"].ToString();
+                        user.Add(problem);
+                    }
+                }
+
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 二级点检内容明细
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public List<SecondLevelMaintenceContent> GetSecondLevelMaintenceContent(List<SecondLevelMaintenceContent> user)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = string.Empty;
+                str1 = "select CONVERT(varchar(10),ID)+'、'+InspectionContent as MaintenceContent from Equ_SecondLevelTestContent ";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        SecondLevelMaintenceContent problem = new
+                            SecondLevelMaintenceContent();
+                        problem.MaintenceContent = dt.Rows[i]["MaintenceContent"].ToString();
+                        problem.IsActive = "1";
+                        user.Add(problem);
+                    }
+                }
+
+            }
+            return user;
+        }
+
+        /// <summary>
+        /// 二级点检更换配件
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public List<SecondLevelMaintenceReplace> GetSecondLevelMaintenceReplace(List<SecondLevelMaintenceReplace> user)
+        {
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = string.Empty;
+                str1 = "select FORMAT(InspectionDate,'yyyy-MM-dd') as PmDate,a.DeviceCode,b.DeviceName,a.ReplacePart,a.ReplaceName,a.ReplaceCount from Equ_SecondLevelInspectionProblem a left join Equ_DeviceInfoList b on a.DeviceCode=b.DeviceCode where FORMAT(InspectionDate,'yyyy-MM-dd')  between '" + StartTime.Trim() + "' and '" + EndTime.Trim() + "' and PmRecordID is not null order by InspectionDate,a.DeviceCode";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        SecondLevelMaintenceReplace problem = new
+                            SecondLevelMaintenceReplace();
+                        problem.PmDate = dt.Rows[i]["PmDate"].ToString();
+                        problem.DeviceCode = dt.Rows[i]["DeviceCode"].ToString();
+                        problem.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        problem.ReplacePart = dt.Rows[i]["ReplacePart"].ToString();
+                        problem.ReplaceName = dt.Rows[i]["ReplaceName"].ToString();
+                        problem.ReplaceCount = dt.Rows[i]["ReplaceCount"].ToString();
+                        user.Add(problem);
+                    }
+                }
+
             }
             return user;
         }

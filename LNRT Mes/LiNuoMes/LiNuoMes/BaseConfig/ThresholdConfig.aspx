@@ -317,17 +317,21 @@
            }
        } 
        @media screen and (min-width: 1400px) { 
-          .formTitle {
-              font-size:30px;
-              width:260px;
-          } 
-          .form-control {
-               font-size:30px;
-               width:300px;
-               height:45px;
+           .formTitle {
+               font-size:15px;
+               width:80px;
+           } 
+           .form-control {
+               font-size:15px;
+               width:150px;
+               height:30px;
+           }
+           .aa{
+               width:10px;
+               height:30px;
            }
            #form1{
-               margin: 0px 0px 0px 0px;
+               margin-left:0px;
            }
        } 
     </style>

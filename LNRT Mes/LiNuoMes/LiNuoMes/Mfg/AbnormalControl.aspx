@@ -446,19 +446,21 @@
            }
        } 
        @media screen and (min-width: 1400px) { 
-          .formTitle {
-              font-size:20px;
-              width:60px;
-          } 
-          .formValue {
-               font-size:20px;
-               width:280px;
-               height:40px;
+           .formTitle {
+               font-size:15px;
+               width:60px;
+           } 
+
+           .formValue {
+               font-size:15px;
+               width:260px;
+               height:30px;
                margin-left:5px;
                margin-right:5px;
            }
+
            #form1{
-               margin: 0px 0px 0px 5px;
+               margin:0px 0px 0px 5px;
            }
        } 
      </style>

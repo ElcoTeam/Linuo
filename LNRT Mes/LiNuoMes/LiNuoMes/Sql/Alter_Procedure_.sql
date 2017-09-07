@@ -783,33 +783,43 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Rfid_getLast]
      ,@ProcessCode        AS VARCHAR  (50) OUTPUT
      ,@AbnormalPoint      AS INT           
 AS
-    DECLARE @MAXID INT;
+    --取得下线点对应的RFID读头   
+    DECLARE @ReaderCode AS VARCHAR(50);
+    SELECT 
+         @ReaderCode  = ReaderCode
+        ,@ProcessCode = ProcessCode
+    FROM Mes_RFID_Reader_List
+    WHERE AbnormalPoint = @AbnormalPoint;
+    
+    --找到最后一条读头读取的信息
+    DECLARE @MAXT DATETIME;
+    SELECT
+        @MAXT = MAX(InTime)
+    FROM Mes_RFID_RecordHistory
+    WHERE
+         AreaCode = @ReaderCode;
+     
+    --获取RFID信息   
+    SELECT 
+        @RFID = MesCode 
+    FROM 
+        Mes_RFID_RecordHistory
+    WHERE
+        inTime   = @MAXT
+    AND AreaCode = @ReaderCode
+
+    --截取订单号码:
+    SET @WorkOrderNumber = LEFT(@RFID, 8);
 
     SELECT
-        @MAXID =
-                CASE
-                    WHEN COUNT(1) <= 3                    THEN 3
-                    WHEN COUNT(1)  > 3 AND COUNT(1) <= 5  THEN 3
-                    WHEN COUNT(1)  > 5                    THEN 3
-                    ELSE                                       3
-                END
-    FROM MFG_WIP_Data_RFID
-    WHERE
-         Status = 0; --此处定义的是正常生产时产生的最后的记录工序点.
-       
-    SELECT
-         @RFID             = RF.RFID
-        ,@GoodsCode        = WO.ErpGoodsCode
-        ,@WorkOrderNumber  = WO.ErpWorkOrderNumber 
-        ,@WorkOrderVersion = WO.MesWorkOrderVersion 
-        ,@ProcessCode      = RF.ProcessCode
+         @GoodsCode        = ErpGoodsCode
+        ,@WorkOrderNumber  = ErpWorkOrderNumber 
+        ,@WorkOrderVersion = MesWorkOrderVersion 
     FROM
-          MFG_WIP_Data_RFID RF
-         ,MFG_WO_List WO
+         MFG_WO_List
     WHERE
-          RF.WorkOrderNumber  = WO.ErpWorkOrderNumber
-      AND RF.WorkOrderVersion = WO.MesWorkOrderVersion
-      AND RF.ID               = @MAXID
+          @WorkOrderNumber  = ErpWorkOrderNumber
+      AND MesStatus = 2;
 GO
 
 --取得下线记录详细信息
@@ -885,14 +895,14 @@ AS
     
     EXEC usp_Mfg_Wip_Data_Rfid_getLast @RFID OUTPUT, @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT, @GoodsCode OUTPUT, @ProcessCode OUTPUT, @AbnormalPoint
     
-    --检查传入的RFID是否有效
-    IF LEN(@WorkOrderNumber) = 0 
+    --检查获取的订单是否有效
+    IF @WorkOrderVersion IS NULL
     BEGIN
         SET @CatchError = 1;
-        SET @RtnMsg = '系统未发现在此号码的生产数据, 请您仔细核对!';
+        SET @RtnMsg = '系统未发现有此订单, 请您仔细核对!';
         RETURN;
-    END    
-    
+    END   
+     
     --检查在本下线工位是否已经存在了此记录, 防止重复录入.
     DECLARE @ExistCount   INT;
     SELECT 
@@ -1007,7 +1017,7 @@ AS
     WHERE
          ID = @AbId
     
-    IF @@ROWCOUNT > 0  --说明最后语句更新了至少一条记录.
+    IF @@ROWCOUNT > 0  --说明最后的更新语句更新了至少一条记录.
     BEGIN 
 
         DELETE FROM MFG_WIP_Data_Abnormal_MTL WHERE AbnormalID = @AbId;
@@ -1162,7 +1172,7 @@ AS
 GO
 
 --生产排程:订单顺序调整
-ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Adjust_inturn]
+ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_Adjust_Inturn]
      @WOID               AS INT                  --Mfg_WO_LIST更改ID
     ,@NBID               AS INT                  --Mfg_WO_LIST相邻ID
     ,@ADJDirection       AS VARCHAR (50)         --调整顺序的方向: PREV:向前调整, NEXT:向后调整
@@ -2015,7 +2025,7 @@ AS
         RETURN
     END
 
-    EXEC usp_Mes_GetNewSerialNo_Output 'MES2PLC','M2P', 10, @BatchNo OUTPUT;
+    EXEC usp_Mes_getNewSerialNo_Output 'MES2PLC','M2P', 10, @BatchNo OUTPUT;
 
     --开始真正的插入到接口表的操作.
     --参数派发
@@ -2114,7 +2124,84 @@ AS
     RETURN
 GO
 
---用以获得MES序列号值
+--用以获得MES序列号值, 此存储过程是实施后正式使用的.
+ALTER PROCEDURE [dbo].[usp_Mes_getWoMesCode]
+     @WorkOrderNumber  AS VARCHAR (50)  = '' --工单号码
+AS
+    DECLARE @CatchError   AS INT;            --系统判断用户操作异常的数量, 如果大于0, 则说明肯定有错误出现, 此时需要查看RtnMsg的详细描述
+    DECLARE @RtnMsg       AS NVARCHAR(100);  --返回状态的字符串描述
+    DECLARE @MesCode      VARCHAR(50);
+    DECLARE @sDate        VARCHAR(10);
+    DECLARE @sLine        VARCHAR(2);
+    DECLARE @sSerialNo    VARCHAR(4);
+    DECLARE @iRowCount    INT;
+    DECLARE @iUbound      INT;
+    DECLARE @iPlanQty     INT;
+    DECLARE @iDiscardQty  INT;
+
+    SET @CatchError = 0;    
+    SET @RtnMsg     = '';    
+
+    SELECT 
+         @iRowCount   = COUNT(1) 
+        ,@iUbound     = MAX(MesCodeUBound)  --这里取最大值, 其实就是取得的version=0时的值, 因为, 我们只对version=0的记录进行记录
+        ,@iPlanQty    = MAX(MesPlanQty)     --这里取最大值, 其实就是取得的version=0时的值
+        ,@iDiscardQty = SUM(MesDiscardQty1 + MesDiscardQty2 + MesDiscardQty3 + MesDiscardQty4)
+    FROM MFG_WO_List
+    WHERE 
+         ErpWorkOrderNumber = @WorkOrderNumber
+    IF @CatchError = 0
+    BEGIN
+        IF @iRowCount = 0
+        BEGIN
+            SET @CatchError = 1;
+            SET @RtnMsg = '没有找到您录入的订单信息, 请您确认录入的订单是否正确!';
+        END
+    END 
+
+    IF @CatchError = 0
+    BEGIN
+        IF @iUbound >= @iPlanQty + @iDiscardQty
+        BEGIN
+            SET @CatchError = 1;
+            SET @RtnMsg = '已经达到此订单的MES码的数量上限了, 不可以继续生成了!';
+        END
+    END 
+     
+    IF @CatchError = 0
+    BEGIN
+        UPDATE MFG_WO_List SET MesCodeUBound = MesCodeUBound + 1 
+        WHERE 
+            ErpWorkOrderNumber  = @WorkOrderNumber
+        AND MesWorkOrderVersion = 0 
+        AND MesCodeUBound  = @iUbound --此条件不可以省略, 事前我们没有对此表进行锁定操作, 这里防止多人同时生成同一个MES Code.
+        IF @@ROWCOUNT = 0
+        BEGIN
+            SET @CatchError = 1;
+            SET @RtnMsg = '此次生成失败, 可能是多人同时使用同一个订单生成MES码造成!';
+        END
+    END 
+
+    IF @CatchError = 0
+    BEGIN
+        SET @sSerialNo = RIGHT('00000' + CONVERT(VARCHAR, @iUbound + 1), 4);
+        SET @sDate  = FORMAT(GETDATE(), 'yyyyMMdd');
+        SET @sLine  = '01';
+        SET @MesCode = RIGHT(@WorkOrderNumber, 8) + @sDate + @sLine + @sSerialNo;
+    END 
+    ELSE
+    BEGIN
+        SET @MesCode = '';
+    END
+
+    SELECT 
+         @MesCode      AS MesCode
+        ,@CatchError   AS ErrorFlag --系统判断用户操作异常, 如果大于0, 则说明肯定有错误出现, 此时需要查看详细描述
+        ,@RtnMsg       AS ErrorMsg  --系统判定出错的详细描述   
+GO
+
+
+--用以获得MES序列号值 此为测试时期使用的测试存储过程, 实施后即弃用.
 --当前的编码规则为: 年月日 + 四位序列号
 ALTER PROCEDURE [dbo].[usp_Mes_getMesCode]
 AS
@@ -2123,7 +2210,7 @@ AS
     DECLARE @SerialNumber   VARCHAR(15) 
 
     SET @SerialName    = FORMAT(GETDATE(), 'yyMMdd');
-    EXEC usp_Mes_GetNewSerialNo_Output @SerialName, 'RFID', 8, @SerialNumber OUTPUT
+    EXEC usp_Mes_getNewSerialNo_Output @SerialName, 'RFID', 8, @SerialNumber OUTPUT
     SET @MesCode = @SerialName + RIGHT(@SerialNumber, 4);
     SELECT @MesCode AS MesCode;
 GO
@@ -2174,7 +2261,7 @@ AS
 GO
 
 --获取序列号的值, 其是以返回参数的形式完成的
-ALTER PROCEDURE [dbo].[usp_Mes_GetNewSerialNo_Output]
+ALTER PROCEDURE [dbo].[usp_Mes_getNewSerialNo_Output]
     @SerialName     VARCHAR(50)  = '',  --序列号的系列名称,
     @SerialPrefix   VARCHAR(5)   = '',  --序列号的前导字符.一般情况, 建议三位字符串作为前导符.
     @SerialLength   INT          = 12,  --序列号总体长度, 即已经包含最终序列号长度中的前导长度.最大不允许超过12位长度

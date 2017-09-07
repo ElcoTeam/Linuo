@@ -180,6 +180,7 @@ CREATE TABLE [dbo].[MFG_WO_List] (
     [MesCostTime]           INT                 NULL DEFAULT (0),         --预计生产耗时(分钟)
     [MesUnitCostTime]       INT                 NULL DEFAULT (2),         --单位生产耗时(分钟)
     [MesCustomerID]         INT                 NULL,                     --客户ID
+    [MesCodeUbound]         INT             NOT NULL DEFAULT (0),         --MesCode流水号的边界值, 用以记录生成了多少MESCode标签值
     [MesOrderComment]       NVARCHAR(150)       NULL,                     --订单说明
     [Mes2ErpMVTStatus]      INT             NOT NULL DEFAULT (-1),        --订单发料状态: -1:新增, 0:待处理, 1:进行中, 2:失败, 3:已完成 [ZME_GOODSMVT_CREATE]         
     [Mes2ErpCfmStatus]      INT             NOT NULL DEFAULT (-1),        --订单报工状态: -1:新增, 0:待处理, 1:进行中, 2:失败, 3:已完成 [BAPI_PRODORDCONF_CREATE_HDR] 
@@ -733,6 +734,7 @@ CREATE TABLE [dbo].[Mes_RFID_Reader_List] (
     [ProcessCode]        VARCHAR  (50)   NOT NULL DEFAULT (''),           --工序编号
     [ReaderCode]         VARCHAR  (50)   NOT NULL DEFAULT (''),           --读取头编码
     [ReaderName]         NVARCHAR (50)   NOT NULL,                        --读取头名称
+    [AbnormalPoint]      INT                 NULL DEFAULT (0)             --RFID读取头对应的下线点编号 
     [ParamName]          VARCHAR  (50)   NOT NULL,                        --参数名称
     [ParamValue]         VARCHAR  (50)   NOT NULL,                        --参数数值
     [UpdateUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户

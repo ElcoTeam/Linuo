@@ -377,6 +377,7 @@
     <Content Include="Equipment\EquAlarmEdit.aspx" />
     <Content Include="Equipment\EquDeviceInfo.aspx" />
     <Content Include="Equipment\EquFirstLevelMaintence.aspx" />
+    <Content Include="Equipment\EquFirstLevelManEdit.aspx" />
     <Content Include="Equipment\EquInfoEdit.aspx" />
     <Content Include="Equipment\EquMaintenceExtraManEdit.aspx" />
     <Content Include="Equipment\EquMaintenceMan.aspx" />
@@ -386,6 +387,7 @@
     <Content Include="Equipment\EquMaintencePlanMan.aspx" />
     <Content Include="Equipment\EquMaintenceStandard.aspx" />
     <Content Include="Equipment\EquMaintenceStandradEdit.aspx" />
+    <Content Include="Equipment\EquSecondLevelAdd.aspx" />
     <Content Include="Equipment\EquSecondLevelMaintence.aspx" />
     <Content Include="Equipment\FileSearchInfo.aspx" />
     <Content Include="Equipment\images\Scheme.png" />
@@ -447,6 +449,10 @@
     <Content Include="Mfg\UnPlanedMaterialPrint.aspx" />
     <Content Include="Mfg\WoDetailEdit.aspx" />
     <Content Include="Mfg\WoMTLList.aspx" />
+    <Content Include="Mfg\SapErrorInformation.aspx" />
+    <Content Include="Mfg\MaterialBkfConfig.aspx" />
+    <Content Include="Mfg\MaterialBkfItemEdit.aspx" />
+    <Content Include="Mfg\WoMtlMVT.aspx" />
     <Content Include="My97DatePicker\calendar.js" />
     <Content Include="My97DatePicker\lang\en.js" />
     <Content Include="My97DatePicker\lang\zh-cn.js" />
@@ -479,19 +485,56 @@
     <Content Include="Report\DailyCompletionRate.aspx" />
     <Content Include="Report\EnergyConsumpReport.aspx" />
     <Content Include="Report\EnergyReport.aspx" />
+    <Content Include="Report\EquAlarmDetail.aspx" />
     <Content Include="Report\EquAlarmReport.aspx" />
     <Content Include="Report\EquMaintenceReport.aspx" />
+    <Content Include="Report\EquTotalReport.aspx" />
     <Content Include="Report\ExportGridToExcel.js" />
+    <Content Include="Report\FirstLevelInspectionReport.aspx" />
     <Content Include="Report\KeyEquOEEReport.aspx" />
     <Content Include="Report\MaterialPullReport.aspx" />
+    <Content Include="Report\MonthBudgetMan.aspx" />
     <Content Include="Report\MonthCompletionRate.aspx" />
+    <Content Include="Report\PersonCapacityNewReport.aspx" />
     <Content Include="Report\PersonCapacityReport.aspx" />
+    <Content Include="Report\ProcessBeatReport.aspx" />
     <Content Include="Report\ProductArtReport.aspx" />
     <Content Include="Report\ProductionCompareReport.aspx" />
     <Content Include="Report\ProductionSourceReport.aspx" />
     <Content Include="Report\ProductionStatisticeReport.aspx" />
     <Content Include="Report\ProductThroughRateReport.aspx" />
     <Content Include="Report\UserAttendenceReport.aspx" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Equipment\hs\GetMaintenceList.ashx" />
+    <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\jquery-1.10.2.js" />
+    <Content Include="Scripts\jquery-1.10.2.min.js" />
+    <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\respond.js" />
+    <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\WebForms\DetailsView.js" />
+    <Content Include="Scripts\WebForms\Focus.js" />
+    <Content Include="Scripts\WebForms\GridView.js" />
+    <Content Include="Scripts\WebForms\Menu.js" />
+    <Content Include="Scripts\WebForms\MenuStandards.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjax.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxApplicationServices.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxComponentModel.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxCore.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxGlobalization.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxHistory.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxNetwork.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxSerialization.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxTimer.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxWebForms.js" />
+    <Content Include="Scripts\WebForms\MSAjax\MicrosoftAjaxWebServices.js" />
+    <Content Include="Scripts\WebForms\SmartNav.js" />
+    <Content Include="Scripts\WebForms\TreeView.js" />
+    <Content Include="Scripts\WebForms\WebForms.js" />
+    <Content Include="Scripts\WebForms\WebParts.js" />
+    <Content Include="Scripts\WebForms\WebUIValidation.js" />
+    <Content Include="Scripts\_references.js" />
     <Content Include="UserManage\RoleDetailEdit.aspx" />
     <Content Include="UserManage\RoleDetailInfo.aspx" />
     <Content Include="UserManage\RoleDetailSearch.aspx" />
@@ -562,6 +605,7 @@
     <Content Include="UserManage\hs\GetAttendenceInfo.ashx" />
     <Content Include="Report\ExportGridToExcel.ashx" />
     <Content Include="Report\GetReportInfo.ashx" />
+    <Content Include="Scripts\jquery-1.10.2.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -686,6 +730,13 @@
     <Compile Include="Equipment\EquFirstLevelMaintence.aspx.designer.cs">
       <DependentUpon>EquFirstLevelMaintence.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Equipment\EquFirstLevelManEdit.aspx.cs">
+      <DependentUpon>EquFirstLevelManEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Equipment\EquFirstLevelManEdit.aspx.designer.cs">
+      <DependentUpon>EquFirstLevelManEdit.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Equipment\EquInfoEdit.aspx.cs">
       <DependentUpon>EquInfoEdit.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -749,6 +800,13 @@
     <Compile Include="Equipment\EquMaintenceStandradEdit.aspx.designer.cs">
       <DependentUpon>EquMaintenceStandradEdit.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Equipment\EquSecondLevelAdd.aspx.cs">
+      <DependentUpon>EquSecondLevelAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Equipment\EquSecondLevelAdd.aspx.designer.cs">
+      <DependentUpon>EquSecondLevelAdd.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Equipment\EquSecondLevelMaintence.aspx.cs">
       <DependentUpon>EquSecondLevelMaintence.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -792,6 +850,9 @@
     </Compile>
     <Compile Include="Equipment\hs\GetEquMaintenceStandardCRUD.ashx.cs">
       <DependentUpon>GetEquMaintenceStandardCRUD.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Equipment\hs\GetMaintenceList.ashx.cs">
+      <DependentUpon>GetMaintenceList.ashx</DependentUpon>
     </Compile>
     <Compile Include="Equipment\UploadifyManu.aspx.cs">
       <DependentUpon>UploadifyManu.aspx</DependentUpon>
@@ -1016,19 +1077,52 @@
     <Compile Include="Mfg\WoMTLList.aspx.designer.cs">
       <DependentUpon>WoMTLList.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Mfg\SapErrorInformation.aspx.cs">
+      <DependentUpon>SapErrorInformation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Mfg\SapErrorInformation.aspx.designer.cs">
+      <DependentUpon>SapErrorInformation.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Mfg\MaterialBkfConfig.aspx.cs">
+      <DependentUpon>MaterialBkfConfig.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Mfg\MaterialBkfConfig.aspx.designer.cs">
+      <DependentUpon>MaterialBkfConfig.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Mfg\MaterialBkfItemEdit.aspx.cs">
+      <DependentUpon>MaterialBkfItemEdit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Mfg\MaterialBkfItemEdit.aspx.designer.cs">
+      <DependentUpon>MaterialBkfItemEdit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Mfg\WoMtlMVT.aspx.cs">
+      <DependentUpon>WoMtlMVT.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Mfg\WoMtlMVT.aspx.designer.cs">
+      <DependentUpon>WoMtlMVT.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Model\Chart.cs" />
     <Compile Include="Model\DailyCompletionRateEntity.cs" />
     <Compile Include="Model\EnergyConsumpEntity.cs" />
     <Compile Include="Model\EquAlarmEntity.cs" />
+    <Compile Include="Model\EquManCountEntity.cs" />
+    <Compile Include="Model\FirstLevelMaintence.cs" />
     <Compile Include="Model\KeyEquOEEEntity.cs" />
     <Compile Include="Model\MaterialPullEntity.cs" />
     <Compile Include="Model\MonthCompletionRateEntity.cs" />
     <Compile Include="Model\PersonCapacityEntity.cs" />
+    <Compile Include="Model\ProcessBeat.cs" />
     <Compile Include="Model\ProductArtEntity.cs" />
     <Compile Include="Model\ProductionCompareEntity.cs" />
     <Compile Include="Model\ProductionSourceEntity.cs" />
     <Compile Include="Model\ProductionStatisticEntity.cs" />
     <Compile Include="Model\ProductThroughRateEntity.cs" />
+    <Compile Include="Model\SecondLevelMaintence.cs" />
+    <Compile Include="Model\UserAttendence.cs" />
     <Compile Include="ProdutionMan\hs\GetQualityStandrad.ashx.cs">
       <DependentUpon>GetQualityStandrad.ashx</DependentUpon>
     </Compile>
@@ -1061,6 +1155,13 @@
     <Compile Include="Report\EnergyReport.aspx.designer.cs">
       <DependentUpon>EnergyReport.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Report\EquAlarmDetail.aspx.cs">
+      <DependentUpon>EquAlarmDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Report\EquAlarmDetail.aspx.designer.cs">
+      <DependentUpon>EquAlarmDetail.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Report\EquAlarmReport.aspx.cs">
       <DependentUpon>EquAlarmReport.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1075,8 +1176,22 @@
     <Compile Include="Report\EquMaintenceReport.aspx.designer.cs">
       <DependentUpon>EquMaintenceReport.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Report\EquTotalReport.aspx.cs">
+      <DependentUpon>EquTotalReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Report\EquTotalReport.aspx.designer.cs">
+      <DependentUpon>EquTotalReport.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Report\ExportGridToExcel.ashx.cs">
       <DependentUpon>ExportGridToExcel.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Report\FirstLevelInspectionReport.aspx.cs">
+      <DependentUpon>FirstLevelInspectionReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Report\FirstLevelInspectionReport.aspx.designer.cs">
+      <DependentUpon>FirstLevelInspectionReport.aspx</DependentUpon>
     </Compile>
     <Compile Include="Report\GetReportInfo.ashx.cs">
       <DependentUpon>GetReportInfo.ashx</DependentUpon>
@@ -1095,6 +1210,13 @@
     <Compile Include="Report\MaterialPullReport.aspx.designer.cs">
       <DependentUpon>MaterialPullReport.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Report\MonthBudgetMan.aspx.cs">
+      <DependentUpon>MonthBudgetMan.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Report\MonthBudgetMan.aspx.designer.cs">
+      <DependentUpon>MonthBudgetMan.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Report\MonthCompletionRate.aspx.cs">
       <DependentUpon>MonthCompletionRate.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1102,12 +1224,26 @@
     <Compile Include="Report\MonthCompletionRate.aspx.designer.cs">
       <DependentUpon>MonthCompletionRate.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Report\PersonCapacityNewReport.aspx.cs">
+      <DependentUpon>PersonCapacityNewReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Report\PersonCapacityNewReport.aspx.designer.cs">
+      <DependentUpon>PersonCapacityNewReport.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Report\PersonCapacityReport.aspx.cs">
       <DependentUpon>PersonCapacityReport.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Report\PersonCapacityReport.aspx.designer.cs">
       <DependentUpon>PersonCapacityReport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Report\ProcessBeatReport.aspx.cs">
+      <DependentUpon>ProcessBeatReport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Report\ProcessBeatReport.aspx.designer.cs">
+      <DependentUpon>ProcessBeatReport.aspx</DependentUpon>
     </Compile>
     <Compile Include="Report\ProductArtReport.aspx.cs">
       <DependentUpon>ProductArtReport.aspx</DependentUpon>

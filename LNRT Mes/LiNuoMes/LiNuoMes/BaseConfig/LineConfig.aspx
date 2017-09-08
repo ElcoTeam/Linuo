@@ -40,13 +40,11 @@
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
-            $('#areascontent').height($(window).height() - 22);
-            //alert($("#areascontent").height());
+            $('#areascontent').height($(window).height() - 106);
             var areaheight = $("#areascontent").height();
-
             $(window).resize(function (e) {
                 window.setTimeout(function () {
-                    $('#areascontent').height($(window).height() - 22);
+                    $('#areascontent').height($(window).height() - 106);
                 }, 200);
             });
 
@@ -163,7 +161,7 @@
                             </table>
                         </div>
                         <div>                        
-                        <table border="0" style="float: none; width: 100%;">
+                        <table border="0" style="float: none; width: 100%; border-collapse:separate; border-spacing:10px">
                                <tr>
                                    <td class="formTitle" style="width:33%">产线编号：</td>
                                    <td style="width:10px">
@@ -237,16 +235,16 @@
           }
        } 
        @media screen and (min-width: 1400px) { 
-          .formTitle {
-              font-size:30px;
-              /*width:300px;*/
-              font-weight:normal;
+           .formTitle {
+               font-size:15px;
+               /*width:300px;*/
+               font-weight:normal;
                text-align:right;
-          } 
-          .form-control {
-               font-size:30px;
-               width:500px;
-           }
+           } 
+           .form-control {
+               font-size:15px;
+               width:400px;
+          }
        } 
         
     </style>

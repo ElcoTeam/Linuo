@@ -617,8 +617,8 @@ AS
 
     --(4).插入新的订单记录到表:Mfg_WO_List
     INSERT INTO Mfg_WO_List
-                   ([MesStartPoint], [MesInturnNumber] ,[MesWorkOrderType], [MesWorkOrderVersion], [MesPlanQty] , [MesCreateUser], [MesPlanStartTime] ,[MesPlanFinishTime] ,[MesCostTime] ,              [ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE], [MesUnitCostTime], [MesCustomerID], [MesOrderComment])
-    SELECT          @StartPoint,     -1 ,                1 ,                 @WorkOrderVersion ,   @PlanQty ,     @UserName,        GETDATE() ,         GETDATE() ,         MesUnitCostTime * @PlanQty , [ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE], [MesUnitCostTime], [MesCustomerID], [MesOrderComment]
+                   ([MesStartPoint], [MesInturnNumber] ,[MesWorkOrderType], [MesWorkOrderVersion], [MesPlanQty] , [MesCreateUser], [MesPlanStartTime] ,[MesPlanFinishTime] ,                                     [MesCostTime] ,              [ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE], [MesUnitCostTime], [MesCustomerID], [MesOrderComment])
+    SELECT          @StartPoint,     -1 ,                1 ,                 @WorkOrderVersion ,   @PlanQty ,     @UserName,        GETDATE() ,         DATEADD(SECOND, MesUnitCostTime * @PlanQty, GETDATE()) , MesUnitCostTime * @PlanQty , [ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE], [MesUnitCostTime], [MesCustomerID], [MesOrderComment]
     FROM Mfg_WO_List
     WHERE ID = @WoId;
 
@@ -772,9 +772,8 @@ AS
          AbnormalID = @AbId
 GO
 
--- 此存储过程需要完全重写: 根据下线点取出最近一次的RFID信息记录值.
+-- 根据下线点取出最近一次的RFID信息记录值, 已经[重写完成]
 -- 取得最后近次的正常生产的RFID所代表工单等信息
--- 此存储过程在上线调试时[需要重写]
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Rfid_getLast]
       @RFID               AS NVARCHAR (50) OUTPUT
      ,@WorkOrderNumber    AS VARCHAR  (50) OUTPUT
@@ -828,7 +827,7 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Detail]
      ,@AbnormalPoint      AS INT
      ,@UserName           AS NVARCHAR (50)
 AS
-    IF @AbId <> '0'
+    IF @AbId <> '0'  --表示不是新增的下线, 是取得已经下线的下线项信息.
     BEGIN
         SELECT
              AB.ID                 ID
@@ -922,7 +921,7 @@ AS
     END
 
     --此处应该加入检查订单是否已经产生了补单状态. 
-    --考虑到实际情况觉得没有必要加入此种判断. 也许需要去除此种判断[需要重写]
+    --考虑到实际情况觉得没有必要加入此种判断. 也许需要去除此种判断, 此处目前处理的比较全面, 因此不必[需要重写].
     IF ( SELECT MesSubPlanFlag 
          FROM MFG_WO_List 
          WHERE 
@@ -947,7 +946,7 @@ AS
 
     --此处相同号码多次补修, 重复计算额外领料数量, 
     --日后根据生产使用实践, 可以根据实际情况把此条件去掉或保留.
-    --[需要重写]
+    --目前来看, 此处的处理不必[需要重写]
   --IF @ExistCount = 0 
     BEGIN
         SELECT @AbId = SCOPE_IDENTITY();
@@ -1078,6 +1077,7 @@ GO
 --插入产品下线需求的额外物料记录
 --其只被下线记录的新增和修改两个操作调用.
 --此存储过程没有用户的界面直接调用的机会, 因此就不做异常判定操作了.
+--此存储过程已经[重新完成]
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_Mtl_Insert]
      @AbId               AS VARCHAR  (50)
 AS
@@ -1085,59 +1085,47 @@ AS
     DECLARE @FinalProcessCode   VARCHAR(50);
     DECLARE @FinalInturnNumber  INT;
     DECLARE @AbnormalPoint      INT;
+    DECLARE @AbnormalProduct    INT;
     DECLARE @AbnormalType       INT;
 
     SELECT 
-         @AbnormalPoint = AbnormalPoint
-        ,@AbnormalType  = AbnormalType
+         @AbnormalPoint   = AbnormalPoint
+        ,@AbnormalProduct = AbnormalProduct
+        ,@AbnormalType    = AbnormalType
     FROM 
         MFG_WIP_Data_Abnormal 
     WHERE 
         ID = @AbId;
 
---因为涉及到工序路线分支的组合问题,此处[需要重写]
-    SELECT 
-        @FinalProcessCode = 
-        CASE --此处在现场调试的时候 [需要重写]
-            WHEN @AbnormalPoint = 1 THEN '0010'
-            WHEN @AbnormalPoint = 2 THEN '0030'
-            WHEN @AbnormalPoint = 3 THEN '0040'
-            WHEN @AbnormalPoint = 4 THEN '0040'
-            ELSE                         'XXXX'
-        END;
-
-    --得到下线工位的工序代码的顺序号
-    SELECT 
-        @FinalInturnNumber = InturnNumber 
-    FROM 
-        Mes_Process_List 
-    WHERE 
-        ProcessCode = @FinalProcessCode
-
-    --只有 "报废", "未完工" 的下线才需要进行额外物料申领操作.
+    --因为涉及到工序路线分支的组合问题, 此处已经使用了计算下线范围定义表:MFG_WIP_Data_Abnormal_Process
+    --只有 "报废", "未完工" 的下线才需要进行额外物料申领操作, 补修的下线: AbnormalType = 1 不需要额外申请物料
     IF @AbnormalType <> 1
     BEGIN
         INSERT INTO MFG_WIP_Data_Abnormal_MTL 
-              ( AbnormalID,   ProcessCode,     ItemNumber,     ItemDsca,     UOM,    UpdateUser, LeftQty, RequireQty)
+              ( AbnormalID,   ProcessCode,     ItemNumber,     ItemDsca,     UOM,     UpdateUser, LeftQty, RequireQty)
         SELECT  @AbId,    MTL.ProcessCode, MTL.ItemNumber, MTL.ItemDsca, MTL.UOM, ABN.UpdateUser, 
         CASE 
-            WHEN ABP.ID IS NULL THEN 0
-            ELSE MTL.Qty/WOL.MesPlanQty
+            WHEN ABP.ID IS NOT NULL THEN
+                0
+            ELSE
+                MTL.Qty/WOL.MesPlanQty
         END AS LeftQty, 
         CASE 
-            WHEN ABP.ID IS NOT NULL THEN 0
-            ELSE MTL.Qty/WOL.MesPlanQty
+            WHEN ABP.ID IS NOT NULL THEN 
+               MTL.Qty/WOL.MesPlanQty
+            ELSE 
+               0
         END AS RequireQty
         FROM 
-             MFG_WO_MTL_List                     MTL
+                   MFG_WO_MTL_List               MTL
         INNER JOIN MFG_WO_List                   WOL ON WOL.ErpWorkOrderNumber  = MTL.WorkOrderNumber AND MTL.WorkOrderVersion = 0
         INNER JOIN MFG_WIP_Data_Abnormal         ABN ON WOL.ErpWorkOrderNumber  = ABN.WorkOrderNumber AND WOL.MesWorkOrderVersion = 0 
-        LEFT  JOIN MFG_WIP_Data_Abnormal_Process ABP ON ABP.abProductId = ABN.AbnormalProduct AND ABP.ProcessCode = MTL.ProcessCode
+        LEFT  JOIN MFG_WIP_Data_Abnormal_Process ABP ON ABP.abProductId         = ABN.AbnormalProduct AND ABP.ProcessCode = MTL.ProcessCode
         WHERE 
         --此处逻辑为: 应该根据"根订单"(WorkOrderVersion = 0)计算产品用料. 
         --因为如果根据子订单的话，其用料数据(额外领料单)可能是用户调整过的.           
         1=1
-        AND ABN.ID               =  @AbId
+        AND ABN.ID                = @AbId
         AND UPPER(MTL.Backflush) <> 'X' 
         AND UPPER(MTL.[BULK]   ) <> 'X' 
         AND UPPER(MTL.Phantom  ) <> 'X'  --需要三者同时都不许为X的状态才是我们需要考虑的计件物料. 2017-06-13 17:16
@@ -2076,7 +2064,8 @@ AS
         AND ErpWorkOrderNumber  = @WorkOrderNumber
         AND MesWorkOrderVersion = @WorkOrderVersion
 
-        --计划产量,这里实现的很不好, 需要考虑工单数量,未完工数量,报废数量 [需要重写]
+        --计划产量,这里实现的很不好, 需要考虑工单数量,未完工数量,报废数量 
+        --目前看来, 这个数量的复杂计算没有必要了, 我们仅仅把计划数量放入即可了, 也许不必[需要重写]
         INSERT INTO Mes_PLC_TransInterface ( BATCHNUM, PLCID, SOURCEID, ParamName, ParamType, ParamValue, OperateCommand, OperateUser,  Status)
                                       SELECT @BatchNo, PLCID, ID,       ParamName, ParamType, @PrsPlanQty,OperateCommand, @OperateUser, 0
                                       FROM Mes_PLC_Parameters
@@ -2468,7 +2457,8 @@ AS
     WHERE
            MTL.AUFNR = WO.ErpWorkOrderNumber
        AND WO.ID IN (SELECT TMP_ID FROM #TMP_FULL WHERE TMP_ID IS NOT NULL AND MES_ID IS NULL)
-       --此条件, 最好不要去掉, 这样可以保证SAP多次更新的时候不至于串皮, 此处取了一个中间折扣: 相差不超过1分钟的可以接受[需要重写]
+       --此条件, 最好不要去掉, 这样可以保证SAP多次更新的时候不至于串皮, 此处取了一个中间折扣: 相差不超过1分钟的可以接受
+       --为了确保订单的用料数据能够顺利导入不缺失, 在刷新导入MES正式表的时候, 故意后延了5分钟时间用以保证其数据导入完全, 因此不必[需要重写]
        AND ABS(DATEDIFF(MINUTE, MTL.MesCreateTime , @RefreshTime)) <= 1; 
 
     --(6.1):删除Mfg_WO_List表中在SAP中删除的订单的用料数据

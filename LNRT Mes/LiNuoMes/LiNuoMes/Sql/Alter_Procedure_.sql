@@ -1390,8 +1390,8 @@ AS
     
     BEGIN TRANSACTION
         INSERT INTO ERP_WO_REPORT_COMPLETE 
-               (WOID, AUFNR,              MATNR,        MAKTX,        GAMNG,      FinishQty,             MesCreateUser, MesCreateTime, MesModifyTime, ErpCfmStatus, MesCfmStatus)
-        SELECT  ID,   ErpWorkOrderNumber, ErpGoodsCode, ErpGoodsDsca, ErpPlanQty, CONVERT(INT, @ROCQTY), @UserName,     GETDATE(),     GETDATE(),     0,            0 
+               (WOID, AUFNR,                       MATNR,                    MAKTX,        GAMNG,      FinishQty,             MesCreateUser, MesCreateTime, MesModifyTime, ErpCfmStatus, MesCfmStatus)
+        SELECT  ID,  '0000' + ErpWorkOrderNumber, '00000000' + ErpGoodsCode, ErpGoodsDsca, ErpPlanQty, CONVERT(INT, @ROCQTY), @UserName,     GETDATE(),     GETDATE(),     0,            0 
         FROM MFG_WO_List
         WHERE ID = @WOID
 
@@ -1536,8 +1536,8 @@ AS
 
     BEGIN TRANSACTION    
         INSERT INTO ERP_WO_Material_Transfer 
-               (WOID, AUFNR,              MATNR,        MAKTX,        GAMNG,      FinishQty,    MesCreateUser, MesCreateTime, MesModifyTime, ErpMvtStatus, MesMvtStatus)
-        SELECT  ID,   ErpWorkOrderNumber, ErpGoodsCode, ErpGoodsDsca, ErpPlanQty, MesFinishQty, 'MES_SYS',     GETDATE(),     GETDATE(),     0,            0 
+               (WOID,  AUFNR,                       MATNR,                    MAKTX,        GAMNG,      FinishQty,    MesCreateUser, MesCreateTime, MesModifyTime, ErpMvtStatus, MesMvtStatus)
+        SELECT  ID,   '0000' + ErpWorkOrderNumber, '00000000' + ErpGoodsCode, ErpGoodsDsca, ErpPlanQty, MesFinishQty, 'MES_SYS',     GETDATE(),     GETDATE(),     0,            0 
         FROM MFG_WO_List
         WHERE 
             ID = @WOID
@@ -1615,7 +1615,7 @@ AS
     
         INSERT INTO ERP_Inventory_List ( SOURCEID, MATNR, MAKTX )
         SELECT
-            MTL.ID, ItemNumber, ItemDsca
+            MTL.ID, '00000000' + ItemNumber, ItemDsca
         FROM Mfg_WO_MTL_List MTL, Mfg_WO_List WO
         WHERE
             MTL.WorkOrderNumber =WO.ErpWorkOrderNumber
@@ -2382,7 +2382,7 @@ AS
     INSERT INTO #TMP_WO
     ([ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE] ,[MesPlanQty] ,[MesPlanStartTime] ,[MesPlanFinishTime] ,[MesCostTime] ,[MesUnitCostTime] )
     SELECT
-     [AUFNR] ,[MATNR] ,[MAKTX] ,[GAMNG] ,[ERDAT] ,[GSTRP] ,[GLTRP] ,[FTRMI] ,[WERKS] ,[AUART] ,[TXT30] ,[OBJNR] ,[ZTYPE] ,[GAMNG] ,[GSTRP] ,[GLTRP] ,[GAMNG] * 2 ,2
+     RIGHT([AUFNR], 8), RIGHT([MATNR], 10), [MAKTX] ,[GAMNG] ,[ERDAT] ,[GSTRP] ,[GLTRP] ,[FTRMI] ,[WERKS] ,[AUART] ,[TXT30] ,[OBJNR] ,[ZTYPE] ,[GAMNG] ,[GSTRP] ,[GLTRP] ,[GAMNG] * 2 ,2
     FROM [ERP_WO_List] ERP
     WHERE
           DATEDIFF(DAY, GLTRP, GETDATE()) = 0
@@ -2450,12 +2450,12 @@ AS
     INSERT INTO MFG_WO_MTL_List
     ([CommentReqNumber] ,[CommentReqPosition] ,[WorkOrderNumber] ,[LineNumber] ,[ItemNumber] ,[ItemDsca] ,[Qty] ,[UOM] ,[ProcessCode] ,[WorkCenter] ,[WcDsca] ,[WHLocation] ,[Phantom] ,[Bulk] ,[Backflush] ,[WorkSite], [MesCreateUser], [MesModifyUser])
     SELECT
-     MTL.RSNUM ,MTL.RSPOS ,MTL.AUFNR ,MTL.POSNR ,MTL.MATNR ,MTL.MAKTX ,MTL.ERFMG ,MTL.ERFME ,MTL.VORNR ,MTL.ARBPL ,MTL.KTEXT ,MTL.LGORT ,MTL.DUMPS ,MTL.SCHGT ,MTL.RGEKZ ,MTL.WERKS, 'MES_SYS', ''
+     MTL.RSNUM ,MTL.RSPOS, RIGHT(MTL.AUFNR, 8), MTL.POSNR , RIGHT(MTL.MATNR, 10) ,MTL.MAKTX ,MTL.ERFMG ,MTL.ERFME ,MTL.VORNR ,MTL.ARBPL ,MTL.KTEXT ,MTL.LGORT ,MTL.DUMPS ,MTL.SCHGT ,MTL.RGEKZ ,MTL.WERKS, 'MES_SYS', ''
     FROM
         ERP_WO_MTL_List MTL,
         #TMP_WO WO
     WHERE
-           MTL.AUFNR = WO.ErpWorkOrderNumber
+           RIGHT(MTL.AUFNR, 8) = WO.ErpWorkOrderNumber
        AND WO.ID IN (SELECT TMP_ID FROM #TMP_FULL WHERE TMP_ID IS NOT NULL AND MES_ID IS NULL)
        --此条件, 最好不要去掉, 这样可以保证SAP多次更新的时候不至于串皮, 此处取了一个中间折扣: 相差不超过1分钟的可以接受
        --为了确保订单的用料数据能够顺利导入不缺失, 在刷新导入MES正式表的时候, 故意后延了5分钟时间用以保证其数据导入完全, 因此不必[需要重写]

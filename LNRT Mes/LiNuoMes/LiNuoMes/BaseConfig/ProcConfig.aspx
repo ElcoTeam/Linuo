@@ -61,7 +61,7 @@
                 url: "GetSetBaseConfig.ashx",
                 postData: { Action: "MES_PROC_CONFIG_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() * 0.70,
+                height: $('#areascontent').height() -220,
                 rowNum: -1,
                 jsonReader: {
                     repeatitems: false,   //此两个参数影响了是否刷新之后高亮选中记录: 如果直接设定为true, 则无论id项设定与否都可以实现高亮选中
@@ -279,21 +279,21 @@
                         <div class="panel-body" style="text-align:left">
                             <table id="form1" class="form" border="0">
                                 <tr>
-                                    <th class="formTitle">工序编号：</th>
-                                    <td class="formValue" style="width:380px">
+                                    <td class="formTitle" style="width:300px">工序编号：</td>
+                                    <td class="formValue">
                                             <select class="form-control" id="ProcessCode"></select>
                                     </td>
                                     <td class="formValue"></td>
                                 </tr>
                                 <tr>
-                                    <th class="formTitle">工序名称：</th>
+                                    <td class="formTitle">工序名称：</td>
                                     <td class="formValue">
                                         <input type="text" class="form-control" id="ProcessName" placeholder="请输入工序名称">
                                     </td>
-                                    <td class="formValue">                                           
+                                    <td class="formValue" style="text-align:right">                                            
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>
-                                        </td>
+                                    </td>
                                 </tr>
                             </table>
                         </div>
@@ -334,17 +334,21 @@
            }
        } 
        @media screen and (min-width: 1400px) { 
-          .formTitle {
-              font-size:30px;
-              width:250px;
-          } 
-          .form-control {
-               font-size:30px;
-               width:300px;
-               height:45px;
+           .formTitle {
+               font-size:15px;
+               width:200px;
+           } 
+           .form-control {
+               font-size:15px;
+               width:200px;
+               height:30px;
+           }
+           .aa{
+               width:200px;
+               height:30px;
            }
            #form1{
-               margin: 0px 0px 0px 150px;
+               margin-left:0px;
            }
        } 
     </style>

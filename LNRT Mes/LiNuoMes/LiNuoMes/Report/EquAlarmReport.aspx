@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>力诺瑞特平板集热器</title>
+ <title>力诺瑞特平板集热器</title>
      <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -61,6 +61,7 @@
             GetGrid();
             CreateSelect();
             GetChart();
+            fnDate();
         });
 
         //加载表格
@@ -296,6 +297,54 @@
             ExportJQGridDataToExcel('#gridTable', '设备故障报警报表');
         }
 
+        //设置默认时间选择
+        function fnDate() {
+            var xhr = null;
+            if (window.XMLHttpRequest) {
+                xhr = new window.XMLHttpRequest();
+            } else { // ie
+                xhr = new ActiveObject("Microsoft")
+            }
+            // 通过get的方式请求当前文件
+            xhr.open("get", "/");
+            xhr.send(null);
+            // 监听请求状态变化
+            xhr.onreadystatechange = function () {
+                var time = null,
+                    curDate = null;
+                if (xhr.readyState === 2) {
+                    var seperator1 = "-";
+                    // 获取请求头里的时间戳
+                    time = xhr.getResponseHeader("Date");
+                    //console.log(xhr.getAllResponseHeaders())
+                    curDate = new Date(time);
+                    var oneweekdate = new Date(curDate.getTime() - 7 * 24 * 3600 * 1000);
+                    //当前时间
+                    var month = curDate.getMonth() + 1;
+                    var strDate = curDate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    //一周前时间
+                    var month = oneweekdate.getMonth() + 1;
+                    var strDate = oneweekdate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var oneweekagodate = oneweekdate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    $("#AlarmEndTime").val(currentdate);
+                    $("#AlarmStartTime").val(oneweekagodate);
+                }
+            }
+        }
+
     </script>
 </head>
 <body data-spy="scroll" data-target=".navbar-example" id="body">
@@ -371,7 +420,7 @@
             </div>
         </div>
 
-        <div class="titlePanel">
+         <div class="titlePanel">
         <div class="toolbar">
             <div class="btn-group">
                 <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>

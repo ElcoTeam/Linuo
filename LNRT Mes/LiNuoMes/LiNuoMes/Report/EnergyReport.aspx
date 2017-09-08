@@ -84,7 +84,7 @@
                 postData: { Action: "EnergyConsumpReport" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() *0.6,
                 colModel: [
                     { label: '序号', name: 'Number', index: 'Number', width: panelwidth * 0.1, align: 'center', sortable: false },
                     { label: '时间', name: 'Date', index: 'Date', width: panelwidth * 0.35, align: 'center' },
@@ -102,10 +102,21 @@
                 autowidth: true,
                 scrollrows: true,
                 gridview: true,
+                footerrow: true,
                 onSelectRow: function () {
                     selectedRowIndex = $("#" + this.id).getGridParam('selrow');
                 },
                 gridComplete: function () {
+                    var rowNum = parseInt($(this).getGridParam("records"), 10);
+                    if (rowNum > 0) {
+                        $(".ui-jqgrid-sdiv").show();
+                        var count = $(this).getCol("CostValue", false, "sum");
+                        $(this).footerData("set", { "Date": "总消耗电量", "CostValue": count }); //将合计值显示出来
+                        $("#container").css("height", "680px");
+                    } else {
+                        $(".ui-jqgrid-sdiv").hide();
+                        $("#container").css("height", "650px");
+                    }
                     //$("#" + this.id).setSelection(selectedRowIndex, false);
                 }
             });
@@ -261,7 +272,7 @@
 
     <!--主体-->
     <div id="areascontent" style="margin:50px 10px 0px 10px; margin-bottom: 0px; overflow: auto;">
-         <div class="rows" style="margin-top:0.5%; margin-bottom: 0.8%; overflow: hidden;">
+         <div class="rows" style="margin-top:0.1%; margin-bottom: 0.1%; overflow: hidden;">
             <div style="float: left; width: 100%;">
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
@@ -273,7 +284,7 @@
                                 </tr>
                             </table>
                         </div>
-                        <div class="panel-body" style="text-align:left">
+                        <div class="panel-body" style="text-align:left; padding:15px;">
                             <table id="form1" class="form" border="0">
                                 <tr>
                                     <th class="formTitle" >统计方式：</th>
@@ -303,7 +314,7 @@
         </div>
          
        
-        <div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+        <div class="ui-layout" id="layout" style="height: 85%; width: 100%;">
 
         <!--统计信息列表-->
         <div class="ui-layout-west">
@@ -331,7 +342,7 @@
         <div class="ui-layout-center">
             <div class="center-Panel">
                 <div class="panel-Title">统计信息折线图</div>
-                 <div id="container" style="width: 80%; height: 740px; text-align:center;  margin: 0 auto">
+                 <div id="container" style="width: 100%; height: 650px; text-align:center;  margin: 0 auto">
            
                  </div>
             </div>

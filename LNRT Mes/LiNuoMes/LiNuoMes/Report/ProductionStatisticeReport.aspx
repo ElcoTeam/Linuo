@@ -33,8 +33,8 @@
     <script src="../Content/scripts/utils/learun-form.js"></script>
     <script src="../My97DatePicker/WdatePicker.js"></script>
     <script src="../Content/scripts/plugins/printTable/jquery.printTable.js"></script>
-    <script src="ExportGridToExcel.js"></script>
     <script src="../Content/scripts/plugins/validator/validator.js"></script>
+    <script src="ExportGridToExcel.js"></script>
 
     <script>
         $(function () {
@@ -50,25 +50,31 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
-            GetGrid();
-            
+            fnDate();
+            //GetGrid();           
         });
 
         //加载表格
         function GetGrid() {
+ 
             var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
             var $gridTable1 = $('#gridTable1');
             var $gridTable2 = $('#gridTable2');
             var $gridTable3 = $('#gridTable3');
             var panelwidth = $('.gridPanel').width();
-
+            var StartTime = $("#StartTime").val();
+            var EndTime = $("#EndTime").val();
             //订单生产情况
             $gridTable.jqGrid({
                 url: "GetReportInfo.ashx",
-                postData: { Action: "OrderProductInfo" },
+                postData: {
+                    Action: "OrderProductInfo",
+                    StartTime: StartTime,
+                    EndTime: EndTime
+                },
                 loadonce: true,
-                datatype: "local",
+                datatype: "json",
                 height: $('#areascontent').height() *0.5,
                 colModel: [
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
@@ -107,9 +113,13 @@
             //下线情况
             $gridTable1.jqGrid({
                 url: "GetReportInfo.ashx",
-                postData: { Action: "AbnormalInfo" },
+                postData: {
+                    Action: "AbnormalInfo",
+                    StartTime: StartTime,
+                    EndTime: EndTime
+                },
                 loadonce: true,
-                datatype: "local",
+                datatype: "json",
                 height: $('#areascontent').height() * 0.23,
                 colModel: [
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth*0.2, align: 'center' },
@@ -131,9 +141,13 @@
             //设备报警情况
             $gridTable2.jqGrid({
                 url: "GetReportInfo.ashx",
-                postData: { Action: "EquAlarmInfo" },
+                postData: {
+                    Action: "EquAlarmInfo",
+                    StartTime: StartTime,
+                    EndTime: EndTime
+                },
                 loadonce: true,
-                datatype: "local",
+                datatype: "json",
                 height: $('#areascontent').height() * 0.3,
                 colModel: [
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth * 0.2, align: 'center' },
@@ -153,9 +167,13 @@
             //物料拉动情况
             $gridTable3.jqGrid({
                 url: "GetReportInfo.ashx",
-                postData: { Action: "MaterialPullInfo" },
+                postData: {
+                    Action: "MaterialPullInfo",
+                    StartTime: StartTime,
+                    EndTime: EndTime
+                },
                 loadonce: true,
-                datatype: "local",
+                datatype: "json",
                 height: $('#areascontent').height() * 0.3,
                 colModel: [
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth * 0.2, align: 'center' },
@@ -221,6 +239,55 @@
             $('.input-error').remove();
         }
 
+        //设置默认时间选择
+        function fnDate() {
+            var xhr = null;
+            if (window.XMLHttpRequest) {
+                xhr = new window.XMLHttpRequest();
+            } else { // ie
+                xhr = new ActiveObject("Microsoft")
+            }
+            // 通过get的方式请求当前文件
+            xhr.open("get", "/",true);
+            xhr.send(null);
+            // 监听请求状态变化
+            xhr.onreadystatechange = function () {
+                var time = null,
+                    curDate = null;
+                if (xhr.readyState === 2) {
+                    var seperator1 = "-";
+                    // 获取请求头里的时间戳
+                    time = xhr.getResponseHeader("Date");
+                    //console.log(xhr.getAllResponseHeaders())
+                    curDate = new Date(time);
+                    var oneweekdate = new Date(curDate.getTime() - 7 * 24 * 3600 * 1000);
+                    //当前时间
+                    var month = curDate.getMonth() + 1;
+                    var strDate = curDate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    //一周前时间
+                    var month = oneweekdate.getMonth() + 1;
+                    var strDate = oneweekdate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var oneweekagodate = oneweekdate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    $("#EndTime").val(currentdate);
+                    $("#StartTime").val(oneweekagodate);
+                    $("#title").html($("#StartTime").val() + '至' + $("#EndTime").val() + '生产统计报表');
+                    GetGrid();
+                }
+            }
+        }
         //打印
         function btn_print(event) {
             try {

@@ -37,6 +37,15 @@
     <script src="../js/highchart.js" type="text/javascript"></script>
 
     <script>
+        var processName = '';
+        var deviceName = '';
+        var DealWithResult = '';
+        var AlarmStartTime = '';
+        var AlarmEndTime = '';
+        var DealWithStartTime = '';
+        var DealWithEndTime = '';
+        var AlarmItem = '';
+
         $(function () {
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
@@ -99,14 +108,14 @@
            
             //查询事件
             $("#btn_Search").click(function () {
-                var processName = $("#ProcessName").val();
-                var deviceName = $("#DeviceName").val();
-                var DealWithResult = $("#DealWithResult").val();
-                var AlarmStartTime = $("#AlarmStartTime").val();
-                var AlarmEndTime = $("#AlarmEndTime").val();
-                var DealWithStartTime = $("#DealWithStartTime").val();
-                var DealWithEndTime = $("#DealWithEndTime").val();
-                var AlarmItem = $("#AlarmItem").val();
+                processName = $("#ProcessName").val();
+                deviceName = $("#DeviceName").val();
+                DealWithResult = $("#DealWithResult").val();
+                AlarmStartTime = $("#AlarmStartTime").val();
+                AlarmEndTime = $("#AlarmEndTime").val();
+                DealWithStartTime = $("#DealWithStartTime").val();
+                DealWithEndTime = $("#DealWithEndTime").val();
+                AlarmItem = $("#AlarmItem").val();
                 $gridTable.jqGrid('setGridParam', {
                     datatype: 'json',
                     postData: {
@@ -129,14 +138,14 @@
 
 
         function GetChart() {
-            var processName = $("#ProcessName").val();
-            var deviceName = $("#DeviceName").val();
-            var DealWithResult = $("#DealWithResult").val();
-            var AlarmStartTime = $("#AlarmStartTime").val();
-            var AlarmEndTime = $("#AlarmEndTime").val();
-            var DealWithStartTime = $("#DealWithStartTime").val();
-            var DealWithEndTime = $("#DealWithEndTime").val();
-            var AlarmItem = $("#AlarmItem").val();
+            processName = $("#ProcessName").val();
+            deviceName = $("#DeviceName").val();
+            DealWithResult = $("#DealWithResult").val();
+            AlarmStartTime = $("#AlarmStartTime").val();
+            AlarmEndTime = $("#AlarmEndTime").val();
+            DealWithStartTime = $("#DealWithStartTime").val();
+            DealWithEndTime = $("#DealWithEndTime").val();
+            AlarmItem = $("#AlarmItem").val();
             //柱状图数据
             $.ajax({
                 url: "GetReportInfo.ashx",
@@ -190,6 +199,14 @@
 
         function paint(serice) {
             //var datavalue = JSON.parse(serice).datavalue;
+            processName = $("#ProcessName").val();
+            deviceName = $("#DeviceName").val();
+            DealWithResult = $("#DealWithResult").val();
+            AlarmStartTime = $("#AlarmStartTime").val();
+            AlarmEndTime = $("#AlarmEndTime").val();
+            DealWithStartTime = $("#DealWithStartTime").val();
+            DealWithEndTime = $("#DealWithEndTime").val();
+            AlarmItem = $("#AlarmItem").val();
             var charts = new Highcharts.chart('container', {
                 chart: {
                     type: 'column'
@@ -220,7 +237,7 @@
                 tooltip: {
                     headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
                     pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y:.1f} </b></td></tr>',
+                    '<td style="padding:0"><b>{point.y} </b></td></tr>',
                     footerFormat: '</table>',
                     shared: true,
                     useHTML: true
@@ -237,7 +254,15 @@
                                     dialogOpen({
                                         id: "Form",
                                         title: '设备保养明细表' + e.point.category,
-                                        url: '../Report/EquAlarmDetail.aspx?equid=' + e.point.category + '',
+                                        url: '../Report/EquAlarmDetail.aspx?equid=' + e.point.category + "\
+                                        &ProcessName=" + processName + "\
+                                        &DeviceName=" + deviceName + "\
+                                        &DealWithResult=" + DealWithResult + "\
+                                        &AlarmStartTime=" + AlarmStartTime + "\
+                                        &AlarmEndTime=" + AlarmEndTime + "\
+                                        &DealWithStartTime=" + DealWithStartTime + "\
+                                        &DealWithEndTime=" + DealWithEndTime + "\
+                                        &AlarmItem" + AlarmItem,
                                         width: "750px",
                                         height: "500px",
                                         btn: null

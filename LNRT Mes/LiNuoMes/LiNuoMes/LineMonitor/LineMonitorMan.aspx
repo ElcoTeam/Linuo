@@ -284,7 +284,7 @@
                                 <tr>
                                     <th class="formTitle">登录时间：</th>
                                     <td class="formValue">
-                                        <label id="currentlogintime" class="form-control" style="border: 0px;"></label>
+                                        <label id="currentlogintime" class="form-control" style="border: 0px; width: 300px;"></label>
                                     </td>
                                 </tr>
                             </table>

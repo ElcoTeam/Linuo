@@ -474,7 +474,7 @@
                         <div class="panel-heading">
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">每日生产完成率报表</strong></th>
+                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">一级点检表</strong></th>
                                     <td></td>
                                 </tr>
                             </table>
@@ -534,6 +534,12 @@
          </div>
          </div>
     </div>
+     <%--<style>
+      
+      .form-control{
+          width: 250px;
+      }
+   </style> --%>
 </body>
 </html>
 

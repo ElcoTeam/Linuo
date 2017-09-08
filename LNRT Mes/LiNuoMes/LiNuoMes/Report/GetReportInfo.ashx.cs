@@ -22,6 +22,7 @@ namespace LiNuoMes.Report
         JavaScriptSerializer jsc = new JavaScriptSerializer();
         string Action = "";
         string UserName = "";
+        
         public void ProcessRequest(HttpContext context)
         {
             context.Response.ContentType = "text/plain";
@@ -33,15 +34,16 @@ namespace LiNuoMes.Report
 
             if (Action.Length == 0) Action = "";
 
-            //设备报警报表
+
+            #region //设备报警报表
             if (Action == "EquAlarmReport")
             {
                 List<EquAlarmEntity> equAlarm= new List<EquAlarmEntity>();
                 equAlarm = GetEquAlarmList(equAlarm);
                 context.Response.Write(jsc.Serialize(equAlarm));
             }
-
-            //设备报警柱状图
+            #endregion
+            #region //设备报警柱状图
             if (Action == "EquAlarmChart")
             {
                 EquAlarm equAlarmReport = new EquAlarm();
@@ -61,48 +63,50 @@ namespace LiNuoMes.Report
                 chart.datavalue = datavalue;
                 context.Response.Write(jsc.Serialize(chart));
             }
+            #endregion
 
-            //设备详细报警
+            #region//设备详细报警
             if (Action == "EquAlarmDetail")
             {
                 List<EquAlarmEntity> equAlarm = new List<EquAlarmEntity>();
                 equAlarm = GetEquAlarmDetail(equAlarm);
                 context.Response.Write(jsc.Serialize(equAlarm));
             }
+            #endregion
 
-            //关键设备OEE
+            #region //关键设备OEE
             if (Action == "KeyEquOEEReport")
             {
                 List<KeyEquOEEEntity> equOEE = new List<KeyEquOEEEntity>();
                 //equOEE = GetEquAlarmList(equOEE);
                 //context.Response.Write(jsc.Serialize(equOEE));
             }
-
-            //设备生产工艺
+            #endregion
+            #region //设备生产工艺
             if (Action == "ProductArtReport")
             {
                 List<ProductArtEntity> productArt = new List<ProductArtEntity>();
                 //equOEE = GetEquAlarmList(equOEE);
                 //context.Response.Write(jsc.Serialize(equOEE));
             }
-
-            //物料拉动
+            #endregion
+            #region//物料拉动
             if (Action == "MaterialPullReport")
             {
                 List<MaterialPullEntity> materialPull = new List<MaterialPullEntity>();
                 materialPull = GetMaterialPullList(materialPull);
                 context.Response.Write(jsc.Serialize(materialPull));
             }
-
-            //能耗统计
+            #endregion
+            #region //能耗统计
             if (Action == "EnergyConsumpReport")
             {
                 List<EnergyConsumpEntity> energyConsump = new List<EnergyConsumpEntity>();
                 energyConsump = GetEnergyList(energyConsump);
                 context.Response.Write(jsc.Serialize(energyConsump));
             }
-
-            //能耗统计
+            #endregion
+            #region//能耗统计
             if (Action == "GetEnergyChart")
             {
                 List<EnergyConsumpEntity> energyConsump = new List<EnergyConsumpEntity>();
@@ -119,8 +123,8 @@ namespace LiNuoMes.Report
                 chart.datavalue = datavalue;
                 context.Response.Write(jsc.Serialize(chart));
             }
-
-            //设备保养总统计表
+            #endregion
+            #region //设备保养总统计表
             if (Action == "GetEquTotalReport")
             {
                 List<EquManCountEntity> equmancount = new List<EquManCountEntity>();
@@ -128,8 +132,8 @@ namespace LiNuoMes.Report
                 context.Response.Write(jsc.Serialize(equmancount));
 
             }
-
-            //每日出勤统计
+            #endregion
+            #region //每日出勤统计
             if (Action == "UserAttendenceReport")
             { 
                 string strJson = "";
@@ -184,8 +188,8 @@ namespace LiNuoMes.Report
                 strJson += "]}";
                 context.Response.Write(strJson);
             }
-
-            //每月出勤人数报表
+            #endregion
+            #region //每月出勤人数报表
             if (Action == "GetUserAttendenceChart")
             {
                 UserAttendence userAttendence = new UserAttendence();
@@ -206,8 +210,8 @@ namespace LiNuoMes.Report
                 chart.datavalue = datavalue;
                 context.Response.Write(jsc.Serialize(chart));
             }
-
-            //人员产能
+            #endregion
+            #region //人员产能
             if (Action == "PersonCapacityReport")
             {
                 PersonCapacityEntity personCapacity = new PersonCapacityEntity();
@@ -255,8 +259,8 @@ namespace LiNuoMes.Report
                 strJson += "]}";
                 context.Response.Write(strJson);
             }
-
-            //人员产能报表
+            #endregion
+            #region//人员产能报表
             if (Action == "GetPersonCapacityChart")
             {
                 PersonCapacityEntity personCapacity = new PersonCapacityEntity();
@@ -282,9 +286,9 @@ namespace LiNuoMes.Report
                 chart.datavalueSecond= datavalue1;
                 context.Response.Write(jsc.Serialize(chart));
             }
+            #endregion
 
-
-            //每日生产完成率
+            #region//每日生产完成率
             if (Action == "DailyCompletionRateReport")
             {
                 DailyCompletionRateEntity dailyCompletionRate = new DailyCompletionRateEntity();
@@ -397,8 +401,8 @@ namespace LiNuoMes.Report
                 strJson += "]}";
                 context.Response.Write(strJson);
             }
-
-            //月度生产完成率
+            #endregion
+            #region//月度生产完成率
             if (Action == "MonthCompletionRateReport")
             {
                 MonthCompletionRateEntity monthCompletionRate = new MonthCompletionRateEntity();
@@ -479,8 +483,8 @@ namespace LiNuoMes.Report
                 context.Response.Write(strJson);
 
             }
-
-            //月度生产完成率柱状图
+            #endregion
+            #region //月度生产完成率柱状图
             if (Action == "MonthCompletionRateChart")
             {
                 MonthCompletionRateEntity monthCompletionRate = new MonthCompletionRateEntity();
@@ -533,10 +537,9 @@ namespace LiNuoMes.Report
                 });
                 context.Response.Write(jsc.Serialize(chart));
             }
+            #endregion
 
-
-
-            //获取每月预算产量
+            #region//获取每月预算产量
             if (Action == "GetMonthBudget")
             {
                 MonthBudget mb = new MonthBudget();
@@ -544,8 +547,8 @@ namespace LiNuoMes.Report
                 mb=GetMonthBudget(mb);
                 context.Response.Write(jsc.Serialize(mb));
             }
-
-            //新增每月预算产量
+            #endregion
+            #region //新增每月预算产量
             if (Action == "MonthBudget_Add")
             {
                 MonthBudget mb = new MonthBudget();
@@ -555,8 +558,8 @@ namespace LiNuoMes.Report
                 result = MonthBudgetMan(mb, result);
                 context.Response.Write(jsc.Serialize(result));
             }
-
-            //更新每月预算产量
+            #endregion
+            #region //更新每月预算产量
             if (Action == "MonthBudget_Edit")
             {
                 MonthBudget mb = new MonthBudget();
@@ -566,15 +569,15 @@ namespace LiNuoMes.Report
                 result = MonthBudgetEdit(mb, result);
                 context.Response.Write(jsc.Serialize(result));
             }
-
-            //产品直通率
+            #endregion
+            #region //产品直通率
             if (Action == "ProductThroughRateReport")
             {
                 List<ProductThroughRateEntity> productThroughRate = new List<ProductThroughRateEntity>();
-                
-            }
 
-            //年度产量对比
+            }
+            #endregion
+            #region //年度产量对比
             if (Action == "ProductionCompareReport")
             {
                 ProductionCompareEntity productCompare = new ProductionCompareEntity();
@@ -625,9 +628,9 @@ namespace LiNuoMes.Report
                 context.Response.Write(strJson);
 
             }
+            #endregion
 
-
-            //年度产量对比柱状图
+            #region//年度产量对比柱状图
             if (Action == "ProductionCompareChart")
             {
                 ProductionCompareEntity personCapacity = new ProductionCompareEntity();
@@ -657,43 +660,43 @@ namespace LiNuoMes.Report
                 chart.datavalueSecond = datavalueSecond;
                 context.Response.Write(jsc.Serialize(chart));
             }
-
+            #endregion
 
             //生产溯源
-           
 
-            //订单生产情况
+
+            #region//订单生产情况
             if (Action == "OrderProductInfo")
             {
                 List<ProductionStatisticEntity> productionStatistic = new List<ProductionStatisticEntity>();
                 productionStatistic = GetOrderProductInfoList(productionStatistic);
                 context.Response.Write(jsc.Serialize(productionStatistic));
             }
-
-            //下线情况
+            #endregion
+            #region//下线情况
             if (Action == "AbnormalInfo")
             {
                 List<AbnormalInfo> abnormal = new List<AbnormalInfo>();
                 abnormal = GetAbnormalInfoList(abnormal);
                 context.Response.Write(jsc.Serialize(abnormal));
             }
-
-            //设备报警情况
+            #endregion
+            #region//设备报警情况
             if (Action == "EquAlarmInfo")
             {
                 List<EquAlarmInfo> equAlarm = new List<EquAlarmInfo>();
                 equAlarm = GetEquAlarmInfoList(equAlarm);
                 context.Response.Write(jsc.Serialize(equAlarm));
             }
-
-            //物料拉动情况
+            #endregion
+            #region//物料拉动情况
             if (Action == "MaterialPullInfo")
             {
                 List<MaterialPullInfo> materialPull = new List<MaterialPullInfo>();
                 materialPull = GetMaterialPullInfoList(materialPull);
                 context.Response.Write(jsc.Serialize(materialPull));
             }
-
+            #endregion
 
             #region  //一级保养点检表
             if (Action == "FirstLevelInspectionReport")
@@ -1116,8 +1119,16 @@ namespace LiNuoMes.Report
         public List<EquAlarmEntity> GetEquAlarmDetail(List<EquAlarmEntity> dataEntity)
         {
             DataTable dt = new DataTable();
+            string plcName = RequstString("PlcName");
+            string processName = RequstString("ProcessName");
             string deviceName = RequstString("DeviceName");
-            
+            string DealWithResult = RequstString("DealWithResult");
+            string AlarmStartTime = RequstString("AlarmStartTime");
+            string AlarmEndTime = RequstString("AlarmEndTime");
+            string DealWithStartTime = RequstString("DealWithStartTime");
+            string DealWithEndTime = RequstString("DealWithEndTime");
+            string AlarmItem = RequstString("AlarmItem");
+
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand();
@@ -1125,10 +1136,18 @@ namespace LiNuoMes.Report
                 cmd.Connection = conn;
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "usp_Report_EquAlarmDetail";
-                SqlParameter[] sqlPara = new SqlParameter[1];
-               
-                sqlPara[0] = new SqlParameter("@deviceName", deviceName);
-                
+                SqlParameter[] sqlPara = new SqlParameter[9];
+
+                sqlPara[0] = new SqlParameter("@plcName", plcName);
+                sqlPara[1] = new SqlParameter("@processName", processName);
+                sqlPara[2] = new SqlParameter("@deviceName", deviceName);
+                sqlPara[3] = new SqlParameter("@DealWithResult", DealWithResult);
+                sqlPara[4] = new SqlParameter("@AlarmStartTime", AlarmStartTime);
+                sqlPara[5] = new SqlParameter("@AlarmEndTime", AlarmEndTime);
+                sqlPara[6] = new SqlParameter("@DealWithStartTime", DealWithStartTime);
+                sqlPara[7] = new SqlParameter("@DealWithEndTime", DealWithEndTime);
+                sqlPara[8] = new SqlParameter("@AlarmItem", AlarmItem);
+
                 foreach (SqlParameter para in sqlPara)
                 {
                     cmd.Parameters.Add(para);

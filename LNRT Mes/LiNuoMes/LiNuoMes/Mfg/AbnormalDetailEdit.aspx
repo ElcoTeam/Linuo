@@ -299,6 +299,13 @@
                          obj.focus();
                          return -1;
                      }
+
+                     if (data < 1) {
+                         dialogMsg("请录入正整数数据!", -1);
+                         obj.focus();
+                         return -1;
+                     }
+
                      ReasonArray[i].RecordValue = data;
                      iCount++;
                  }

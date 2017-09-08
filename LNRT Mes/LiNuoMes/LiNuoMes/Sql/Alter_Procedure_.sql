@@ -2114,6 +2114,7 @@ AS
 GO
 
 --用以获得MES序列号值, 此存储过程是实施后正式使用的.
+--模块接口用户Proc_RFID_Interface会调用此存储过程.
 ALTER PROCEDURE [dbo].[usp_Mes_getWoMesCode]
      @WorkOrderNumber  AS VARCHAR (50)  = '' --工单号码
 AS
@@ -2184,9 +2185,16 @@ AS
     END
 
     SELECT 
-         @MesCode      AS MesCode
-        ,@CatchError   AS ErrorFlag --系统判断用户操作异常, 如果大于0, 则说明肯定有错误出现, 此时需要查看详细描述
-        ,@RtnMsg       AS ErrorMsg  --系统判定出错的详细描述   
+       CASE 
+           WHEN @CatchError = 0 THEN 'OK'                     --系统判断用户操作异常, 如果大于0, 则说明肯定有错误出现, 此时需要查看详细描述
+           ELSE 'NG' 
+       END AS STA
+      ,CASE 
+           WHEN @CatchError = 0 THEN '获取MES码成功'
+           ELSE @RtnMsg                                       --系统判定出错的详细描述   
+       END AS INFO;
+
+    SELECT @MesCode AS MesCode;                               --给用户返回刚刚产生的MES码
 GO
 
 

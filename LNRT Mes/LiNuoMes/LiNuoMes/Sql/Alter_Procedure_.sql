@@ -439,6 +439,7 @@ AS
     FROM MFG_WIP_Data_Abnormal_Reason_Template TT
     LEFT JOIN MFG_WIP_Data_Abnormal_Reason AB ON TT.ID = AB.TemplateID AND AB.AbnormalID = @AbId
     WHERE TT.AbProductID = @abProduct
+    ORDER BY TT.ID;
 GO
 
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wip_Data_Abnormal_SummayQty]
@@ -2131,6 +2132,7 @@ AS
     DECLARE @iUbound      INT;
     DECLARE @iPlanQty     INT;
     DECLARE @iDiscardQty  INT;
+    DECLARE @iLowerVDQty  INT;
     DECLARE @iStatus      INT;
     DECLARE @iVersion     INT;
 
@@ -2163,10 +2165,21 @@ AS
         RETURN;
     END
 
-    --如果当下的订单的计数是新产生的, 则有必要更新的订单的状态为"生产进行中"
-    IF   @iUBound = 0                             --说明是原始订单
-      OR @iUbound - @iPlanQty = 0                 --说明是原始订单的下线补单
-      OR @iUbound - @iPlanQty - @iDiscardQty = 0  --说明是下线补单的下线补单(此处处理的仓促,应该重新计算一遍本订单之前的所有订单的报废数量, 当下订单的报废数量不应该计算在内才会准确, 时间原因不考虑此种异常情况)
+    --取得小于当下订单版本的订单的报废下线总和.
+    SELECT @iLowerVDQty = SUM(MesDiscardQty1 + MesDiscardQty2 + MesDiscardQty3 + MesDiscardQty4)
+    FROM MFG_WO_List
+    WHERE 
+         ErpWorkOrderNumber  = @WorkOrderNumber
+     AND MesWorkOrderVersion < @iVersion; --此处的条件不可以包含:等于
+
+     IF @iLowerVDQty IS NULL
+     BEGIN
+        SET @iLowerVDQty = 0; --0: 说明是原始订单; >0: 说明是下线补单
+     END
+
+    --如果当下的订单的计数是新产生的, 则要更新订单的状态为"生产进行中"
+    IF     @iUbound                              = 0  --说明是原始订单
+        OR @iUbound - (@iPlanQty + @iLowerVDQty) = 0  --说明是下线补单
     BEGIN
         
         SELECT 

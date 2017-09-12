@@ -170,11 +170,11 @@
                     { label: 'SubPlanStatus', name: 'SubPlanStatus', hidden: true, sortable: false },
                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: panelwidth * 0.03, align: 'center', sortable: false },
                     { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: panelwidth * 0.08, align: 'center', sortable: false },
-                    { label: 'MES码', name: 'RFID', index: 'RFID', width: panelwidth * 0.15, align: 'center', sortable: false },
-                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: panelwidth * 0.14, align: 'center', sortable: false },
+                    { label: 'MES码', name: 'RFID', index: 'RFID', width: panelwidth * 0.18, align: 'center', sortable: false },
+                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: panelwidth * 0.09, align: 'center', sortable: false },
                     { label: '下线工序', name: 'AbnormalDisplayValue', index: 'AbnormalDisplayValue', width: panelwidth * 0.09, align: 'center', sortable: false },
                     {
-                        label: '下线类型', name: 'AbnormalType', index: 'AbnormalType', width: panelwidth * 0.04, align: 'center', sortable: false,
+                        label: '下线类型', name: 'AbnormalType', index: 'AbnormalType', width: panelwidth * 0.06, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return  cellvalue == "0" ? "正常订单"
                                   : cellvalue == "1" ? "补修"
@@ -184,9 +184,9 @@
                         }
                     },
                     { label: '下线时间', name: 'AbnormalTime', index: 'AbnormalTime', width: panelwidth * 0.14, align: 'center', sortable: false },
-                    { label: '下线人员', name: 'AbnormalUser', index: 'AbnormalUser', width: panelwidth * 0.05, align: 'center', sortable: false },
-                    { label: '物料维护', name: 'MaintainCol', width: panelwidth * 0.14, align: 'center', sortable: false },
-                    { label: '操 作',   name: 'OperateCol', width: panelwidth * 0.14, align: 'center', sortable: false  },
+                    { label: '下线人员', name: 'AbnormalUser', index: 'AbnormalUser', width: panelwidth * 0.07, align: 'center', sortable: false },
+                    { label: '物料维护', name: 'MaintainCol', width: panelwidth * 0.13, align: 'center', sortable: false },
+                    { label: '操 作',   name: 'OperateCol', width: panelwidth * 0.13, align: 'center', sortable: false  },
 
                 ],
                 shrinkToFit: true,

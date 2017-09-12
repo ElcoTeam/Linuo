@@ -266,7 +266,7 @@
 
 </script>
     <div style="margin-left: 10px; margin-top: 10px; margin-right: 10px;">
-        <table class="form" style="margin-top:0px;"  border="0">
+        <table class="form" style="margin-top:2px; padding:5px"  border="0"  >
             <tr>
                 <td class="formTitle">MES码:</td>
                 <td colspan="3">

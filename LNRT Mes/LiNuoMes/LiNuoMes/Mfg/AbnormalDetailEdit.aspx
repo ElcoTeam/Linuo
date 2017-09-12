@@ -413,60 +413,60 @@
 
     </script>
     <div style="margin-left: 10px; margin-top: 10px; margin-right: 10px;">
-            <table class="form" style="margin-top:2px; padding:5px"  border="0"  >
-                <tr>
-                    <td class="formTitle">下线工序:</td>
-                    <td colspan="3" id="tdAbnormalPoint"></td>
-                </tr>
-                <tr>
-                    <td class="formTitle">MES码:</td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" id="RFID" />
-                    </td>
+        <table class="form" style="margin-top:2px; padding:5px"  border="0"  >
+            <tr>
+                <td class="formTitle">下线工序:</td>
+                <td colspan="3" id="tdAbnormalPoint"></td>
+            </tr>
+            <tr>
+                <td class="formTitle">MES码:</td>
+                <td colspan="3">
+                    <input type="text" class="form-control" id="RFID" />
+                </td>
 
-                </tr>
-                <tr>
-                    <td class="formTitle">订单编号:</td>
-                    <td>
-                        <input type="text" class="form-control" id="WorkOrderNumber"/>
-                    </td>
-                    <td class="formTitle">产品物料编码:</td>
-                    <td>
-                        <input type="text" class="form-control" id="GoodsCode"  />
-                    </td>
-                </tr>
-                <tr>
-                    <td class="formTitle">下线时间:</td>
-                    <td>
-                        <input EDITFLG="true" type="text" id="AbnormalTime" style="width:180px" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm', readOnly:true})" class="Wdate timeselect"/>
-                    </td>
-                    <td class="formTitle">下线人员:</td>
-                    <td>
-                        <input EDITFLG="true" type="text" class="form-control"  id="AbnormalUser"  />
-                    </td>
-                 </tr>
-                <tr>
-                <tr>
-                    <td class="formTitle">下线类型:</td>
-                    <td colspan="3">
-                        <input EDITFLG="true" type="checkbox" id="AbnormalType2" value="2">
-                        <label for="AbnormalType2" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >报废</label>
-                        <input EDITFLG="true" type="checkbox" id="AbnormalType3" value="3" >
-                        <label for="AbnormalType3" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >未完工</label>
-                   </td>
-                </tr>
-                <tr>
-                    <td class="formTitle">下线产品:</td>
-                    <td colspan="3" id="tdAbnormalProduct"></td>
-                </tr>
-                <tr>
-                    <td class="formTitle" style="vertical-align:top; text-align:left">下线原因:</td>
-                    <td colspan="3" >
-                        <ul id="tdAbnormalReason"></ul>
-                    </td>
-                </tr>
-               
-            </table>
+            </tr>
+            <tr>
+                <td class="formTitle">订单编号:</td>
+                <td>
+                    <input type="text" class="form-control" id="WorkOrderNumber"/>
+                </td>
+                <td class="formTitle">产品物料编码:</td>
+                <td>
+                    <input type="text" class="form-control" id="GoodsCode"  />
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle">下线时间:</td>
+                <td>
+                    <input EDITFLG="true" type="text" id="AbnormalTime" style="width:180px" onFocus="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm', readOnly:true})" class="Wdate timeselect"/>
+                </td>
+                <td class="formTitle">下线人员:</td>
+                <td>
+                    <input EDITFLG="true" type="text" class="form-control"  id="AbnormalUser"  />
+                </td>
+             </tr>
+            <tr>
+            <tr>
+                <td class="formTitle">下线类型:</td>
+                <td colspan="3">
+                    <input EDITFLG="true" type="checkbox" id="AbnormalType2" value="2">
+                    <label for="AbnormalType2" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >报废</label>
+                    <input EDITFLG="true" type="checkbox" id="AbnormalType3" value="3" >
+                    <label for="AbnormalType3" class="formTitle" style="font-weight:normal; color:blueviolet; text-align:left;" >未完工</label>
+               </td>
+            </tr>
+            <tr>
+                <td class="formTitle">下线产品:</td>
+                <td colspan="3" id="tdAbnormalProduct"></td>
+            </tr>
+            <tr>
+                <td class="formTitle" style="vertical-align:top; text-align:left">下线原因:</td>
+                <td colspan="3" >
+                    <ul id="tdAbnormalReason"></ul>
+                </td>
+            </tr>
+           
+        </table>
     </div>
    <style>
      table td{padding:2px;}

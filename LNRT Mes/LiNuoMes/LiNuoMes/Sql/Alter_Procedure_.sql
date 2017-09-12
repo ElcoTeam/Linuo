@@ -2113,14 +2113,17 @@ AS
     RETURN
 GO
 
+
 --用以获得MES序列号值, 此存储过程是实施后正式使用的.
 --模块接口用户Proc_RFID_Interface会调用此存储过程.
 ALTER PROCEDURE [dbo].[usp_Mes_getWoMesCode]
-     @WorkOrderNumber  AS VARCHAR (50)  = '' --工单号码
+      @WorkOrderNumber  AS VARCHAR (50)  = ''     --工单号码
+     ,@MesCode          VARCHAR(50)          OUTPUT   --获得新的Mes码值 
+     ,@CatchError       AS INT           = 0 OUTPUT   --这是一个输入输出参数: 
+                                                      --  作为输入时: 0:正常产生新Mes码; -1: 说明客户已经确认当前工单状态可以从待产直接跳转为正在生产中状态. 
+                                                      --  作为输出时: 0:产生了新的Mes码;  1: 则说明肯定有错误出现, 此时需要查看RtnMsg的详细描述
+     ,@RtnMsg           AS NVARCHAR(100) ='' OUTPUT   --返回状态的字符串描述
 AS
-    DECLARE @CatchError   AS INT;            --系统判断用户操作异常的数量, 如果大于0, 则说明肯定有错误出现, 此时需要查看RtnMsg的详细描述
-    DECLARE @RtnMsg       AS NVARCHAR(100);  --返回状态的字符串描述
-    DECLARE @MesCode      VARCHAR(50);
     DECLARE @sDate        VARCHAR(10);
     DECLARE @sLine        VARCHAR(2);
     DECLARE @sSerialNo    VARCHAR(4);
@@ -2128,75 +2131,93 @@ AS
     DECLARE @iUbound      INT;
     DECLARE @iPlanQty     INT;
     DECLARE @iDiscardQty  INT;
+    DECLARE @iStatus      INT;
+    DECLARE @iVersion     INT;
 
-    SET @CatchError = 0;    
-    SET @RtnMsg     = '';    
+    --先进行返回值的初始化 
+    SET @RtnMsg  = '';  
+    SET @MesCode = '';
+    SET @iStatus = -1;
 
     SELECT 
          @iRowCount   = COUNT(1) 
-        ,@iUbound     = MAX(MesCodeUBound)  --这里取最大值, 其实就是取得的version=0时的值, 因为, 我们只对version=0的记录进行记录
-        ,@iPlanQty    = MAX(MesPlanQty)     --这里取最大值, 其实就是取得的version=0时的值
+        ,@iVersion    = MAX(MesWorkOrderVersion) --这里取最大值, 可能取得的是正常订单的值, 也可能是下线补单的值, 但是系统默认为当下不会存在两个同时在产的订单.     
+        ,@iUbound     = MAX(MesCodeUBound)       --这里取最大值, 其实就是取得的version=0时的值, 因为, 我们只对version=0的记录进行记录
+        ,@iPlanQty    = MAX(MesPlanQty)          --这里取最大值, 其实就是取得的version=0时的值
         ,@iDiscardQty = SUM(MesDiscardQty1 + MesDiscardQty2 + MesDiscardQty3 + MesDiscardQty4)
     FROM MFG_WO_List
     WHERE 
-         ErpWorkOrderNumber = @WorkOrderNumber
-    IF @CatchError = 0
-    BEGIN
-        IF @iRowCount = 0
-        BEGIN
-            SET @CatchError = 1;
-            SET @RtnMsg = '没有找到您录入的订单信息, 请您确认录入的订单是否正确!';
-        END
-    END 
+         ErpWorkOrderNumber = @WorkOrderNumber;
 
-    IF @CatchError = 0
+    IF @iRowCount = 0
     BEGIN
-        IF @iUbound >= @iPlanQty + @iDiscardQty
-        BEGIN
-            SET @CatchError = 1;
-            SET @RtnMsg = '已经达到此订单的MES码的数量上限了, 不可以继续生成了!';
-        END
-    END 
-     
-    IF @CatchError = 0
-    BEGIN
-        UPDATE MFG_WO_List SET MesCodeUBound = MesCodeUBound + 1 
-        WHERE 
-            ErpWorkOrderNumber  = @WorkOrderNumber
-        AND MesWorkOrderVersion = 0 
-        AND MesCodeUBound  = @iUbound --此条件不可以省略, 事前我们没有对此表进行锁定操作, 这里防止多人同时生成同一个MES Code.
-        IF @@ROWCOUNT = 0
-        BEGIN
-            SET @CatchError = 1;
-            SET @RtnMsg = '此次生成失败, 可能是多人同时使用同一个订单生成MES码造成!';
-        END
-    END 
-
-    IF @CatchError = 0
-    BEGIN
-        SET @sSerialNo = RIGHT('00000' + CONVERT(VARCHAR, @iUbound + 1), 4);
-        SET @sDate  = FORMAT(GETDATE(), 'yyyyMMdd');
-        SET @sLine  = '01';
-        SET @MesCode = RIGHT(@WorkOrderNumber, 8) + @sDate + @sLine + @sSerialNo;
-    END 
-    ELSE
-    BEGIN
-        SET @MesCode = '';
+        SET @CatchError = 1;
+        SET @RtnMsg     = '没有找到您录入的订单信息, 请您确认录入的订单是否正确!';
+        RETURN;
     END
 
-    SELECT 
-       CASE 
-           WHEN @CatchError = 0 THEN 'OK'                     --系统判断用户操作异常, 如果大于0, 则说明肯定有错误出现, 此时需要查看详细描述
-           ELSE 'NG' 
-       END AS STA
-      ,CASE 
-           WHEN @CatchError = 0 THEN '获取MES码成功'
-           ELSE @RtnMsg                                       --系统判定出错的详细描述   
-       END AS INFO;
+    IF @iUbound >= @iPlanQty + @iDiscardQty  --最初的计划数量 + 各版本数量之和 即为最后可以生成的MES码的数量.
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg     = '已经达到此订单MES码的数量上限了, 不可以继续生成MES码了!';
+        RETURN;
+    END
 
-    SELECT @MesCode AS MesCode;                               --给用户返回刚刚产生的MES码
+    --如果当下的订单的计数是新产生的, 则有必要更新的订单的状态为"生产进行中"
+    IF   @iUBound = 0                             --说明是原始订单
+      OR @iUbound - @iPlanQty = 0                 --说明是原始订单的下线补单
+      OR @iUbound - @iPlanQty - @iDiscardQty = 0  --说明是下线补单的下线补单(此处处理的仓促,应该重新计算一遍本订单之前的所有订单的报废数量, 当下订单的报废数量不应该计算在内才会准确, 时间原因不考虑此种异常情况)
+    BEGIN
+        
+        SELECT 
+            @iStatus = MesStatus
+        FROM MFG_WO_List
+        WHERE 
+             ErpWorkOrderNumber  = @WorkOrderNumber
+         AND MesWorkOrderVersion = @iVersion;
+
+        IF @iStatus = 0  
+        BEGIN
+            IF @CatchError = -1
+            BEGIN
+                UPDATE MFG_WO_List 
+                SET 
+                    MesStatus = 2 
+                WHERE 
+                    ErpWorkOrderNumber  = @WorkOrderNumber
+                AND MesWorkOrderVersion = @iVersion
+                AND MesStatus           = 0;
+            END
+            ELSE
+            BEGIN
+                SET @CatchError = 1;
+                SET @RtnMsg     = '您录入的订单状态目前处于“待生产”状态, 其尚未经过“产前调整中”的准备阶段, 请确认是否要直接将其变为“生产进行中”状态!';
+                RETURN;
+            END
+        END
+
+    END
+     
+    UPDATE MFG_WO_List 
+    SET 
+        MesCodeUBound = MesCodeUBound + 1 
+    WHERE 
+        ErpWorkOrderNumber  = @WorkOrderNumber
+    AND MesWorkOrderVersion = 0 
+    AND MesCodeUBound       = @iUbound; --此条件不可以省略, 事前我们没有对此表进行锁定操作, 这里防止多人同时生成同一个MES Code.
+
+    IF @@ROWCOUNT = 0
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg = '此次生成失败, 可能是因为多人在同时使用同一订单生成MES码!';
+        RETURN;
+    END
+    SET @sSerialNo = RIGHT('00000' + CONVERT(VARCHAR, @iUbound + 1), 4);
+    SET @sDate  = FORMAT(GETDATE(), 'yyyyMMdd');
+    SET @sLine  = '01';
+    SET @CatchError = 0; 
+    SET @MesCode = RIGHT(@WorkOrderNumber, 8) + @sDate + @sLine + @sSerialNo;
 GO
-
 
 --用以获得MES序列号值 此为测试时期使用的测试存储过程, 实施后即弃用.
 --当前的编码规则为: 年月日 + 四位序列号

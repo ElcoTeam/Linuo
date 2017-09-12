@@ -2756,7 +2756,11 @@ AS
     AND Mes_PLC_Parameters.ParamName = @TagName 
     AND Mes_PLC_List.GoodsCode = '0000000000';
 
+    --如果决定结束工单需要从码垛工位的计数机制来完成, 则需要修改此处的工单号取得方式(仅仅多查看一下TAG标识表的时时值即可得到)
+    --而且仅仅需要在@FinalFlag = 1的情况的工位下有此差别, 其它工位可以认为没有差别, 那些记录的数据都是为了记录日志和制作报告而维护着.
+    --此处[需要重写]
     --查找工单
+
     SELECT 
          @WorkOrderNumber  = WorkOrderNumber
         ,@WorkOrderVersion = WorkOrderVersion
@@ -2960,17 +2964,18 @@ AS
 
      -- 需求文档描述原文文本: 一个订单的首个工序的操作计数等于1时(各PLC参数派发完成后，会调整操作计数为0)，则调整该订单状态为“生产进行中”
      -- 个人觉得: 产量为1的限制条件可以去掉, 这样可以防止生产线的某些漏操作, 造成系统一直没有更改工单状态的严重事故, 如果条件去除, 则可以给工单状态重大的延后的弥补机会.
-     IF ( @WorkOrderStatus = 0 OR @WorkOrderStatus = 1 ) AND @StartFlag = 1 --AND @TagFinishQty = 1
-     BEGIN
-         UPDATE MFG_WO_List 
-         SET
-             MesStatus = 2 
-            ,MesActualStartTime = GETDATE()
-         WHERE
-             ErpWorkOrderNumber  = @WorkOrderNumber
-         AND MesWorkOrderVersion = @WorkOrderVersion
-         AND ( MesStatus = 0 OR MesStatus = 1 );
-     END
+     --当下已经不使用这个作为订单的状态更改触发机制了, 其使用了MES Code的产生作为触发条件并进行工单状态修改.[2017-09-12]
+     -- IF ( @WorkOrderStatus = 0 OR @WorkOrderStatus = 1 ) AND @StartFlag = 1 --AND @TagFinishQty = 1
+     -- BEGIN
+     --     UPDATE MFG_WO_List 
+     --     SET
+     --         MesStatus = 2 
+     --        ,MesActualStartTime = GETDATE()
+     --     WHERE
+     --         ErpWorkOrderNumber  = @WorkOrderNumber
+     --     AND MesWorkOrderVersion = @WorkOrderVersion
+     --     AND ( MesStatus = 0 OR MesStatus = 1 );
+     -- END
 
      --3. 更新当下工序的实际产出数量, 
      -- 这里的操作 "不要" 和下面的 "本工序产出完成" 的另一个条件分支合并起来, 

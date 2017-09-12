@@ -96,15 +96,32 @@
                 rownumWidth: 100,
                 rowList: [30, 50, 100],
                 pager: "#gridPager",
+                rownumbers: true,
                 shrinkToFit: false,
                 autowidth: true,
                 scrollrows: true,
                 gridview: true,
+                jsonReader: {
+                    root: "rows",
+                    page: "page",
+                    total: "total",
+                    records: "records",
+                    repeatitems: true,
+                    cell: "cell",
+                    id: "id",
+                    userdata: "userdata",
+                    subgrid: {
+                        root: "rows",
+                        repeatitems: true,
+                        cell: "cell"
+                    }
+                },
                 onSelectRow: function () {
                     selectedRowIndex = $("#" + this.id).getGridParam('selrow');
                 },
                 gridComplete: function () {
                     $("#" + this.id).setSelection(selectedRowIndex, false);
+                    //$('#gridTable').setGridParam({ datatype: 'json', page: 1 }).trigger('reloadGrid');
                 }
             });
 
@@ -195,6 +212,7 @@
 
         //导出
         function btn_export(event) {
+            //$('#gridTable').setGridParam({ loadonce: 'true'}).trigger('reloadGrid');
             ExportJQGridDataToExcel('#gridTable', '设备保养报表');
         }
 

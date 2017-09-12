@@ -252,9 +252,10 @@
                     <th class="formTitle">下线工序:</th>
                     <td class="formValue">
                         <select class="form-control" id="AbnormalPoint" disabled>
-                            <option value ="1">下线点1</option>
-                            <option value ="2">下线点2</option>
-                            <option value ="3">下线点3</option>
+                            <option value ="1">铜排气密性检测</option>
+                            <option value ="2">板芯气密性检测</option>
+                            <option value ="3">板芯装配</option>
+                            <option value ="4">终检(预装压条)</option>
                         </select>
                     </td>
                 </tr>

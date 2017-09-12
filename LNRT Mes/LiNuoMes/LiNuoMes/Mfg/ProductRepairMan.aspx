@@ -50,32 +50,54 @@
                 }, 200);
             });
 
-            InitPage();
-
+            InitalMes();
+            //InitPage();
         });
 
         function InitPage() {
             var panelwidth = $('#areascontent').width();
             var $gridTable = $('#gridTable');
+            var RFID = $("#RFID").val();
+            var WorkOrderNumber = $("#WorkOrderNumber").val();
+            var GoodsCode = $("#GoodsCode").val();
+            var AbnormalPoint = $("#AbnormalPoint").val();
+            var AbnormalType = $("#AbnormalType").val();
+            var RepairStatus = $("#RepairStatus").val();
+            var FromTime = $("#FromTime").val();
+            var ToTime = $("#ToTime").val();
+            var RepairFromTime = $("#RepairFromTime").val();
+            var RepairToTime = $("#RepairToTime").val();
+
             $gridTable.jqGrid({
                 url: "./GetProductRepair.ashx",
                 postData: {
-                    "Action": "MFG_ProductRepairInfo"
+                    "Action": "MFG_ProductRepairInfo",
+                    "WorkOrderNumber": WorkOrderNumber,
+                    "RFID": RFID,
+                    "GoodsCode": GoodsCode,
+                    "AbnormalPoint": AbnormalPoint,
+                    "AbnormalType": AbnormalType,
+                    "RepairStatus": RepairStatus,
+                    "FromTime": FromTime,
+                    "ToTime": ToTime,
+                    "RepairFromTime": RepairFromTime,
+                    "RepairToTime": RepairToTime
                 },
                 datatype: "json",
                 height: $('#areascontent').height() * 0.7,
                 colModel: [
                     { label: 'ID', name: 'ID', hidden: true },
                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: panelwidth * 0.03, align: 'center', sortable: false },
-                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: panelwidth * 0.09, align: 'center', sortable: false },
-                    { label: 'MES码', name: 'RFID', index: 'RFID', width: panelwidth * 0.09, align: 'center', sortable: false },
-                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: panelwidth * 0.17, align: 'center', sortable: false },
+                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: panelwidth * 0.11, align: 'center', sortable: false },
+                    { label: 'MES码', name: 'RFID', index: 'RFID', width: panelwidth * 0.17, align: 'center', sortable: false },
+                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: panelwidth * 0.09, align: 'center', sortable: false },
                     {
-                        label: '下线工序', name: 'AbnormalPoint', index: 'AbnormalPoint', width: panelwidth * 0.06, align: 'center', sortable: false,
+                        label: '下线工序', name: 'AbnormalPoint', index: 'AbnormalPoint', width: panelwidth * 0.08, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                            return  cellvalue == "1" ? "下线点1"
-                                  : cellvalue == "2" ? "下线点2"
-                                  : cellvalue == "3" ? "下线点3"
+                            return  cellvalue == "1" ? "铜排气密性检测"
+                                  : cellvalue == "2" ? "板芯气密性检测"
+                                  : cellvalue == "3" ? "板芯装配"
+                                  : cellvalue == "4" ? "终检(预装压条)"
                                   : "";
                         }
                     },
@@ -97,8 +119,8 @@
                                   : "";
                         }
                     },
-                    { label: '补修时间', name: 'RepairTime', index: 'RepairTime', width: panelwidth * 0.16, align: 'center', sortable: false },
-                    { label: '补修人员', name: 'RepairUser', index: 'RepairUser', width: panelwidth * 0.16, align: 'center', sortable: false },
+                    { label: '补修时间', name: 'RepairTime', index: 'RepairTime', width: panelwidth * 0.14, align: 'center', sortable: false },
+                    { label: '补修人员', name: 'RepairUser', index: 'RepairUser', width: panelwidth * 0.14, align: 'center', sortable: false },
                     {
                         label: '操 作', width: panelwidth * 0.14, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
@@ -129,35 +151,59 @@
 
             //查询事件
             $("#btn_Search").click(function () {
-                var RFID = $("#RFID").val();
-                var WorkOrderNumber = $("#WorkOrderNumber").val();
-                var GoodsCode = $("#GoodsCode").val();
-                var AbnormalPoint = $("#AbnormalPoint").val();
-                var AbnormalType = $("#AbnormalType").val();
-                var RepairStatus = $("#RepairStatus").val();
-                var FromTime = $("#FromTime").val();
-                var ToTime = $("#ToTime").val();
-                var RepairFromTime = $("#RepairFromTime").val();
-                var RepairToTime = $("#RepairToTime").val();
-
-                $gridTable.jqGrid('setGridParam',
-                    {
-                        postData: {
-                            "WorkOrderNumber": WorkOrderNumber,
-                            "RFID": RFID,
-                            "GoodsCode": GoodsCode,
-                            "AbnormalPoint": AbnormalPoint,
-                            "AbnormalType": AbnormalType,
-                            "RepairStatus" : RepairStatus,
-                            "FromTime": FromTime,
-                            "ToTime": ToTime,
-                            "RepairFromTime": RepairFromTime,
-                            "RepairToTime": RepairToTime
-                        }
-                }).trigger('reloadGrid');
+                ReloadGrid();
+                
             });
         }
 
+        function InitalMes()
+        {
+            $.ajax({
+                url: "ProductRepairMan.aspx/GetMesCode",
+                type: "post",
+                dataType: "json",
+                data: "{deviceid:''}",
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    var data1 = eval('(' + data.d + ')');
+                    $("#RFID").val(data1[0].MesCode);
+                    InitPage();
+                },
+                error: function (msg) {
+                    dialogMsg("数据访问异常", -1);
+                }
+            });
+        }
+
+        function ReloadGrid()
+        {
+            var RFID = $("#RFID").val();
+            var WorkOrderNumber = $("#WorkOrderNumber").val();
+            var GoodsCode = $("#GoodsCode").val();
+            var AbnormalPoint = $("#AbnormalPoint").val();
+            var AbnormalType = $("#AbnormalType").val();
+            var RepairStatus = $("#RepairStatus").val();
+            var FromTime = $("#FromTime").val();
+            var ToTime = $("#ToTime").val();
+            var RepairFromTime = $("#RepairFromTime").val();
+            var RepairToTime = $("#RepairToTime").val();
+
+            $gridTable.jqGrid('setGridParam',
+                {
+                    postData: {
+                        "WorkOrderNumber": WorkOrderNumber,
+                        "RFID": RFID,
+                        "GoodsCode": GoodsCode,
+                        "AbnormalPoint": AbnormalPoint,
+                        "AbnormalType": AbnormalType,
+                        "RepairStatus": RepairStatus,
+                        "FromTime": FromTime,
+                        "ToTime": ToTime,
+                        "RepairFromTime": RepairFromTime,
+                        "RepairToTime": RepairToTime
+                    }
+                }).trigger('reloadGrid');
+        }
         //查看 1：查看
         function btn_search(equid) {
             if (equid == undefined) {
@@ -306,7 +352,14 @@
             </div>
         </div>
     </div>
-   
+   <style>
+       .form .form-control{
+           width: 350px;
+       }
+       .timeselect{
+           width: 350px;
+       }
+   </style>
 </body>
 </html>
 

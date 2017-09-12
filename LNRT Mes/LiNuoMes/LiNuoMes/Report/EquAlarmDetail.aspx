@@ -41,7 +41,7 @@
     </style>
 </head>
 <body>
-    <script>        var equid = request('equid');        var ProcessName = request('ProcessName');        var DeviceName = request('DeviceName');        var DealWithResult = request('DealWithResult');        var AlarmStartTime = request('AlarmStartTime');        var AlarmEndTime = request('AlarmEndTime');        var DealWithStartTime = request('DealWithStartTime');        var DealWithEndTime = request('DealWithEndTime');        var AlarmItem = request('AlarmItem');        $(function () {
+    <script>        //var equid = request('equid');        var equid = "<%=Request.QueryString["equid"]%>";              var ProcessName = request('ProcessName');        var DeviceName = request('DeviceName');        var DealWithResult = request('DealWithResult');        var AlarmStartTime = request('AlarmStartTime');        var AlarmEndTime = request('AlarmEndTime');        var DealWithStartTime = request('DealWithStartTime');        var DealWithEndTime = request('DealWithEndTime');        var AlarmItem = request('AlarmItem');        $(function () {
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
@@ -64,7 +64,7 @@
                 datatype: "json",
                 postData: {
                     Action: "EquAlarmDetail",
-                    PlcName: equid,
+                    PlcName: decodeURI(equid),
                     ProcessName: ProcessName,
                     DeviceName: DeviceName,
                     DealWithResult: DealWithResult,

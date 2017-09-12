@@ -148,12 +148,14 @@ namespace LiNuoMes.Mfg
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
-                string str1 = "SELECT  AB.ID,AB.RFID,AB.AbnormalPoint,AB.AbnormalType,AB.RepairStatus, CONVERT(varchar(100), AB.AbnormalTime, 120)  as AbnormalTime,AB.AbnormalUser,CONVERT(varchar(100), AB.RepairTime, 120)  as RepairTime,AB.RepairUser,WO.ErpGoodsCode as GoodsCode,WO.ErpWorkOrderNumber WorkOrderNumber,AB.RepairComment FROM MFG_WIP_Data_Abnormal AB left join  MFG_WO_List WO   on AB.WorkOrderNumber= WO.ErpWorkOrderNumber AND AB.WorkOrderVersion= WO.MesWorkOrderVersion";
+                string str1 = "SELECT  AB.ID,AB.RFID,AB.AbnormalPoint,AB.AbnormalType,tt.DisplayValue+':'+CONVERT(varchar(10),reason.RecordValue)+'处' AbnormalReason,AB.RepairStatus, CONVERT(varchar(100), AB.AbnormalTime, 120)  as AbnormalTime,AB.AbnormalUser,CONVERT(varchar(100), AB.RepairTime, 120)  as RepairTime,AB.RepairUser,WO.ErpGoodsCode as GoodsCode,WO.ErpWorkOrderNumber WorkOrderNumber,AB.RepairComment FROM MFG_WIP_Data_Abnormal AB,MFG_WIP_Data_Abnormal_Reason reason,MFG_WIP_Data_Abnormal_Reason_Template TT,MFG_WO_List wo where AB.WorkOrderNumber= WO.ErpWorkOrderNumber AND AB.WorkOrderVersion= WO.MesWorkOrderVersion and AB.ID=reason.AbnormalID AND reason.TemplateID=tt.ID";
 
                 if (equinfo.ID != "")
                 {
-                    str1 += " WHERE AB.ID = " + equinfo.ID + " ";
+                    str1 += " AND AB.ID = " + equinfo.ID + " ";
                 }
+
+                str1 += " order by tt.ID";
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str1;
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
@@ -161,6 +163,10 @@ namespace LiNuoMes.Mfg
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
+                    for (int j = 0; j < dt.Rows.Count; j ++ )
+                    {
+                        result.AbnormalReason += dt.Rows[j]["AbnormalReason"].ToString()+"\n";
+                    }
                     result.ID = dt.Rows[0]["ID"].ToString();
                     result.WorkOrderNumber = dt.Rows[0]["WorkOrderNumber"].ToString();
                     result.RFID = dt.Rows[0]["RFID"].ToString();
@@ -172,7 +178,7 @@ namespace LiNuoMes.Mfg
                     result.AbnormalTime = dt.Rows[0]["AbnormalTime"].ToString();
                     result.RepairTime = dt.Rows[0]["RepairTime"].ToString();
                     result.RepairUser = dt.Rows[0]["RepairUser"].ToString();
-                    result.RepairUser = dt.Rows[0]["RepairComment"].ToString();
+                    result.RepairComment = dt.Rows[0]["RepairComment"].ToString();
                 }
             }
             return result;

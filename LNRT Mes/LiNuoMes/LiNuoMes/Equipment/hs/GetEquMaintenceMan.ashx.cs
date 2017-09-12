@@ -64,7 +64,7 @@ namespace LiNuoMes.Equipment.hs
                 int index = (Convert.ToInt16(page) - 1) * Convert.ToInt16(rows); // 开始记录数 
                 int pageSize = Convert.ToInt16(rows);
                 strJson = "{\"page\":" + page + ",\"total\": " + totalPage + "  ,\"records\":" + dt.Rows.Count.ToString() + ",\"rows\":[";
-                for (int j = index; j < pageSize + index && j < totalRecord; j++)
+                for (int j = 0; j < totalRecord; j++)
                 {
                     strJson += "{";
                     strJson += "\"id\":\"" + (j + 1).ToString() + "\",";
@@ -88,10 +88,10 @@ namespace LiNuoMes.Equipment.hs
                     strJson += "\"" + dt.Rows[j]["UpdateTime"].ToString().Trim() + "\"";
                     strJson += "]";
                     strJson += "}";
-                    if (j != pageSize + index - 1 && j != totalRecord - 1)
-                    {
-                        strJson += ",";
-                    }
+                    //if (j != pageSize + index - 1 && j != totalRecord - 1)
+                    //{
+                    strJson += ",";
+                    //}
                 }
             }
             else

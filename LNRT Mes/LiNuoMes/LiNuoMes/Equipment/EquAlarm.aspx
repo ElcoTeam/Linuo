@@ -59,7 +59,7 @@
             $gridTable.jqGrid({
                 url: "hs/GetEquAlarm.ashx",
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() *0.56,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {

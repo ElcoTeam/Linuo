@@ -58,7 +58,7 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
-            GetGrid();
+            //GetGrid();
             CreateSelect();
             GetChart();
             fnDate();
@@ -68,12 +68,13 @@
         function GetGrid() {
             var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
+            
             $gridTable.jqGrid({
                 url: "GetReportInfo.ashx",
                 postData: { Action: "EquAlarmReport" },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() *0.4,
+                height: $('#areascontent').height() *0.2,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
@@ -132,9 +133,8 @@
                     }
                 }).trigger('reloadGrid');
 
-                GetChart();
             });
-
+            GetChart();
         }
 
 
@@ -147,6 +147,7 @@
             DealWithStartTime = $("#DealWithStartTime").val();
             DealWithEndTime = $("#DealWithEndTime").val();
             AlarmItem = $("#AlarmItem").val();
+    
             //柱状图数据
             $.ajax({
                 url: "GetReportInfo.ashx",
@@ -208,6 +209,7 @@
             DealWithStartTime = $("#DealWithStartTime").val();
             DealWithEndTime = $("#DealWithEndTime").val();
             AlarmItem = $("#AlarmItem").val();
+            
             var charts = new Highcharts.chart('container', {
                 chart: {
                     type: 'column'
@@ -255,7 +257,7 @@
                                     dialogOpen({
                                         id: "Form",
                                         title: '设备保养明细表' + e.point.category,
-                                        url: '../Report/EquAlarmDetail.aspx?equid=' + e.point.category + "\
+                                        url: '../Report/EquAlarmDetail.aspx?equid=' +encodeURI(encodeURI(e.point.category)) + "\
                                         &ProcessName=" + processName + "\
                                         &DeviceName=" + deviceName + "\
                                         &DealWithResult=" + DealWithResult + "\
@@ -341,6 +343,7 @@
                     var oneweekagodate = oneweekdate.getFullYear() + seperator1 + month + seperator1 + strDate;
                     $("#AlarmEndTime").val(currentdate);
                     $("#AlarmStartTime").val(oneweekagodate);
+                    GetGrid();
                 }
             }
         }
@@ -437,7 +440,7 @@
          </div>
          <div class="center-Panel">
                <div class="panel-Title">统计信息折线图</div>
-               <div id="container" style="width: 100%; height: 400px; text-align:center;  margin: 0 auto">
+               <div id="container" style="width: 100%; height: 350px; text-align:center;  margin: 0 auto">
           
                </div>
          </div>

@@ -387,7 +387,7 @@
                 </div>
             </div>
         </div>
-        <div class="titlePanel">
+         <div class="titlePanel">
         <div class="toolbar">
             <div class="btn-group">
                 <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>

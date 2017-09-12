@@ -1101,7 +1101,7 @@ namespace LiNuoMes.Report
                 {
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
-                        Device.Add(dt.Rows[i]["DeviceCode"].ToString());
+                        Device.Add(dt.Rows[i]["DeviceName"].ToString());
                         AlarmCount.Add(dt.Rows[i]["AlarmCount"].ToString());
                     }
                 }

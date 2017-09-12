@@ -51,7 +51,7 @@
                 }, 200);
             });
             GetGrid();
-            
+            CreateSelect();
         });
 
         //加载表格
@@ -68,7 +68,7 @@
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
                     {
-                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 200, align: 'center'
+                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 150, align: 'center'
                     },
                     {
                         label: '订单类型', name: 'WorkOrderVersion', index: 'WorkOrderVersion', width: 100, align: 'left',
@@ -81,10 +81,10 @@
                             }
                         }
                      },
-                    { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 200, align: 'center' },
-                    { label: '物料编码', name: 'ItemNumber', index: 'ItemNumber', width: 100, align: 'center' },
+                    { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 150, align: 'center' },
+                    { label: '物料编码', name: 'ItemNumber', index: 'ItemNumber', width: 150, align: 'center' },
                     {
-                        label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 100, align: 'center'
+                        label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 150, align: 'center'
                     },
                     { label: '拉动数量', name: 'Qty', index: 'Qty', width: 100, align: 'center' },
                     { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 200, align: 'center' },
@@ -106,7 +106,20 @@
                     { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 100, align: 'center' },
                     { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 200, align: 'center' },
                     { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 100, align: 'center' },
-                    { label: '是否超时', name: 'OTFlag', index: 'OTFlag', width: 100, align: 'center' },
+                    {
+                        label: '是否超时', name: 'OTFlag', index: 'OTFlag', width: 100, align: 'center',
+                        formatter: function (cellvalue, options, rowObject) {
+                            if (cellvalue == 0) {
+                                return '未超时';
+                            }
+                            else if (cellvalue == 1) {
+                                return '超时';
+                            }
+                            else {
+                                return '';
+                            }
+                        }
+                    },
                    
                 ],
                 viewrecords: true,
@@ -161,6 +174,29 @@
             //});
         }
 
+        //构造select
+        function CreateSelect() {
+            $("#ProcessName").empty();
+            var optionstring = "";
+            $.ajax({
+                url: "../Equipment/EquDeviceInfo.aspx/GetProcessInfo",
+                type: "post",
+                dataType: "json",
+                data: "{deviceid:''}",
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    var data1 = eval('(' + data.d + ')');
+                    var i = 0;
+                    for (i in data1) {
+                        optionstring += "<option value=\"" + data1[i].ProcessCode + "\" >" + data1[i].ProcessName.trim() + "</option>";
+                    }
+                    $("#produce").html("<option value=''>请选择...</option> " + optionstring);
+                },
+                error: function (msg) {
+                    dialogMsg("数据访问异常", -1);
+                }
+            });
+        }
         
         //打印
         function btn_print(event) {

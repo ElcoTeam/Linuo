@@ -577,8 +577,12 @@ CREATE TABLE [dbo].[Mes_Process_List] (
     [UpdateUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户
     [Status]             INT             NOT NULL DEFAULT (0),            --订单状态: 0:新增, -1:修改, -2:删除
     [ReservedFlag]       INT             NOT NULL DEFAULT (0),            --本记录是否预定义标记: 0: 否; 1: 是 (本字段是为了保证实施后,保留工序是否可以被删除和工序顺序号是否可以被修改)
-    [WorkOrderNumber]    VARCHAR  (50)   NOT NULL DEFAULT (N''),          --订单编码
-    [WorkOrderVersion]   INT             NOT NULL DEFAULT (-1),           --订单版本
+    [WorkOrderNumber]    VARCHAR  (50)   NOT NULL DEFAULT (N''),          --订单编码-用以记录工位计数值记录值:当前正在进行生产的数据
+    [WorkOrderVersion]   INT             NOT NULL DEFAULT (-1),           --订单版本-用以记录工位计数值记录值:当前正在进行生产的数据
+    [NextWorkOrderNumber] VARCHAR  (50)  NOT NULL DEFAULT (N''),          --订单编码-用以记录工位计数值记录值:下一订单即将进行生产的数据,等待产线把请求改产信号切换时, 即把此值覆盖当前正在生产之值
+    [NextWorkOrderVersion]INT            NOT NULL DEFAULT (-1),           --订单版本-用以记录工位计数值记录值:下一订单即将进行生产的数据,等待产线把请求改产信号切换时, 即把此值覆盖当前正在生产之值
+    [PullWorkOrderNumber] VARCHAR  (50)  NOT NULL DEFAULT (N''),          --订单编码-用以物料拉动之记录值
+    [PullWorkOrderVersion]INT            NOT NULL DEFAULT (-1),           --订单版本-用以物料拉动之记录值
     [FinishQty]          INT             NOT NULL DEFAULT (-1),           --本工序的已经完成产量: -1: 代表当前工单已经结单
     [PlanQty]            INT             NOT NULL DEFAULT (0),            --本工序的计划产量: 此数值是在PLC参数派发的过程中自己保留一份, 用以决定本工序是否完成的判断依据.
     [ParamTime]          DATETIME        NOT NULL DEFAULT GETDATE(),      --PLC触发时间

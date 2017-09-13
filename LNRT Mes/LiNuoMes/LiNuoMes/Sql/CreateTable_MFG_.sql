@@ -234,12 +234,13 @@ CREATE TABLE [dbo].[MFG_WO_MTL_Pull] (
     [ProcessCode]        NVARCHAR (50)   NOT NULL DEFAULT (N''),          --工序编号
     [PullTime]           DATETIME        NOT NULL DEFAULT GETDATE(),      --拉动时间
     [PullUser]           NVARCHAR (50)   NOT NULL,                        --拉动用户
+    [ActionQty]          NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --响应用量(实发数量)
     [ActionTime]         DATETIME            NULL,                        --响应时间
     [ActionUser]         NVARCHAR (50)       NULL,                        --响应用户
     [ConfirmTime]        DATETIME            NULL,                        --确认时间
     [ConfirmUser]        NVARCHAR (50)       NULL,                        --确认用户
     [OTFlag]             INT             NOT NULL DEFAULT (0),            --是否超时: 0:未超时; 1:超时
-    [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:待响应; 1:待确认; 2:已完成
+    [Status]             INT             NOT NULL DEFAULT (0)             --状态: -2:删除(拒绝); 0:待响应; 1:待确认; 2:已完成
 );
 
 

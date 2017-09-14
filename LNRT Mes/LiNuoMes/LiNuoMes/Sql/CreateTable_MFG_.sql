@@ -582,8 +582,6 @@ CREATE TABLE [dbo].[Mes_Process_List] (
     [WorkOrderVersion]   INT             NOT NULL DEFAULT (-1),           --订单版本-用以记录工位计数值记录值:当前正在进行生产的数据
     [NextWorkOrderNumber] VARCHAR  (50)  NOT NULL DEFAULT (N''),          --订单编码-用以记录工位计数值记录值:下一订单即将进行生产的数据,等待产线把请求改产信号切换时, 即把此值覆盖当前正在生产之值
     [NextWorkOrderVersion]INT            NOT NULL DEFAULT (-1),           --订单版本-用以记录工位计数值记录值:下一订单即将进行生产的数据,等待产线把请求改产信号切换时, 即把此值覆盖当前正在生产之值
-    [PullWorkOrderNumber] VARCHAR  (50)  NOT NULL DEFAULT (N''),          --订单编码-用以物料拉动之记录值
-    [PullWorkOrderVersion]INT            NOT NULL DEFAULT (-1),           --订单版本-用以物料拉动之记录值
     [FinishQty]          INT             NOT NULL DEFAULT (-1),           --本工序的已经完成产量: -1: 代表当前工单已经结单
     [PlanQty]            INT             NOT NULL DEFAULT (0),            --本工序的计划产量: 此数值是在PLC参数派发的过程中自己保留一份, 用以决定本工序是否完成的判断依据.
     [ParamTime]          DATETIME        NOT NULL DEFAULT GETDATE(),      --PLC触发时间
@@ -652,6 +650,8 @@ CREATE TABLE [dbo].[Mes_PLC_Parameters] (
     [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --原料编码 (备用, 用以标记某个PLC的参数单独和某种原料进行设定.)
     [UpdateUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户
     [UpdateTime]         DATETIME        NOT NULL DEFAULT GETDATE(),      --更新时间
+    [WorkOrderNumber]    VARCHAR  (50)   NOT NULL DEFAULT (N''),          --订单编码-用以物料拉动之记录值
+    [WorkOrderVersion]   INT             NOT NULL DEFAULT (-1),           --订单版本-用以物料拉动之记录值
     [Status]             INT             NOT NULL DEFAULT (0)             --订单状态: 0:新增, -1:修改, -2:删除
 );
 

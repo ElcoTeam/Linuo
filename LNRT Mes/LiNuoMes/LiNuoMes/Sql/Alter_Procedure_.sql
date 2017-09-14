@@ -2650,9 +2650,10 @@ AS
     FROM
         MFG_WO_MTL_Pull
     WHERE 
-         WorkOrderNumber  = @WorkOrderNumber
-     AND WorkOrderVersion = @WorkOrderVersion
-     AND ItemNumber       = @ItemNumber;
+         WorkOrderNumber   = @WorkOrderNumber
+     AND WorkOrderVersion  = @WorkOrderVersion
+     AND ItemNumber        = @ItemNumber
+     AND [Status]         >= 0 ;
 
     --得到本工单对应此种物料的需求数量
     SELECT 

@@ -649,15 +649,16 @@ namespace LiNuoMes.BaseConfig
                         transaction = conn.BeginTransaction();
                         cmd.Transaction = transaction;
                         strSql = string.Format(
-                                                @" UPDATE Mes_Process_List SET 
-                                                  ProcessCode  = '{0}' 
-                                                , ProcessName  = N'{1}'
-                                                , ProcessBeat  = {2}
-                                                , ProcessDsca  = N'{3}'
-                                                , InturnNumber = {4}
-                                                , ProcessManual= N'{5}'
-                                                , UpdateUser   = N'{6}'
-                                                , UpdateTime   = getdate()
+                                              @"UPDATE Mes_Process_List 
+                                                SET 
+                                                     ProcessCode   =  '{0}' 
+                                                    ,ProcessName   = N'{1}'
+                                                    ,ProcessBeat   =   {2}
+                                                    ,ProcessDsca   = N'{3}'
+                                                    ,InturnNumber  =   {4}
+                                                    ,ProcessManual = N'{5}'
+                                                    ,UpdateUser    = N'{6}'
+                                                    ,UpdateTime    = GETDATE()
                                                 WHERE id = {7}
                                             ",
                                                     dataEntity.ProcessCode,
@@ -701,11 +702,11 @@ namespace LiNuoMes.BaseConfig
 
         public ResultMsg_Process addProcessDataInDB(ProcessEntity dataEntity, ResultMsg_Process result)
         {
-            if (dataEntity.ProcessCode.Length == 0) dataEntity.ProcessCode = "";
-            if (dataEntity.ProcessName.Length == 0) dataEntity.ProcessName = "";
-            if (dataEntity.ProcessBeat.Length == 0) dataEntity.ProcessBeat = "";
-            if (dataEntity.ProcessDsca.Length == 0) dataEntity.ProcessDsca = "";
-            if (dataEntity.InturnNumber.Length == 0) dataEntity.InturnNumber = "0";
+            if (dataEntity.ProcessCode.Length == 0)   dataEntity.ProcessCode   = "";
+            if (dataEntity.ProcessName.Length == 0)   dataEntity.ProcessName   = "";
+            if (dataEntity.ProcessBeat.Length == 0)   dataEntity.ProcessBeat   = "";
+            if (dataEntity.ProcessDsca.Length == 0)   dataEntity.ProcessDsca   = "";
+            if (dataEntity.InturnNumber.Length == 0)  dataEntity.InturnNumber  = "0";
             if (dataEntity.ProcessManual.Length == 0) dataEntity.ProcessManual = "";
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -727,12 +728,12 @@ namespace LiNuoMes.BaseConfig
                         if (Convert.ToInt32(dt.Rows[0]["SM"]) > 0)
                         {
                             result.result = "failed";
-                            result.msg = "此工序编号已经存在, 请核对!";
+                            result.msg    = "此工序编号已经存在, 请核对!";
                         }
                         else
                         {
                             result.result = "";
-                            result.msg = "";
+                            result.msg    = "";
                         }
                     }
                     else
@@ -767,13 +768,13 @@ namespace LiNuoMes.BaseConfig
                         {
                             transaction.Commit();
                             result.result = "success";
-                            result.msg = "保存数据成功!";
+                            result.msg    = "保存数据成功!";
                         }
                         else
                         {
                             transaction.Rollback();
                             result.result = "failed";
-                            result.msg = "服务器端文件处理发生错误.\n" + strFileMoveResult;
+                            result.msg    = "服务器端文件处理发生错误.\n" + strFileMoveResult;
                         }
                     }
                 }
@@ -1014,12 +1015,12 @@ namespace LiNuoMes.BaseConfig
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
-                    dataEntity.ID = dt.Rows[0]["ID"].ToString();
-                    dataEntity.GoodsCode = dt.Rows[0]["GoodsCode"].ToString();
-                    dataEntity.GoodsDsca = dt.Rows[0]["GoodsDsca"].ToString();
-                    dataEntity.DimLength = dt.Rows[0]["DimLength"].ToString();
-                    dataEntity.DimHeight = dt.Rows[0]["DimHeight"].ToString();
-                    dataEntity.DimWidth = dt.Rows[0]["DimWidth"].ToString();
+                    dataEntity.ID           = dt.Rows[0]["ID"].ToString();
+                    dataEntity.GoodsCode    = dt.Rows[0]["GoodsCode"].ToString();
+                    dataEntity.GoodsDsca    = dt.Rows[0]["GoodsDsca"].ToString();
+                    dataEntity.DimLength    = dt.Rows[0]["DimLength"].ToString();
+                    dataEntity.DimHeight    = dt.Rows[0]["DimHeight"].ToString();
+                    dataEntity.DimWidth     = dt.Rows[0]["DimWidth"].ToString();
                     dataEntity.UnitCostTime = dt.Rows[0]["UnitCostTime"].ToString();
                 }
             }
@@ -1258,8 +1259,8 @@ namespace LiNuoMes.BaseConfig
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
                         ThresholdEntity itemList = new ThresholdEntity();
-                        itemList.ID   = (i + 1).ToString();
-                        itemList.THID = dt.Rows[i]["ID"].ToString();
+                        itemList.ID           = (i + 1).ToString();
+                        itemList.THID         = dt.Rows[i]["ID"].ToString();
                         itemList.ProcessCode  = dt.Rows[i]["ProcessCode"].ToString();
                         itemList.ProcessName  = dt.Rows[i]["ProcessName"].ToString();
                         itemList.ItemNumber   = dt.Rows[i]["ItemNumber"].ToString();
@@ -1348,7 +1349,7 @@ namespace LiNuoMes.BaseConfig
                 {
                     for (int i = 0; i < dt0.Rows.Count; i++)
                     {
-                        PLCEntity plc_entity = new PLCEntity();
+                        PLCEntity plc_entity   = new PLCEntity();
                         plc_entity.ID          = dt0.Rows[i]["ID"].ToString();
                         plc_entity.GoodsCode   = dt0.Rows[i]["GoodsCode"].ToString();
                         plc_entity.ProcessCode = dt0.Rows[i]["ProcessCode"].ToString();
@@ -1370,15 +1371,15 @@ namespace LiNuoMes.BaseConfig
                             Datapter1.Fill(dt1);
                             for (int j = 0; j < dt1.Rows.Count; j++)
                             {
-                                PLCParame plc_parame = new PLCParame();
-                                plc_parame.ID = dt1.Rows[j]["ID"].ToString();
-                                plc_parame.PLCID = dt1.Rows[j]["PLCID"].ToString();
-                                plc_parame.ParamName = dt1.Rows[j]["ParamName"].ToString();
-                                plc_parame.ParamDsca = dt1.Rows[j]["ParamDsca"].ToString();
-                                plc_parame.ParamValue = dt1.Rows[j]["ParamValue"].ToString();
-                                plc_parame.ParamType = dt1.Rows[j]["ParamType"].ToString();
+                                PLCParame plc_parame   = new PLCParame();
+                                plc_parame.ID          = dt1.Rows[j]["ID"].ToString();
+                                plc_parame.PLCID       = dt1.Rows[j]["PLCID"].ToString();
+                                plc_parame.ParamName   = dt1.Rows[j]["ParamName"].ToString();
+                                plc_parame.ParamDsca   = dt1.Rows[j]["ParamDsca"].ToString();
+                                plc_parame.ParamValue  = dt1.Rows[j]["ParamValue"].ToString();
+                                plc_parame.ParamType   = dt1.Rows[j]["ParamType"].ToString();
                                 plc_parame.OperateType = dt1.Rows[j]["OperateType"].ToString();
-                                plc_parame.ItemNumber = dt1.Rows[j]["ItemNumber"].ToString();
+                                plc_parame.ItemNumber  = dt1.Rows[j]["ItemNumber"].ToString();
                                 plc_entity.Parames.Add(plc_parame);
                             }
                             dt1.Clear();
@@ -1488,11 +1489,11 @@ namespace LiNuoMes.BaseConfig
                             Datapter1.Fill(dt1);
                             for (int j = 0; j < dt1.Rows.Count; j++)
                             {
-                                PLCParame plc_param = new PLCParame();
-                                plc_param.ID = dt1.Rows[j]["ParamID"].ToString();
-                                plc_param.ParamValue = dt1.Rows[j]["ParamValue"].ToString();
+                                PLCParame plc_param   = new PLCParame();
+                                plc_param.ID          = dt1.Rows[j]["ParamID"].ToString();
+                                plc_param.ParamValue  = dt1.Rows[j]["ParamValue"].ToString();
                                 plc_param.StatusValue = dt1.Rows[j]["StatusValue"].ToString();
-                                plc_param.StatusTip = dt1.Rows[j]["StatusTip"].ToString();
+                                plc_param.StatusTip   = dt1.Rows[j]["StatusTip"].ToString();
                                 plc_entity.Parames.Add(plc_param);
                             }
                             dataEntity.Add(plc_entity);
@@ -1656,15 +1657,15 @@ namespace LiNuoMes.BaseConfig
                     {
                         transaction.Rollback();
                         result.result = "failed";
-                        result.msg = sqlPara[8].Value.ToString();
+                        result.msg    = sqlPara[8].Value.ToString();
                         cmd.Dispose();
                     }
                     else
                     {
-                        result.BatchNo = sqlPara[5].Value.ToString();
+                        result.BatchNo      = sqlPara[5].Value.ToString();
                         result.ParamesCount = sqlPara[6].Value.ToString();
-                        result.result = "success";
-                        result.msg = "读取(保存)数据成功!";
+                        result.result       = "success";
+                        result.msg          = "读取(保存)数据成功!";
                         transaction.Commit();
                         cmd.Dispose();
                     }
@@ -1743,7 +1744,7 @@ namespace LiNuoMes.BaseConfig
                     {
                         transaction.Rollback();
                         dataEntity.result = "failed";
-                        dataEntity.msg = sqlPara[6].Value.ToString();
+                        dataEntity.msg    = sqlPara[6].Value.ToString();
                         cmd.Dispose();
                     }
                     else
@@ -1872,12 +1873,12 @@ namespace LiNuoMes.BaseConfig
 
                 file.SaveAs(uploadFilePath + result.targetFileName);
                 result.result = "success";
-                result.msg = "上传成功";
+                result.msg    = "上传成功";
             }
             else
             {
                 result.result = "failed";
-                result.msg = "上传失败";
+                result.msg    = "上传失败";
                 result.sourceFileName = "";
                 result.targetFileName = "";
             }

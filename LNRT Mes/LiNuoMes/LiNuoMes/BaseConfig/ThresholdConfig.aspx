@@ -69,10 +69,10 @@
                     { label: 'THID',     name: 'THID', hidden: true },
                     { label: '序号', name: 'ID', index: 'ID', width: 50, align: 'center', sortable: false },
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 180, align: 'center', sortable: false },
-                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 200, align: 'center', sortable: false },
-                    { label: '物料名称', name: 'ItemName', index: 'ItemName', width: 400, align: 'left', sortable: false },
+                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 180, align: 'center', sortable: false },
+                    { label: '物料名称', name: 'ItemName', index: 'ItemName', width: 500, align: 'left', sortable: false },
                     {
-                        label: '最大拉动数量', name: 'MaxPullQty', index: 'MaxPullQty', width: 100, align: 'center',
+                        label: '最大拉动数量', name: 'MaxPullQty', index: 'MaxPullQty', width: 150, align: 'center',
                         sortable: false,
                         editable: true,
                         editrules: {
@@ -84,7 +84,7 @@
                         }
                     },
                     {
-                        label: '到位时限', name: 'MinTrigQty', index: 'MinTrigQty', width: 100, align: 'center',
+                        label: '到位时限', name: 'MinTrigQty', index: 'MinTrigQty', width: 150, align: 'center',
                         sortable: false,
                         editable: true,
                         editrules: {

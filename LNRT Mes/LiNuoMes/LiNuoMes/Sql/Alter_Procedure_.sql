@@ -2569,7 +2569,8 @@ AS
     SET @ApplModel = '';
 
     SELECT 
-        @ApplModel = Mes_PLC_Parameters.ApplModel 
+         @ApplModel   = Mes_PLC_Parameters.ApplModel
+        ,@ProcessCode = Mes_PLC_Parameters.ProcessCode
     FROM 
         Mes_PLC_Parameters, Mes_PLC_List 
     WHERE 
@@ -2579,22 +2580,59 @@ AS
     
     INSERT Log_Mfg_Plc_Tag_Trig (TagName, TagValue, ProcessCode, Category) VALUES(@TagName, @TagValue, @ProcessCode, ISNULL(@ApplModel,''));
 
-    IF @ApplModel = 'ET' 
+    IF @ApplModel = 'ET' --能源计数触发
     BEGIN
         EXEC [usp_Mfg_Plc_Trig_ET] @TagName, @TagValue, @ProcessCode; RETURN;
     END
 
-    IF @ApplModel = 'MT' 
+    IF @ApplModel = 'MT' --物料拉动触发
     BEGIN
         EXEC [usp_Mfg_Plc_Trig_MT] @TagName, @TagValue, @ProcessCode; RETURN;
     END
 
-    IF @ApplModel = 'QT' 
+    IF @ApplModel = 'QT' --产量计数触发
     BEGIN
         EXEC [usp_Mfg_Plc_Trig_QT] @TagName, @TagValue, @ProcessCode; RETURN;
     END
+
+    IF @ApplModel = 'CS' --产品变更手动完成触发
+    BEGIN
+        EXEC [usp_Mfg_Plc_Trig_CS] @TagName, @TagValue, @ProcessCode; RETURN;
+    END
 GO
 
+-- PLC 触发了 产品变更手动完成触发 动作
+ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_CS]
+      @TagName            AS VARCHAR  (50)       
+     ,@TagValue           AS VARCHAR  (50) = ''  
+     ,@ProcessCode        AS VARCHAR  (50) = ''  
+AS
+    --当MES 给PLC 发送变更请求是 1 触发对话框出现, 操作员如果点击了确认, 则此标记会变为 0 值.
+    IF @TagValue = '1'
+    BEGIN
+        RETURN; 
+    END
+    DECLARE @pProcessCode   AS VARCHAR (50);
+
+    --完成Process记录点的工单切换动作: 正在生产的工单值使用将下一工单的工单值覆盖. 并且将下一工单值置空.
+    SELECT 
+         @pProcessCode = Mes_PLC_List.ProcessCode
+    FROM 
+        Mes_PLC_Parameters, Mes_PLC_List 
+    WHERE 
+        Mes_PLC_Parameters.PLCID = Mes_PLC_List.ID
+    AND Mes_PLC_Parameters.ParamName = @TagName 
+    AND Mes_PLC_List.GoodsCode = '0000000000';
+
+    UPDATE Mes_Process_List
+    SET 
+         WorkOrderNumber      = NextWorkOrderNumber
+        ,WorkOrderVersion     = NextWorkOrderVersion
+        ,NextWorkOrderNumber  = ''
+        ,NextWorkOrderVersion = -1
+    WHERE
+        ProcessCode = @pProcessCode;
+GO
 
 -- PLC 触发了 能源计数 动作
 ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_ET]
@@ -2676,6 +2714,25 @@ AS
         ItemNumber = @ItemNumber; 
 GO
 
+--更新PLC参数表的当下正在物料拉动物料的工单.
+ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Param_Update_WO]
+     @TagName            AS VARCHAR (50) = ''
+    ,@WorkOrderNumber    AS VARCHAR (50) = ''
+    ,@WorkOrderVersion   AS INT          = -1
+AS
+ UPDATE Mes_Plc_Parameters
+            SET    
+                WorkOrderNumber  = @WorkOrderNumber              
+               ,WorkOrderVersion = @WorkOrderVersion            
+            FROM 
+                Mes_PLC_Parameters
+               ,Mes_PLC_List 
+            WHERE 
+                Mes_PLC_Parameters.PLCID     = Mes_PLC_List.ID
+            AND Mes_PLC_List.GoodsCode       = '0000000000'   
+            AND Mes_PLC_Parameters.ParamName = @TagName;
+GO
+
 -- PLC 触发了 物料拉动 动作
 ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_MT]
       @TagName                AS VARCHAR  (50)       
@@ -2694,9 +2751,6 @@ AS
     DECLARE @ItemNumber       AS VARCHAR (50);
     DECLARE @UOM              AS NVARCHAR(15);
     DECLARE @ItemDsca         AS NVARCHAR(50);
-    DECLARE @FlagUpdatedWO    AS INT;
-
-    SET @FlagUpdatedWO = 0;
 
     --1.查找工序清单, 找到当下的工单, 
 
@@ -2715,11 +2769,9 @@ AS
     --如果工单为空, 则需要进行一下初始化
     IF ISNULL(@WorkOrderNumber, '') = ''
     BEGIN
-        SELECT 
-            @WorkOrderNumber  = ''
-           ,@WorkOrderVersion = -1;
+        SELECT @WorkOrderNumber  = '', @WorkOrderVersion = -1;
         EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT; 
-        SET @FlagUpdatedWO = 1;
+        EXEC [usp_Mfg_Plc_Param_Update_WO] @TagName, @WorkOrderNumber, @WorkOrderVersion;
     END
 
     IF ISNULL(@WorkOrderNumber, '') = ''
@@ -2728,28 +2780,28 @@ AS
         RETURN;
     END 
 
-    EXEC [dbo_Mfg_Plc_Trig_MT_Require]  @TagName, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus, @GoodsCode, @MesPlanQty, @ActionQty, @RequireQty, @ThresholdQty, @ItemNumber, @UOM, @ItemDsca;
+    EXEC [dbo_Mfg_Plc_Trig_MT_Require]  @TagName,  @WorkOrderNumber,  @WorkOrderVersion,  @WorkOrderStatus OUTPUT,  @GoodsCode OUTPUT,  @MesPlanQty OUTPUT,  @ActionQty OUTPUT,  @RequireQty OUTPUT,  @ThresholdQty OUTPUT,  @ItemNumber OUTPUT,  @UOM OUTPUT,  @ItemDsca OUTPUT;
 
     --判断已经拉动的物料数量是否满足了要求
     SET @ApplyQty = @RequireQty - @ActionQty;
-    IF @ApplyQty < 0
+    IF @ApplyQty <= 0
     BEGIN
         --如果当下已经完成的拉动请求已经可以满足当下的拉动订单, 则需要取得下一个可以使用的订单. 然后继续进行后续的物料拉动步骤.
         EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT;
-        SET @FlagUpdatedWO = 1;
+        EXEC [usp_Mfg_Plc_Param_Update_WO] @TagName, @WorkOrderNumber, @WorkOrderVersion;
         IF ISNULL(@WorkOrderNumber, '') = ''
         BEGIN
             --说明当下没有排程计划. 此时直接返回
             RETURN;
         END 
 
-        EXEC [dbo_Mfg_Plc_Trig_MT_Require]  @TagName, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus, @GoodsCode, @MesPlanQty, @ActionQty, @RequireQty, @ThresholdQty, @ItemNumber, @UOM, @ItemDsca;
+        EXEC [dbo_Mfg_Plc_Trig_MT_Require]  @TagName,  @WorkOrderNumber,  @WorkOrderVersion,  @WorkOrderStatus OUTPUT,  @GoodsCode OUTPUT,  @MesPlanQty OUTPUT,  @ActionQty OUTPUT,  @RequireQty OUTPUT,  @ThresholdQty OUTPUT,  @ItemNumber OUTPUT,  @UOM OUTPUT,  @ItemDsca OUTPUT;
 
         --继续进行补料运算.
         SET @ApplyQty = @RequireQty - @ActionQty;
-        IF @ApplyQty < 0
+        IF @ApplyQty <= 0
         BEGIN
-            --如果下一个工单仍然已经满足了要求, 说明有另外一个信号同时触发了需求, 这里不做考虑, 直接抛弃此次触发.
+            --如果下一个工单仍然已经满足了要求, 说明有另外一个信号同时触发了需求或者本工单物料需求数量过小, 抛弃此次触发.
             RETURN;
         END 
     END 
@@ -2768,22 +2820,6 @@ AS
         AND MesWorkOrderVersion = @WorkOrderVersion
         AND MesStatus           = 0; --此条件不可以省略, 因为我们是提前获取状态的时候, 当时并没有为表加锁.
     END
-
-    --设定工序表的当下物料拉动工单
-    IF @FlagUpdatedWO = 1  --加入此条件判断, 目的是减少数据库表的更新次数, 提高效率
-    BEGIN
-        UPDATE Mes_Plc_Parameters
-        SET    
-            WorkOrderNumber  = @WorkOrderNumber              
-           ,WorkOrderVersion = @WorkOrderVersion            
-        FROM 
-            Mes_PLC_Parameters
-           ,Mes_PLC_List 
-        WHERE 
-            Mes_PLC_Parameters.PLCID     = Mes_PLC_List.ID
-        AND Mes_PLC_List.GoodsCode       = '0000000000'   
-        AND Mes_PLC_Parameters.ParamName = @TagName;
-    END  
 
     --产生物料拉料动作.
     INSERT INTO MFG_WO_MTL_Pull 

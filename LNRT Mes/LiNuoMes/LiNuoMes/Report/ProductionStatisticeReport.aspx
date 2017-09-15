@@ -75,7 +75,7 @@
                 },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() *0.5,
+                height: $('#areascontent').height() *0.3,
                 colModel: [
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
                     { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 200, align: 'center' },
@@ -120,14 +120,14 @@
                 },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() * 0.23,
+                height: $('#areascontent').height() * 0.2,
                 colModel: [
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth*0.2, align: 'center' },
                     { label: '报废数量', name: 'RejectQty', index: 'RejectQty', width: panelwidth * 0.2, align: 'center' },
                     { label: '未完工数量', name: 'UnFinishQty', index: 'UnFinishQty', width: panelwidth * 0.2, align: 'center' },
                     { label: '补修数量', name: 'RepairQty', index: 'RepairQty', width: panelwidth * 0.2, align: 'center' },
                     {
-                        label: '总下线数量', name: 'SumAbnormalQty', index: 'SumAbnormalQty', width: panelwidth * 0.2, align: 'center'
+                        label: '总下线数量', name: 'SumAbnormalQty', index: 'SumAbnormalQty', width: panelwidth * 0.1, align: 'center'
                     },
                 ],
                 viewrecords: true,
@@ -148,7 +148,7 @@
                 },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() * 0.3,
+                height: $('#areascontent').height() * 0.25,
                 colModel: [
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth * 0.2, align: 'center' },
                     { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: panelwidth * 0.2, align: 'center' },
@@ -174,7 +174,7 @@
                 },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() * 0.3,
+                height: $('#areascontent').height() * 0.2,
                 colModel: [
                     { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: panelwidth * 0.2, align: 'center' },
                     { label: '物料名称', name: 'ItemName', index: 'ItemName', width: panelwidth * 0.2, align: 'center' },

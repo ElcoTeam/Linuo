@@ -45,8 +45,9 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
-            GetGrid();
+            //GetGrid();
             CreateSelect();
+            fnDate();
         });
 
        
@@ -54,9 +55,15 @@
         function GetGrid() {
             var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
+            var PullTimeStart = $("#PullTimeStart").val();
+            var PullTimeEnd = $("#PullTimeEnd").val();
             $gridTable.jqGrid({
                 url: "GetMaterialpull.ashx",
                 datatype: "json",
+                postData: {
+                    PullTimeStart: PullTimeStart,
+                    PullTimeEnd: PullTimeEnd
+                },
                 height: $('#areascontent').height() -380,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
@@ -75,10 +82,10 @@
                         }
                     },
                     { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 150, align: 'left' },
-                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 200, align: 'left' },
+                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 150, align: 'left' },
                     { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 250, align: 'left' },
-                    { label: '拉动数量', name: 'Qty', index: 'Qty', width: 100, align: 'left' },
-                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 180, align: 'left' },
+                    { label: '需求数量', name: 'Qty', index: 'Qty', width: 100, align: 'left' },
+                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 150, align: 'left' },
                     {
                         label: '发送情况', name: 'Status', index: 'Status', width: 80, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
@@ -93,9 +100,10 @@
                             }
                         }
                     },
-                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 180, align: 'left' },
+                    { label: '响应数量', name: 'ActionQty', index: 'ActionQty', width: 100, align: 'left' },
+                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 150, align: 'left' },
                     { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 80, align: 'left' },
-                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 180, align: 'left' },
+                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 150, align: 'left' },
                     { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 80, align: 'left' },
                     {
                         label: '是否超时', name: 'OTFlag', index: 'OTFlag', width: 80, align: 'left',
@@ -112,7 +120,7 @@
                         label: '操作', name: 'Status', index: 'Status', width: 80, align: 'center',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 0) {
-                                return '<span name=\"operatebtn\" onclick=\"btn_enabled(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer;\">响应</span>';
+                                return '<span name=\"operatebtn\" onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[6] + '\')\" class=\"label label-danger\" style=\"cursor: pointer;\">响应</span>';
                             }
                             else {
                                 return '';
@@ -199,48 +207,68 @@
            
         }
 
-
         //响应
-        function btn_enabled(keyValue) {
+        function btn_enabled(keyValue, keyNumber, ItemNumber,keyQty) {
             if (keyValue == undefined) {
                 keyValue = $("#gridTable").jqGridRowValue("ID");
+                keyNumber = $("#gridTable").jqGridRowValue("WorkOrderNumber");
+                ItemNumber = $("#gridTable").jqGridRowValue("ItemNumber");
+                keyQty = $("#gridTable").jqGridRowValue("Qty");
             }
-            if (keyValue) {
-                 Loading(true, "正在保存数据...");
-                 window.setTimeout(function () {
-                     $.ajax({
-                         url: "MaterialPullResponse.aspx/ResponsePullInfo",
-                         data: "{ID:'" + keyValue + "'}",
-                         type: "post",
-                         dataType: "json",
-                         contentType: "application/json;charset=utf-8",
-                         success: function (data) {
-                             if (data.d == "success") {
-                                 Loading(false);
-                                 dialogMsg("响应成功", 1);
-                                 $("#gridTable").trigger("reloadGrid");
-                             }
-                             else if (data.d == "falut") {
-                                 dialogMsg("响应失败", -1);
-                             }
-                         },
-                         error: function (XMLHttpRequest, textStatus, errorThrown) {
-                             Loading(false);
-                             dialogMsg(errorThrown, -1);
-                         },
-                         beforeSend: function () {
-                             Loading(true, "正在保存数据");
-                         },
-                         complete: function () {
-                             Loading(false);
-                         }
-                     });
-                 }, 500);           
-            } else {
-                dialogMsg('您没有选择任何数据！', 0);
-            }
+            // 响应数量
+            dialogOpen({
+                id: "Form",
+                title: '订单编号：' + keyNumber,
+                url: '../Mfg/MaterialPullResponseEdit.aspx?id=' + keyValue + '&order=' + keyNumber + '&ItemNumber=' + ItemNumber + '&Qty=' + keyQty + '',
+                width: "500px",
+                height: "250px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
         }
 
+        //初始化拉动时间
+        function fnDate() {
+            var xhr = null;
+            if (window.XMLHttpRequest) {
+                xhr = new window.XMLHttpRequest();
+            } else { // ie
+                xhr = new ActiveObject("Microsoft")
+            }
+            // 通过get的方式请求当前文件
+            xhr.open("get", "/");
+            xhr.send(null);
+            // 监听请求状态变化
+            xhr.onreadystatechange = function () {
+                var time = null,
+                    preDate = null,
+                    curDate = null;
+                if (xhr.readyState === 2) {
+                    var seperator1 = "-";
+                    // 获取请求头里的时间戳
+                    time = xhr.getResponseHeader("Date");
+                    //console.log(xhr.getAllResponseHeaders())
+                    curDate = new Date(time);
+                    preDate = new Date(curDate.getTime() - 24 * 60 * 60 * 1000);
+                    var month = curDate.getMonth() + 1;
+                    var premonth = preDate.getMonth() + 1;
+                    var strDate = curDate.getDate();
+                    var strDate1 = preDate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    var predate = preDate.getFullYear() + seperator1 + premonth + seperator1 + strDate1;
+                    $("#PullTimeStart").val(predate);
+                    $("#PullTimeEnd").val(currentdate);
+                    GetGrid();
+                }
+            }
+        }
     </script>
 </head>
 <body data-spy="scroll" data-target=".navbar-example" id="body">

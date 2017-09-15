@@ -158,10 +158,8 @@
              xhr.onreadystatechange = function () {
                  var time = null,
                      curDate = null;
-
                  if (xhr.readyState === 2) {
                      var seperator1 = "-";
-                     
                      // 获取请求头里的时间戳
                      time = xhr.getResponseHeader("Date");
                      //console.log(xhr.getAllResponseHeaders())

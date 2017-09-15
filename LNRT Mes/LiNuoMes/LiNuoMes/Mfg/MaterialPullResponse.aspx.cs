@@ -40,7 +40,7 @@ namespace LiNuoMes.Mfg
         }
 
         [WebMethod]
-        public static string ResponsePullInfo(string ID)
+        public static string ResponsePullInfo(string ID, string ActionQty)
         {
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -52,7 +52,7 @@ namespace LiNuoMes.Mfg
                     transaction = conn.BeginTransaction();
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
-                    string str1 = "update MFG_WO_MTL_Pull set Status='1', ActionTime=GETDATE(),ActionUser='" + HttpContext.Current.Session["UserName"].ToString().ToUpper().Trim() + "' where ID='" + ID.ToString().Trim() + "'";
+                    string str1 = "update MFG_WO_MTL_Pull set Status='1', ActionTime=GETDATE(),ActionQty='"+ Convert.ToDouble(ActionQty)+"',ActionUser='" + HttpContext.Current.Session["UserName"].ToString().ToUpper().Trim() + "' where ID='" + ID.ToString().Trim() + "'";
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandText = str1;
                     cmd.ExecuteNonQuery();

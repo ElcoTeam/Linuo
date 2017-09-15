@@ -107,11 +107,11 @@
         //if (!$('#form1').Validform()) {
         //    return false;
         //}
-        var userid = $('#username').val();
+        var userid = $('#username').val().replace("'", "''");
         var psw = $('#password').val();
         $.ajax({
             url: "Login.aspx/CheckLogin",
-            data: "{UserID:'" + userid + "',Password:'"+psw+"'}",
+            data: "{UserID:\"" + userid + "\",Password:'" + psw + "'}",
             type: "post",
             dataType: "json",
             contentType: "application/json;charset=utf-8",

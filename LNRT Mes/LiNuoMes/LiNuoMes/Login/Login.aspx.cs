@@ -85,11 +85,8 @@ namespace LiNuoMes.Login
             }
             else
             {
-                
                 return "";
             }
-
         }
-
     }
 }

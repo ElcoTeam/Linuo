@@ -60,7 +60,7 @@
             });
             //GetGrid();
             CreateSelect();
-            GetChart();
+            //GetChart();
             fnDate();
         });
 

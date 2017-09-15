@@ -81,7 +81,16 @@ namespace LiNuoMes.Equipment.hs
                 SqlCommand cmd = new SqlCommand();
                 conn.Open();
                 cmd.Connection = conn;
-                string str1 = "select a.ID,b.ProcessCode,DeviceName,d.Info  as AlarmItem,CONVERT(varchar(100), AlarmTime, 120) as AlarmTime,a.AlarmStatus as  DealWithResult,CONVERT(varchar(16), DealWithTime, 120) as DealWithTime,DealWithOper,DealWithComment from Mes_PLC_AlarmFiles a  left join Equ_DeviceInfoList c on a.DeviceCode=c.DeviceCode  left join Mes_Process_List b on c.ProcessCode=b.ProcessCode left join TagsInfo1 d on a.Tag=d.Tag ";
+                string str1 = @"select 
+                                a.ID,b.ProcessCode,DeviceName,d.Info  as AlarmItem,
+                                CONVERT(varchar(100), AlarmTime, 120) as AlarmTime,
+                                a.AlarmStatus as  DealWithResult,
+                                CONVERT(varchar(16),DealWithTime, 120) as DealWithTime,
+                                DealWithOper,DealWithComment 
+                                from Mes_PLC_AlarmFiles a  
+                                left join Equ_DeviceInfoList c on a.DeviceCode=c.DeviceCode  
+                                left join Mes_Process_List b on c.ProcessCode=b.ProcessCode 
+                                left join TagsInfo1 d on a.Tag=d.Tag ";
                 if (equinfo.ID != "")
                 {
                     str1 += " WHERE a.ID = " + equinfo.ID + " ";

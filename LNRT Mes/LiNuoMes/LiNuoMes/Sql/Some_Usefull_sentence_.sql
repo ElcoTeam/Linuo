@@ -186,7 +186,9 @@ FROM MFG_WO_MTL_Pull PULL LEFT JOIN Mes_Threshold_List MTL ON PULL.ItemNumber = 
 SELECT * FROM mes_config;
 SELECT * FROM mfg_wo_list;
 
-UPDATE mfg_wo_list SET
+UPDATE 
+   mfg_wo_list
+SET
  MesLeftQty1 = 1
 ,MesLeftQty2 = 1
 ,MesDiscardQty = 1
@@ -279,6 +281,18 @@ UPDATE MES_PLC_Parameters SET ApplModel = 'NA' WHERE [ParamName] IN (SELECT TAG 
 UPDATE MES_PLC_Parameters SET ApplModel = 'CS' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '换更产品请求');
 UPDATE MES_PLC_Parameters SET ApplModel = 'ET' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '有功电能');
 UPDATE MES_PLC_Parameters SET ApplModel = 'QT' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname LIKE '完成数量%');
+
+UPDATE Mes_PLC_Parameters
+SET 
+    ProcessCode = PLC.ProcessCode
+FROM 
+  Mes_PLC_Parameters PAM
+, Mes_PLC_List plc
+WHERE 
+PAM.PLCID = PLC.ID
+AND GOODSCODE = '0000000000'
+AND APPLMODEL ='CS'
+
 */
 --truncate table Mes_Threshold_List;
 INSERT INTO

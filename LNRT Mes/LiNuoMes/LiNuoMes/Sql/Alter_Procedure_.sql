@@ -2660,6 +2660,7 @@ ALTER PROCEDURE [dbo_Mfg_Plc_Trig_MT_Require]
     ,@ItemNumber         AS VARCHAR (50)    OUTPUT
     ,@UOM                AS NVARCHAR(15)    OUTPUT
     ,@ItemDsca           AS NVARCHAR(50)    OUTPUT
+    ,@WaitingResponse    AS INT             OUTPUT
 AS
     --找到工单的状态, 产品, 计划产量
     SELECT 
@@ -2684,15 +2685,15 @@ AS
 
     --得到本工单已经拉动物料数量(可能是包含了未确认的, 但是已经响应了的数量)
     SELECT 
-        @ActionQty = ISNULL(SUM(ActionQty), 0)
+        @ActionQty = ISNULL(SUM(ActionQty), 0), @WaitingResponse = ISNULL(SUM(CASE [Status] WHEN 0 THEN 1 ELSE 0 END), 0)
     FROM
         MFG_WO_MTL_Pull
     WHERE 
          WorkOrderNumber   = @WorkOrderNumber
      AND WorkOrderVersion  = @WorkOrderVersion
      AND ItemNumber        = @ItemNumber
-     AND [Status]         >= 0 ;
-
+     AND [Status]         >= 0;
+    
     --得到本工单对应此种物料的需求数量
     SELECT 
         @RequireQty = ISNULL(SUM(Qty), 0)
@@ -2751,6 +2752,13 @@ AS
     DECLARE @ItemNumber       AS VARCHAR (50);
     DECLARE @UOM              AS NVARCHAR(15);
     DECLARE @ItemDsca         AS NVARCHAR(50);
+    DECLARE @WaitingResponse  AS INT;             --当下等待响应的物料拉动记录条数
+
+    IF UPPER(@TagValue) = 'FALSE' OR UPPER(@TagValue) = '0'
+    BEGIN
+        --仅仅响应触发值为'TRUE' 或 '1' 的值.
+        RETURN;
+    END
 
     --1.查找工序清单, 找到当下的工单, 
 
@@ -2780,7 +2788,13 @@ AS
         RETURN;
     END 
 
-    EXEC [dbo_Mfg_Plc_Trig_MT_Require]  @TagName,  @WorkOrderNumber,  @WorkOrderVersion,  @WorkOrderStatus OUTPUT,  @GoodsCode OUTPUT,  @MesPlanQty OUTPUT,  @ActionQty OUTPUT,  @RequireQty OUTPUT,  @ThresholdQty OUTPUT,  @ItemNumber OUTPUT,  @UOM OUTPUT,  @ItemDsca OUTPUT;
+    EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT;
+
+    IF @WaitingResponse > 0 
+    BEGIN
+        --说明当下, 此工位的此种物料尚有未完成的拉料记录, 因此抛弃此次触发
+        RETURN;
+    END
 
     --判断已经拉动的物料数量是否满足了要求
     SET @ApplyQty = @RequireQty - @ActionQty;
@@ -2788,14 +2802,19 @@ AS
     BEGIN
         --如果当下已经完成的拉动请求已经可以满足当下的拉动订单, 则需要取得下一个可以使用的订单. 然后继续进行后续的物料拉动步骤.
         EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT;
-        EXEC [usp_Mfg_Plc_Param_Update_WO] @TagName, @WorkOrderNumber, @WorkOrderVersion;
         IF ISNULL(@WorkOrderNumber, '') = ''
         BEGIN
             --说明当下没有排程计划. 此时直接返回
             RETURN;
         END 
+        EXEC [usp_Mfg_Plc_Param_Update_WO] @TagName, @WorkOrderNumber, @WorkOrderVersion;
+        EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT;
 
-        EXEC [dbo_Mfg_Plc_Trig_MT_Require]  @TagName,  @WorkOrderNumber,  @WorkOrderVersion,  @WorkOrderStatus OUTPUT,  @GoodsCode OUTPUT,  @MesPlanQty OUTPUT,  @ActionQty OUTPUT,  @RequireQty OUTPUT,  @ThresholdQty OUTPUT,  @ItemNumber OUTPUT,  @UOM OUTPUT,  @ItemDsca OUTPUT;
+        IF @WaitingResponse > 0 
+        BEGIN
+            --说明当下, 此工位的此种物料尚有未完成的拉料记录, 因此抛弃此次触发
+            RETURN;
+        END
 
         --继续进行补料运算.
         SET @ApplyQty = @RequireQty - @ActionQty;

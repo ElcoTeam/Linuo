@@ -227,8 +227,12 @@ CREATE TABLE [dbo].[MFG_WO_MTL_Pull] (
     [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
     [WorkOrderNumber]    VARCHAR  (50)   NOT NULL,                        --订单编码
     [WorkOrderVersion]   INT             NOT NULL DEFAULT (0),            --订单版本: 目的是为了区分开来补单的补单, 0:正常订单; >0: 其余补单顺次+1
+    [NextWorkOrderNumber] VARCHAR  (50)  NOT NULL DEFAULT (''),           --下一订单编码
+    [NextWorkOrderVersion]INT            NOT NULL DEFAULT (0),            --下一订单版本: 目的是为了区分开来补单的补单, 0:正常订单; >0: 其余补单顺次+1
+    [NextWOPlanQty]      INT             NOT NULL DEFAULT (0),            --下一工单的计划产量
     [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --原料编码
     [ItemDsca]           NVARCHAR (50)   NOT NULL,                        --原料描述
+    [ActionTotalQty]     NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --当前工单已经响应的数量(和)
     [Qty]                NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --用量
     [UOM]                NVARCHAR (15)   NOT NULL DEFAULT (N'个'),        --用料计量单位
     [ProcessCode]        NVARCHAR (50)   NOT NULL DEFAULT (N''),          --工序编号

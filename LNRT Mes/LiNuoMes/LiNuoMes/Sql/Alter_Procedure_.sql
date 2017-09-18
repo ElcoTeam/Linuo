@@ -2754,6 +2754,11 @@ AS
     DECLARE @ItemDsca         AS NVARCHAR(50);
     DECLARE @WaitingResponse  AS INT;             --当下等待响应的物料拉动记录条数
 
+    DECLARE @NextWorkOrderNumber  AS VARCHAR (50);--下一订单编码
+    DECLARE @NextWorkOrderVersion AS INT;         --下一订单版本
+    DECLARE @NextWOPlanQty        AS INT;         --下一工单计划产量
+
+
     IF UPPER(@TagValue) = 'FALSE' OR UPPER(@TagValue) = '0'
     BEGIN
         --仅仅响应触发值为'TRUE' 或 '1' 的值.
@@ -2827,6 +2832,15 @@ AS
     
     --最终的拉动请求数量: 剩余需求 与 拉动阈值 二者之中的较小值作为此次的拉动请求数量.
     SET @ApplyQty = (@ApplyQty + @ThresholdQty)/2 - ABS(@ApplyQty - @ThresholdQty)/2;    
+
+    --取得下一工单的相应信息.
+    SELECT @NextWorkOrderNumber = @WorkOrderNumber, @NextWorkOrderVersion = @WorkOrderVersion;
+    EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT;
+    SELECT @NextWOPlanQty = ISNULL(MesPlanQty, 0)
+    FROM MFG_WO_List
+    WHERE
+            ErpWorkOrderNumber  = @NextWorkOrderNumber
+        AND MesWorkOrderVersion = @NextWorkOrderVersion;
     
     --如果当下工单的状态为"待生产", 则需要设置工单为"产前调整中",
     IF @WorkOrderStatus = 0 
@@ -2842,8 +2856,8 @@ AS
 
     --产生物料拉料动作.
     INSERT INTO MFG_WO_MTL_Pull 
-          ( WorkOrderNumber,   WorkOrderVersion,  ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,      PullUser )
-    VALUES( @WorkOrderNumber, @WorkOrderVersion, @ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty, 'MES'    );
+          ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion, NextWOPlanQty,  ActionTotalQty, ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,      PullUser )
+    VALUES( @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty,    @ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty, 'MES'    );
     --(需要判断当前是否为全局"暂停/正常"标志, 此处涉及到异常恢复情况场景, 比较复杂, 时间关系不考虑)
 GO
 

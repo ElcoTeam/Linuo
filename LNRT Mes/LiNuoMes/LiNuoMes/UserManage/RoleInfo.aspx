@@ -75,7 +75,7 @@
             $gridTable.jqGrid({
                 url: "hs/GetRoleInfo.ashx",
                 datatype: "json",
-                height: $('#areascontent').height() *0.74,
+                height: $('#areascontent').height() -200,
                 colModel: [
                     { label: '主键', name: 'RoleID', hidden: true },
                     {

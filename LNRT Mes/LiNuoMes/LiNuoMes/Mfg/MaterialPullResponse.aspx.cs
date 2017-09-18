@@ -68,6 +68,65 @@ namespace LiNuoMes.Mfg
             }
         }
 
+
+        [WebMethod]
+        public static string DeleteMaterialInfo(string MaterialID)
+        {
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+                    string str1 = "update  MFG_WO_MTL_Pull set Status='-2' where ID='" + MaterialID.ToString().Trim() + "'";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = str1;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    return "success";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return "falut";
+                }
+
+            }
+        }
+
+        [WebMethod]
+        public static string ReactiveMaterialInfo(string MaterialID)
+        {
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+                    string str1 = "update MFG_WO_MTL_Pull set Status='0' where ID='" + MaterialID.ToString().Trim() + "'";
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = str1;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    return "success";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return "falut";
+                }
+
+            }
+        }
+
         /// <summary>       
         /// dataTable转换成Json格式       
         /// </summary>       

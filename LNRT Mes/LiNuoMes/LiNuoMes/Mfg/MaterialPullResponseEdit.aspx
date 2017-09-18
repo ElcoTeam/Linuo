@@ -106,13 +106,13 @@
                 <tr>
                     <th class="formTitle" style="width: 150px;">物料编号<font face="宋体">*</font></th>
                     <td class="formValue">
-                      <input id="ItemNumber" type="text" class="form-control" readonly style="width:250px;"/>
+                      <input id="ItemNumber" type="text" class="form-control" readonly style="width:250px;" disabled/>
                     </td>
                 </tr>
                 <tr>
                     <th class="formTitle" style="width: 150px;">物料描述<font face="宋体">*</font></th>
                     <td class="formValue">
-                      <input id="ItemDsca" type="text" class="form-control" readonly style="width:250px;"/>
+                      <input id="ItemDsca" type="text" class="form-control" readonly style="width:250px;" disabled/>
                     </td>
                 </tr>
                 <tr>

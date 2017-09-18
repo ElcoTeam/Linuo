@@ -64,11 +64,11 @@
                     PullTimeStart: PullTimeStart,
                     PullTimeEnd: PullTimeEnd
                 },
-                height: $('#areascontent').height() -380,
+                height: $('#areascontent').height() -370,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {
-                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 120, align: 'left'
+                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 100, align: 'left'
                     },
                     {
                         label: '订单类型', name: 'WorkOrderVersion', index: 'WorkOrderVersion', width: 80, align: 'left',
@@ -81,11 +81,11 @@
                             }
                         }
                     },
-                    { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 150, align: 'left' },
-                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 150, align: 'left' },
-                    { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 250, align: 'left' },
+                    { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 100, align: 'left' },
+                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 120, align: 'left' },
+                    { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 200, align: 'left' },
                     { label: '需求数量', name: 'Qty', index: 'Qty', width: 100, align: 'left' },
-                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 150, align: 'left' },
+                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 200, align: 'left' },
                     {
                         label: '发送情况', name: 'Status', index: 'Status', width: 80, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
@@ -101,9 +101,9 @@
                         }
                     },
                     { label: '响应数量', name: 'ActionQty', index: 'ActionQty', width: 100, align: 'left' },
-                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 150, align: 'left' },
+                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 200, align: 'left' },
                     { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 80, align: 'left' },
-                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 150, align: 'left' },
+                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 200, align: 'left' },
                     { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 80, align: 'left' },
                     {
                         label: '是否超时', name: 'OTFlag', index: 'OTFlag', width: 80, align: 'left',
@@ -117,10 +117,14 @@
                         }
                     },
                     {
-                        label: '操作', name: 'Status', index: 'Status', width: 80, align: 'center',
+                        label: '操作', name: 'Status', index: 'Status', width: 80, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 0) {
-                                return '<span name=\"operatebtn\" onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[6] + '\')\" class=\"label label-danger\" style=\"cursor: pointer;\">响应</span>';
+                                return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[6] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\">响应</span>'+
+                                       '<span onclick=\"btn_delete(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer; margin-left:10px;\">删除</span>';
+                            }
+                            else if (cellvalue == -2) {
+                                return '<span  onclick=\"btn_reactive(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer;\">恢复</span>';
                             }
                             else {
                                 return '';
@@ -129,8 +133,8 @@
                     },
                 ],
                 viewrecords: true,
-                rowNum: 30,
-                rowList: [30, 50, 100],
+                rowNum: 50,
+                rowList: [50, 100, 150],
                 pager: "#gridPager",
                 sortname: 'WorkOrderNumber asc',
                 rownumbers: true,
@@ -228,6 +232,90 @@
             });
         }
 
+
+        //删除
+        function btn_delete(keyValue) {
+            if (keyValue == undefined) {
+                keyValue = $("#gridTable").jqGridRowValue("ID");
+            }
+            dialogConfirm("注：您确定要删除吗？该操作将无法恢复", function (r) {
+                if (r) {
+                    Loading(true, "正在删除数据...");
+                    window.setTimeout(function () {
+                        $.ajax({
+                            url: "MaterialPullResponse.aspx/DeleteMaterialInfo",
+                            data: "{MaterialID:'" + keyValue + "'}",
+                            type: "post",
+                            dataType: "json",
+                            contentType: "application/json;charset=utf-8",
+                            success: function (data) {
+                                if (data.d == "success") {
+                                    Loading(false);
+                                    dialogMsg("删除成功", 1);
+                                    $("#gridTable").trigger("reloadGrid");
+                                }
+                                else if (data.d == "falut") {
+                                    dialogMsg("删除失败", -1);
+                                }
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                Loading(false);
+                                dialogMsg(errorThrown, -1);
+                            },
+                            beforeSend: function () {
+                                Loading(true, "正在删除数据");
+                            },
+                            complete: function () {
+                                Loading(false);
+                            }
+                        });
+                    }, 500);
+                }
+            });
+        }
+
+        //恢复
+        function btn_reactive(keyValue) {
+            if (keyValue == undefined) {
+                keyValue = $("#gridTable").jqGridRowValue("ID");
+
+            }
+            dialogConfirm("注：您确定要恢复吗？", function (r) {
+                if (r) {
+                    Loading(true, "正在恢复数据...");
+                    window.setTimeout(function () {
+                        $.ajax({
+                            url: "MaterialPullResponse.aspx/ReactiveMaterialInfo",
+                            data: "{MaterialID:'" + keyValue + "'}",
+                            type: "post",
+                            dataType: "json",
+                            contentType: "application/json;charset=utf-8",
+                            success: function (data) {
+                                if (data.d == "success") {
+                                    Loading(false);
+                                    dialogMsg("恢复成功", 1);
+                                    $("#gridTable").trigger("reloadGrid");
+                                }
+                                else if (data.d == "falut") {
+                                    dialogMsg("恢复失败", -1);
+                                }
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                Loading(false);
+                                dialogMsg(errorThrown, -1);
+                            },
+                            beforeSend: function () {
+                                Loading(true, "正在恢复数据");
+                            },
+                            complete: function () {
+                                Loading(false);
+                            }
+                        });
+                    }, 500);
+                }
+            });
+        }
+
         //初始化拉动时间
         function fnDate() {
             var xhr = null;
@@ -269,6 +357,7 @@
                 }
             }
         }
+
     </script>
 </head>
 <body data-spy="scroll" data-target=".navbar-example" id="body">

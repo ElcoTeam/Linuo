@@ -64,7 +64,7 @@
                     PullTimeStart: PullTimeStart,
                     PullTimeEnd: PullTimeEnd
                 },
-                height: $('#areascontent').height() -370,
+                height: $('#areascontent').height() -400,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {
@@ -81,11 +81,16 @@
                             }
                         }
                     },
+                    {
+                        label: '下一订单编号', name: 'NextWorkOrderNumber', index: 'NextWorkOrderNumber', width: 100, align: 'left'
+                    },
+                    { label: '下一订单计划产量', name: 'NextWOPlanQty', index: 'NextWOPlanQty', width: 50, align: 'left' },
+                    { label: '已经响应数量', name: 'ActionTotalQty', index: 'ActionTotalQty', width: 50, align: 'left' },
                     { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 100, align: 'left' },
                     { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 120, align: 'left' },
                     { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 200, align: 'left' },
-                    { label: '需求数量', name: 'Qty', index: 'Qty', width: 100, align: 'left' },
-                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 200, align: 'left' },
+                    { label: '需求数量', name: 'Qty', index: 'Qty', width: 50, align: 'left' },
+                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 180, align: 'left' },
                     {
                         label: '发送情况', name: 'Status', index: 'Status', width: 80, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
@@ -98,15 +103,18 @@
                             else if (cellvalue == 2) {
                                 return '已完成';
                             }
+                            else if (cellvalue == -2) {
+                                return '已删除';
+                            }
                         }
                     },
-                    { label: '响应数量', name: 'ActionQty', index: 'ActionQty', width: 100, align: 'left' },
-                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 200, align: 'left' },
-                    { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 80, align: 'left' },
-                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 200, align: 'left' },
-                    { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 80, align: 'left' },
+                    { label: '响应数量', name: 'ActionQty', index: 'ActionQty', width: 50, align: 'left' },
+                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 180, align: 'left' },
+                    { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 70, align: 'left' },
+                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 180, align: 'left' },
+                    { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 70, align: 'left' },
                     {
-                        label: '是否超时', name: 'OTFlag', index: 'OTFlag', width: 80, align: 'left',
+                        label: '超时', name: 'OTFlag', index: 'OTFlag', width: 70, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 0) {
                                 return '未超时';
@@ -117,10 +125,10 @@
                         }
                     },
                     {
-                        label: '操作', name: 'Status', index: 'Status', width: 80, align: 'left',
+                        label: '操作', name: 'Status', index: 'Status', width: 110, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 0) {
-                                return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[6] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\">响应</span>'+
+                                return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[9] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\">响应</span>'+
                                        '<span onclick=\"btn_delete(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer; margin-left:10px;\">删除</span>';
                             }
                             else if (cellvalue == -2) {
@@ -182,6 +190,7 @@
             $gridTable.jqGrid('setLabel', 'rn', '序号', {
                 'text-align': 'center'
             });
+
         }
 
         //构造select
@@ -462,6 +471,7 @@
              </div>
          </div>
     </div>
+
     <style>
          @media screen and (min-width: 1900px) { 
              .timeselect {

@@ -78,6 +78,9 @@ namespace LiNuoMes.Mfg
                     strJson += "\"" + dt.Rows[j]["ID"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["WorkOrderNumber"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["WorkOrderVersion"].ToString() + "\",";
+                    strJson += "\"" + dt.Rows[j]["NextWorkOrderNumber"].ToString() + "\",";
+                    strJson += "\"" + dt.Rows[j]["NextWOPlanQty"].ToString() + "\",";
+                    strJson += "\"" + dt.Rows[j]["ActionTotalQty"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["Procedure_Name"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["ItemNumber"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["ItemDsca"].ToString() + "\",";

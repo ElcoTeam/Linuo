@@ -45,6 +45,7 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
+            $("#Status").val("1");
             GetGrid();
             CreateSelect();
         });
@@ -53,15 +54,18 @@
         function GetGrid() {
             var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
+            var Status = $("#Status").val();
             $gridTable.jqGrid({
                 url: "GetMaterialConfirm.ashx",
-                
                 datatype: "json",
-                height: $('#areascontent').height() -380,
+                postData: {
+                    Status: Status
+                },
+                height: $('#areascontent').height() -400,
                 colModel: [
-                    { label: '主键', name: 'ID', hidden: true },
+                     { label: '主键', name: 'ID', hidden: true },
                     {
-                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 120, align: 'left'
+                        label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 100, align: 'left'
                     },
                     {
                         label: '订单类型', name: 'WorkOrderVersion', index: 'WorkOrderVersion', width: 80, align: 'left',
@@ -74,11 +78,16 @@
                             }
                         }
                     },
-                    { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 150, align: 'left' },
-                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 200, align: 'left' },
-                    { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 250, align: 'left' },
-                    { label: '拉动数量', name: 'Qty', index: 'Qty', width: 100, align: 'left' },
-                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 150, align: 'left' },
+                    {
+                        label: '下一订单编号', name: 'NextWorkOrderNumber', index: 'NextWorkOrderNumber', width: 100, align: 'left'
+                    },
+                    { label: '下一订单计划产量', name: 'NextWOPlanQty', index: 'NextWOPlanQty', width: 50, align: 'left' },
+                    { label: '已经响应数量', name: 'ActionTotalQty', index: 'ActionTotalQty', width: 50, align: 'left' },
+                    { label: '工序名称', name: 'Procedure_Name', index: 'Procedure_Name', width: 100, align: 'left' },
+                    { label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 120, align: 'left' },
+                    { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 200, align: 'left' },
+                    { label: '需求数量', name: 'Qty', index: 'Qty', width: 50, align: 'left' },
+                    { label: '拉动时间', name: 'PullTime', index: 'PullTime', width: 180, align: 'left' },
                     {
                         label: '发送情况', name: 'Status', index: 'Status', width: 80, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
@@ -91,14 +100,18 @@
                             else if (cellvalue == 2) {
                                 return '已完成';
                             }
+                            else if (cellvalue == -2) {
+                                return '已删除';
+                            }
                         }
                     },
+                    { label: '响应数量', name: 'ActionQty', index: 'ActionQty', width: 50, align: 'left' },
                     { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 180, align: 'left' },
-                    { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 80, align: 'left' },
+                    { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 70, align: 'left' },
                     { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 180, align: 'left' },
-                    { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 80, align: 'left' },
+                    { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 70, align: 'left' },
                     {
-                        label: '是否超时', name: 'OTFlag', index: 'OTFlag', width: 80, align: 'left',
+                        label: '超时', name: 'OTFlag', index: 'OTFlag', width: 70, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 0) {
                                 return '未超时';
@@ -121,8 +134,8 @@
                     },
                 ],
                 viewrecords: true,
-                rowNum: 30,
-                rowList: [30, 50, 100],
+                rowNum: 50,
+                rowList: [50, 100, 150],
                 pager: "#gridPager",
                 sortname: 'WorkOrderNumber asc',
                 rownumbers: true,
@@ -265,22 +278,22 @@
                             <table id="form1" class="form">
                                 <tr>
                                     <th class="formTitle">订单编号：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                         <input type="text" class="form-control" id="orderno" placeholder="请输入订单编号">
                                     </td>
                                     <th class="formTitle">物料编号：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                         <input type="text" class="form-control" id="materialcode" placeholder="请输入物料编号">
                                     </td> 
                                 </tr>
                                 <tr>
                                     <th class="formTitle">工序名称：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <select class="form-control" id="produce">
                                          </select>
                                     </td>
                                     <th class="formTitle">发送情况：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <select class="form-control" id="Status">
                                             <option value=''>请选择...</option>
                                             <option value='0'>待响应</option>
@@ -291,12 +304,12 @@
                                 </tr>
                                 <tr>
                                     <th class="formTitle">拉动时间：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
                                          <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
                                     </td>
                                     <th class="formTitle">是否超时：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <select class="form-control" id="OTFlag">
                                             <option value=''>请选择...</option>
                                             <option value='1'>是</option>
@@ -306,23 +319,23 @@
                                 </tr>
                                 <tr>
                                     <th class="formTitle">响应时间：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <input id="ActionTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
                                          <input id="ActionTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate timeselect" /> 
                                     </td>
                                     <th class="formTitle">响应人：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <input type="text" class="form-control" id="ActionUser" placeholder="请输入响应人">
                                     </td>
                                 </tr>
                                 <tr>
                                     <th class="formTitle">确认时间：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <input id="ConfirmTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ConfirmTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
                                          <input id="ConfirmTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ConfirmTimeStart\')}'})" class="Wdate timeselect" /> 
                                     </td>
                                     <th class="formTitle">确认人：</th>
-                                    <td class="formValue">
+                                    <td class="formValue" colspan="2">
                                          <input type="text" class="form-control" id="ConfirmUser" placeholder="请输入确认人">
                                     </td>
                                     <td class="formValue">
@@ -345,10 +358,37 @@
          </div>
     </div>
     <style>
-         .timeselect {
-             width: 110px;
-             height: 35px;
+         @media screen and (min-width: 1900px) { 
+             .timeselect {
+                 width: 200px;
+                 height: 35px;
+            }
+         } 
+         @media screen and (min-width: 800px ) and (max-width: 1400px) { 
+              .timeselect{
+                 width: 130px;
+                 height: 30px !important;
+                 font-size: 15px;
+             }
+         } 
+     
+        @media screen and (min-width: 1400px ) and (max-width: 1900px) { 
+           
+              .timeselect{
+                 width: 150px;
+                 height: 35px !important;
+                 font-size: 25px;
+             } 
          }
+
+         @media screen and (max-width: 800px ) { 
+            
+              .timeselect{
+                 width: 40px;
+                 height: 25px !important;
+                 font-size: 10px;
+             }
+          }  
     </style>
 </body>
 </html>

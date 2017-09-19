@@ -87,6 +87,7 @@ namespace LiNuoMes.Mfg
                     strJson += "\"" + dt.Rows[j]["Qty"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["PullTime"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["Status"].ToString() + "\",";
+                    strJson += "\"" + dt.Rows[j]["ActionQty"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["ActionTime"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["ActionUser"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["ConfirmTime"].ToString() + "\",";

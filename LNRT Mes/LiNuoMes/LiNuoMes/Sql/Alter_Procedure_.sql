@@ -2022,12 +2022,12 @@ AS
                                   SELECT @BatchNo, PLCID, ID,       ParamName, ParamType, CASE WHEN ApplModel = 'VS' THEN ParamValue ELSE '1' END , OperateCommand, @OperateUser, 0
                                   FROM Mes_PLC_Parameters
                                   WHERE PLCID IN ( SELECT PLCID FROM @ListTB)
-                                  AND OperateType IN ( 'W', 'RW') AND ApplModel = @SenderType;
+                                  AND OperateType IN ( 'W', 'RW') 
+                                  AND ApplModel = @SenderType;
 
     --参数派发, 需要派发计划产量信息.
     IF @SenderType = 'VS'
     BEGIN
-
         DECLARE @PrsPlanQty  INT; --Process计划数量
         SELECT
              @PrsPlanQty = MesPlanQty        
@@ -2036,30 +2036,13 @@ AS
         WHERE
             ErpWorkOrderNumber  = @WorkOrderNumber
         AND MesWorkOrderVersion = @WorkOrderVersion;
-    
-        DECLARE @WorkOrderStatus    AS INT;
-        DECLARE @GoodsCode          AS VARCHAR (50);
-        DECLARE @pProcessCode       AS NVARCHAR(50); --plc   processcode
-        DECLARE @mProcessCode       AS NVARCHAR(50); --param processcode
-
-
-        UPDATE Mes_Process_List
-        SET 
-             WorkOrderNumber  = @WorkOrderNumber
-            ,WorkOrderVersion = @WorkOrderVersion
-            ,FinishQty        = 0
-            ,PlanQty          = @PrsPlanQty     
-        FROM 
-            Mes_PLC_List         
-        WHERE 
-            Mes_PLC_List.ProcessCode = Mes_Process_List.ProcessCode 
-        AND Mes_PLC_List.ID IN (SELECT PLCID FROM @ListTB) 
-
+ 
+        --更改工单的状态为产前调整中
         UPDATE MFG_WO_List
         SET 
             MesStatus = 1
         FROM 
-            Mes_PLC_List         
+            Mes_PLC_List
         WHERE 
             MesStatus = 0
         AND ErpWorkOrderNumber  = @WorkOrderNumber
@@ -2071,7 +2054,22 @@ AS
                                       SELECT @BatchNo, PLCID, ID,       ParamName, ParamType, @PrsPlanQty,OperateCommand, @OperateUser, 0
                                       FROM Mes_PLC_Parameters
                                       WHERE PLCID IN ( SELECT PLCID FROM @ListTB)
-                                      AND OperateType IN ( 'W', 'RW') AND ApplModel = 'QS';
+                                      AND OperateType IN ( 'W', 'RW') 
+                                      AND ApplModel = 'QS';
+    END
+
+    --发送的是产品变更指令, 因此需要此时设定工位的下一个工单信息, 此处是需要现场的CS信号由1改变为0的触发(存储过程: usp_Mfg_Plc_Trig_CS)相配合来完成.
+    IF @SenderType = 'CS'
+    BEGIN
+        UPDATE Mes_Process_List
+        SET 
+             NextWorkOrderNumber  = @WorkOrderNumber
+            ,NextWorkOrderVersion = @WorkOrderVersion
+        FROM 
+            Mes_PLC_List         
+        WHERE 
+            Mes_PLC_List.ProcessCode = Mes_Process_List.ProcessCode 
+        AND Mes_PLC_List.ID IN (SELECT PLCID FROM @ListTB) 
     END
 
     SELECT @ParamsCount = COUNT(1)
@@ -2612,6 +2610,7 @@ AS
     BEGIN
         RETURN; 
     END
+
     DECLARE @pProcessCode   AS VARCHAR (50);
 
     --完成Process记录点的工单切换动作: 正在生产的工单值使用将下一工单的工单值覆盖. 并且将下一工单值置空.
@@ -2626,12 +2625,18 @@ AS
 
     UPDATE Mes_Process_List
     SET 
-         WorkOrderNumber      = NextWorkOrderNumber
-        ,WorkOrderVersion     = NextWorkOrderVersion
+         WorkOrderNumber      = PLS.NextWorkOrderNumber
+        ,WorkOrderVersion     = PLS.NextWorkOrderVersion
+        ,PlanQty              = WO.MesPlanQty
         ,NextWorkOrderNumber  = ''
         ,NextWorkOrderVersion = -1
+    FROM 
+        Mes_Process_List PLS
+       ,MFG_WO_List      WO
     WHERE
-        ProcessCode = @pProcessCode;
+         PLS.NextWorkOrderNumber  = WO.ErpWorkOrderNumber  
+     AND PLS.NextWorkOrderVersion = WO.MesWorkOrderVersion 
+     AND PLS.ProcessCode          = @pProcessCode;
 GO
 
 -- PLC 触发了 能源计数 动作
@@ -2948,62 +2953,33 @@ AS
         RETURN;
     END 
 
-    DECLARE @MesPlanQty       INT; --原始订单计划数量
-    DECLARE @PrsPlanQty       INT; --Process计划数量
-
-    DECLARE @selfDiscardQty1  INT; --本订单报废数量
-    DECLARE @selfDiscardQty2  INT; --本订单报废数量
-    DECLARE @selfDiscardQty3  INT; --本订单报废数量
-    DECLARE @selfDiscardQty4  INT; --本订单报废数量
-
-    DECLARE @selfLeftQty1     INT; --本订单待修数量
-    DECLARE @selfLeftQty2     INT; --本订单待修数量
-    DECLARE @selfLeftQty3     INT; --本订单待修数量
-    DECLARE @selfLeftQty4     INT; --本订单待修数量
-
-    DECLARE @baseDiscardQty1  INT; --母订单报废数量
-    DECLARE @baseDiscardQty2  INT; --母订单报废数量
-    DECLARE @baseDiscardQty3  INT; --母订单报废数量
-    DECLARE @baseDiscardQty4  INT; --母订单报废数量
-
-    DECLARE @baseLeftQty1     INT; --母订单待修数量
-    DECLARE @baseLeftQty2     INT; --母订单待修数量
-    DECLARE @baseLeftQty3     INT; --母订单待修数量
-    DECLARE @baseLeftQty4     INT; --母订单待修数量
-
-    DECLARE @AbnormalRegion   INT;
-    DECLARE @FinalFlag        INT;
-    DECLARE @StartFlag        INT;
-    DECLARE @FinishQty        INT;
-
-    SELECT 
-         @MesPlanQty      = 0      
-        ,@PrsPlanQty      = 0     
-        
-        ,@selfDiscardQty1 = 0 
-        ,@selfDiscardQty2 = 0 
-        ,@selfDiscardQty3 = 0 
-        ,@selfDiscardQty4 = 0 
-        
-        ,@selfLeftQty1    = 0    
-        ,@selfLeftQty2    = 0    
-        ,@selfLeftQty3    = 0    
-        ,@selfLeftQty4    = 0    
-        
-        ,@baseDiscardQty1 = 0  
-        ,@baseDiscardQty2 = 0  
-        ,@baseDiscardQty3 = 0  
-        ,@baseDiscardQty4 = 0  
-        
-        ,@baseLeftQty1    = 0    
-        ,@baseLeftQty2    = 0 
-        ,@baseLeftQty3    = 0 
-        ,@baseLeftQty4    = 0 
-                         
-        ,@AbnormalRegion  = 0 
-        ,@FinalFlag       = 0 
-        ,@StartFlag       = 0 
-        ,@FinishQty       = 0 ;
+    DECLARE @MesPlanQty       INT = 0; --原始订单计划数量
+    DECLARE @PrsPlanQty       INT = 0; --Process计划数量
+                                 
+    DECLARE @selfDiscardQty1  INT = 0; --本订单报废数量
+    DECLARE @selfDiscardQty2  INT = 0; --本订单报废数量
+    DECLARE @selfDiscardQty3  INT = 0; --本订单报废数量
+    DECLARE @selfDiscardQty4  INT = 0; --本订单报废数量
+                                  
+    DECLARE @selfLeftQty1     INT = 0; --本订单待修数量
+    DECLARE @selfLeftQty2     INT = 0; --本订单待修数量
+    DECLARE @selfLeftQty3     INT = 0; --本订单待修数量
+    DECLARE @selfLeftQty4     INT = 0; --本订单待修数量
+                                  
+    DECLARE @baseDiscardQty1  INT = 0; --母订单报废数量
+    DECLARE @baseDiscardQty2  INT = 0; --母订单报废数量
+    DECLARE @baseDiscardQty3  INT = 0; --母订单报废数量
+    DECLARE @baseDiscardQty4  INT = 0; --母订单报废数量
+                                 
+    DECLARE @baseLeftQty1     INT = 0; --母订单待修数量
+    DECLARE @baseLeftQty2     INT = 0; --母订单待修数量
+    DECLARE @baseLeftQty3     INT = 0; --母订单待修数量
+    DECLARE @baseLeftQty4     INT = 0; --母订单待修数量
+                                  
+    DECLARE @AbnormalRegion   INT = 0;
+    DECLARE @FinalFlag        INT = 0;
+    DECLARE @StartFlag        INT = 0;
+    DECLARE @FinishQty        INT = 0;    
 
     --取得本工序的基本配置信息
     SELECT 
@@ -3073,21 +3049,16 @@ AS
     + 'WOStatus;'  + convert(varchar, @WorkOrderStatus) + ';'
     + 'FinalFlag;' + convert(varchar, @FinalFlag) + ';'
     + 'StartFlag;' + convert(varchar, @StartFlag) + ';'
-    + 'DiscQty1;'  + convert(varchar, @selfDiscardQty1) + ';'
-    + 'DiscQty2;'  + convert(varchar, @selfDiscardQty2) + ';'
-    + 'DiscQty3;'  + convert(varchar, @selfDiscardQty3) + ';'
-    + 'DiscQty4;'  + convert(varchar, @selfDiscardQty4) + ';'
-    + 'LeftQty1;'  + convert(varchar, @selfLeftQty1) + ';'
-    + 'LeftQty2;'  + convert(varchar, @selfLeftQty2) + ';'
-    + 'LeftQty3;'  + convert(varchar, @selfLeftQty3) + ';'
-    + 'LeftQty4;'  + convert(varchar, @selfLeftQty4) + ';'
+  --  + 'DiscQty1;'  + convert(varchar, @selfDiscardQty1) + ';'
+  --  + 'DiscQty2;'  + convert(varchar, @selfDiscardQty2) + ';'
+  --  + 'DiscQty3;'  + convert(varchar, @selfDiscardQty3) + ';'
+  --  + 'DiscQty4;'  + convert(varchar, @selfDiscardQty4) + ';'
+  --  + 'LeftQty1;'  + convert(varchar, @selfLeftQty1) + ';'
+  --  + 'LeftQty2;'  + convert(varchar, @selfLeftQty2) + ';'
+  --  + 'LeftQty3;'  + convert(varchar, @selfLeftQty3) + ';'
+  --  + 'LeftQty4;'  + convert(varchar, @selfLeftQty4) + ';'
     );
     --++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    -------------------为了验收的需要, 暂时屏蔽复杂的操作.
-    RETURN;
-    --------+++++++++++
-
 
     SET @PrsPlanQty = @MesPlanQty
     --此处原意是把当下的工位的计划数量调整一下, 其根据其父订单的计划数量减去当时其在此工位之前的下线数量.
@@ -3117,12 +3088,12 @@ AS
      --3. 更新当下工序的实际产出数量, 
      -- 这里的操作 "不要" 和下面的 "本工序产出完成" 的另一个条件分支合并起来, 
      -- 因为, 可能会有订单数量为 "1" 情况, 这样就可能一次产量输出事件就完成了工单而导致工单号码和版本号密码没有机会更新
-     -- 这样写的方法会多执行一次数据表的更新操作, 工序表很小, 因此问题不大.
+     -- 这样写的方法会多执行一次数据表的更新操作, 工序表很小, 因此效率问题不大.
+
+     -- 此处只需要记录计数器的计数数值即可, 其工序的工单值不再考虑, 工序的工单信息仅仅需要参数派发机制来完成.
      UPDATE Mes_Process_List
      SET    
-          WorkOrderNumber  = @WorkOrderNumber
-         ,WorkOrderVersion = @WorkOrderVersion
-         ,FinishQty        = @TagFinishQty
+          FinishQty        = @TagFinishQty
          ,ParamTime        = GETDATE() 
          ,ParamName        = @TagName   
          ,ParamValue       = @TagValue 
@@ -3130,28 +3101,32 @@ AS
           ProcessCode = @pProcessCode
 
      --本工序产出完成
-     IF @PrsPlanQty <= @FinishQty 
-     BEGIN
-         UPDATE Mes_Process_List
-         SET    
-             FinishQty   = -1
-         WHERE 
-             ProcessCode = @pProcessCode
-     END
+     --IF @PrsPlanQty <= @FinishQty 
+     --BEGIN
+     --    UPDATE Mes_Process_List
+     --    SET    
+     --        FinishQty   = -1
+     --    WHERE 
+     --        ProcessCode = @pProcessCode
+     --END
+
+    -------------------为了验收的需要, 暂时屏蔽复杂的操作.
+    --RETURN;
+    --------+++++++++++
 
      --更新订单产量
      IF @FinalFlag = 1 AND @WorkOrderStatus = 2 
      BEGIN
          UPDATE MFG_WO_List
-         SET MesFinishQty = @FinishQty
+         SET MesFinishQty = @TagFinishQty
          WHERE
              ErpWorkOrderNumber  = @WorkOrderNumber
          AND MesWorkOrderVersion = @WorkOrderVersion
          AND MesStatus           = 2;
      END
         
-     --结束工单, FinalFlag = 1 表示当下工序是最后一个计数点, 其可以作为判断工单是否完成的一个节点.
-     IF  @FinalFlag = 1 AND @PrsPlanQty <= @FinishQty AND @WorkOrderStatus = 2 
+     --结束工单, FinalFlag = 1 (当下只有"码垛"这个工位)表示当下工序是生产线的最后一个计数点, 其可以作为判断工单是否完成的一个节点.
+     IF @FinalFlag = 1 AND @PrsPlanQty <= @FinishQty AND @WorkOrderStatus = 2 
      BEGIN
          --结束工单主记录
          UPDATE MFG_WO_List
@@ -3172,7 +3147,7 @@ AS
              ,ParamValue = @TagValue                      
          WHERE 
              WorkOrderNumber  = @WorkOrderNumber
-         AND WorkOrderVersion = @WorkOrderVersion;  --这里需要把所有和这个工单有关系的标致都要结单, 因为可能有物料拉动的工序在没有产量计数触发事件.
+         AND WorkOrderVersion = @WorkOrderVersion;  --这里需要把所有和这个工单有关系的标致都要结单.
      END
       
      COMMIT TRANSACTION
@@ -3187,6 +3162,6 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Client_Trig_RFID]
      ,@MesCode          AS VARCHAR  (50) = ''      --MES编号
      ,@ReadTime         AS DATETIME      = ''      --Client读取时间
 AS
-    ;
-    
+    --此模块目前和本系统尚没有关联, 因此直接返回即可.
+    RETURN;    
 GO

@@ -2835,7 +2835,8 @@ AS
 
     --取得下一工单的相应信息.
     SELECT @NextWorkOrderNumber = @WorkOrderNumber, @NextWorkOrderVersion = @WorkOrderVersion;
-    EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT;
+    EXEC [usp_Mfg_Wo_List_get_Next_Available] @NextWorkOrderNumber OUTPUT, @NextWorkOrderVersion OUTPUT;
+
     SELECT @NextWOPlanQty = ISNULL(MesPlanQty, 0)
     FROM MFG_WO_List
     WHERE
@@ -2856,8 +2857,8 @@ AS
 
     --产生物料拉料动作.
     INSERT INTO MFG_WO_MTL_Pull 
-          ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion, NextWOPlanQty,  ActionTotalQty, ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,      PullUser )
-    VALUES( @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty,    @ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty, 'MES'    );
+          ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,  ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,      PullUser )
+    VALUES( @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty,      @ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty, 'MES'    );
     --(需要判断当前是否为全局"暂停/正常"标志, 此处涉及到异常恢复情况场景, 比较复杂, 时间关系不考虑)
 GO
 

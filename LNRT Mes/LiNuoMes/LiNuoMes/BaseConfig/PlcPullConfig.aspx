@@ -96,10 +96,10 @@
                 $("#areascontent").append(strListContent);
                 var Parames = data[i].Parames;
                 for (j in Parames) {
-                    if (j % 3 == 0) {                                
+                //    if (j % 3 == 0) {                                
                         trow = $("<tr></tr>");
                         $("#" + PLC_ID).append(trow);
-                    }
+                //    }
                     var PARAME_ID = "PARAME_" + Parames[j].ID;
                     var tdTitle = $('<td class="formTitle">(' + Parames[j].ParamDsca + ')料号:</td>');
                     var tdValue = $('<td><input id="' + PARAME_ID + '" type="text" class="form-control" value="' + Parames[j].ItemNumber + '"</td>');

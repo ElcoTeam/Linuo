@@ -40,11 +40,11 @@
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
-            $('#areascontent').height($(window).height() - 106);
+            $('#areascontent').height($(window).height() - 116);
             var areaheight = $("#areascontent").height();
             $(window).resize(function (e) {
                 window.setTimeout(function () {
-                    $('#areascontent').height($(window).height() - 106);
+                    $('#areascontent').height($(window).height() - 116);
               //      $('#areascontent').width($(window).width() - 20);
                     $('#gridTable0').setGridWidth(($('#areascontent').width()) - 10);
               //      $('#gridTable0').setGridHeight($('#areascontent').height() * 0.60);
@@ -61,7 +61,7 @@
                 url: "./GetSetMfg.ashx",
                 postData: { Action: "MFG_WO_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() * 0.60,
+                height: $('#areascontent').height() - 116,
                 width: $('#areascontent').width,
                 rowNum: -1,
                 jsonReader: {
@@ -227,14 +227,6 @@
                                 </tr>
                             </table>
                         </div>
-                        <div class="panel-body" style="text-align:left">
-                            <table class="form" border="0">
-                                <tr>
-                                    <th class="formTitle" style="width:180px;font-weight:bold;text-align:right">当日生产排程</th>                                    
-                                    <td class="formValue" style="text-align:right"></td>
-                                </tr>
-                            </table>
-                        </div>
                         <div class="rows" style="margin-top:0.5%; width:100%; overflow: hidden; ">
                               <div class="gridPanel">
                                    <table id="gridTable0"></table>
@@ -261,12 +253,12 @@
            }
        } 
        @media screen and (min-width: 1400px) { 
-          .formTitle {
-              font-size:30px;
-              width:300px;
-          } 
+           .formTitle {
+               font-size:15px;
+               width:200px;
+           } 
            #form1{
-               margin: 0px 0px 0px 5px;
+               margin:0px 0px 0px 5px;
            }
        } 
      </style>

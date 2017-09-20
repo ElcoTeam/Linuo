@@ -479,7 +479,10 @@
            .panel-color-green {
                background-color: #33ff33 !important;            
             }
-
+           .aa{
+               width:200px;
+               height:30px;
+           }
            #form1{
                margin: 0px;
            }

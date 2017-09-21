@@ -2911,7 +2911,27 @@ AS
     WHERE ProcessCode = @pProcessCode; --此处和物料拉动不同, 产量计数是基于PLC为单位的. 
                                        --现在觉得可以统一都使用PLC参数的ProcessCode, 也便于记忆和理解, 也许适用性更强些.
 
-    --记录一下节拍数据 ---- 开始
+
+    --如果订单已经完结, 则找到当下排程的下一个工单
+    --工序订单状态的变更, 已经不在此处来完成了, 其是使用CS(产品变更)完成信号的触发来进行和下一个订单翻转完成的机制[2017-09-21]
+    --IF ISNULL(@ProcessFinishQty, -1) = -1
+    --BEGIN
+    --    --如果工单为空, 则需要进行一下初始化
+    --    IF ISNULL(@WorkOrderNumber, '') = ''
+    --    BEGIN
+    --        SELECT @WorkOrderNumber = '', @WorkOrderVersion = -1;
+    --    END
+    --    EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT; 
+    --END
+
+
+    IF ISNULL(@WorkOrderNumber, '') = ''
+    BEGIN
+        --说明当下没有排程计划. 此时直接返回
+        RETURN;
+    END 
+
+    --记录节拍数据
     DECLARE @PreValue AS DATETIME;
     SELECT @PreValue = ISNULL(
             (
@@ -2921,37 +2941,10 @@ AS
             ),     
             GETDATE()
         );
+
     INSERT INTO Mes_Process_Beat_Record 
-           ( ProcessCode,                          TagName,   DisplayValue, BeatValue)
-    VALUES (ISNULL(@pProcessCode, @mProcessCode), @TagName, @TagFinishQty,  DATEDIFF(SECOND, @PreValue, GETDATE()));
-    --记录节拍数据 ---- 完成
-
-    --如果订单已经完结, 则找到当下排程的下一个工单
-    IF ISNULL(@ProcessFinishQty, -1) = -1
-    BEGIN
-        --如果工单为空, 则需要进行一下初始化
-        IF ISNULL(@WorkOrderNumber, '') = ''
-        BEGIN
-            SELECT @WorkOrderNumber = '', @WorkOrderVersion = -1;
-        END
-        EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT; 
-    END
-
-    ---------- 为了调试存储过程而临时加入的这一段记录中间值, 便于分析.
-    --INSERT INTO [dbo].[Log_QT_List] (ProcessCode, WorkOrderNumber, WorkOrderVersion, FinishQty, PlanQty, Comment)
-    --VALUES (@ProcessCode, @WorkOrderNumber, @WorkOrderVersion, 0, 0, 
-    --  'line code: 2548;'
-    --+ 'TagName:'   + @TagName  + ';'
-    --+ 'TagValue:'  + @TagValue + ';'
-    --);
-    --++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-    IF ISNULL(@WorkOrderNumber, '') = ''
-    BEGIN
-        --说明当下没有排程计划. 此时直接返回
-        RETURN;
-    END 
+           ( ProcessCode,                         WorkOrderNumber,  WorkOrderVersion,  TagName,  DisplayValue, BeatValue)
+    VALUES (ISNULL(@pProcessCode, @mProcessCode),@WorkOrderNumber, @WorkOrderVersion, @TagName, @TagFinishQty,  DATEDIFF(SECOND, @PreValue, GETDATE()));
 
     DECLARE @MesPlanQty       INT = 0; --原始订单计划数量
     DECLARE @PrsPlanQty       INT = 0; --Process计划数量
@@ -3072,7 +3065,7 @@ AS
 
      -- 需求文档描述原文文本: 一个订单的首个工序的操作计数等于1时(各PLC参数派发完成后，会调整操作计数为0)，则调整该订单状态为“生产进行中”
      -- 个人觉得: 产量为1的限制条件可以去掉, 这样可以防止生产线的某些漏操作, 造成系统一直没有更改工单状态的严重事故, 如果条件去除, 则可以给工单状态重大的延后的弥补机会.
-     --当下已经不使用这个作为订单的状态更改触发机制了, 其使用了MES Code的产生作为触发条件并进行工单状态修改.[2017-09-12]
+     -- 当下已经不使用这个作为订单的状态更改触发机制了, 其使用了MES Code的产生作为触发条件并进行工单状态修改.[2017-09-12]
      -- IF ( @WorkOrderStatus = 0 OR @WorkOrderStatus = 1 ) AND @StartFlag = 1 --AND @TagFinishQty = 1
      -- BEGIN
      --     UPDATE MFG_WO_List 
@@ -3099,8 +3092,9 @@ AS
          ,ParamValue       = @TagValue 
      WHERE 
           ProcessCode = @pProcessCode
-
+     
      --本工序产出完成
+     --工序订单状态的变更, 已经不在此处来完成了, 其是使用CS(产品变更)完成信号的触发来进行和下一个订单翻转完成的机制[2017-09-21]
      --IF @PrsPlanQty <= @FinishQty 
      --BEGIN
      --    UPDATE Mes_Process_List

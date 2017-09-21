@@ -532,11 +532,12 @@ CREATE TABLE [dbo].[Mes_Process_Beat_Record] (
     [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
     [UpdateTime]       DATETIME        NOT NULL DEFAULT GETDATE(),        --更新时间
     [ProcessCode]      VARCHAR  (50)   NOT NULL DEFAULT (''),             --工序编号
+    [WorkOrderNumber]  VARCHAR  (50)   NOT NULL DEFAULT (N''),            --订单编码-用以记录工位计数值记录值:当前正在进行生产的数据
+    [WorkOrderVersion] INT             NOT NULL DEFAULT (-1),             --订单版本-用以记录工位计数值记录值:当前正在进行生产的数据
     [TagName]          VARCHAR  (50)   NOT NULL,                          --PLC参数名称
     [DisplayValue]     INT             NOT NULL,                          --PLC参数数值: 产量示数
     [BeatValue]        INT             NOT NULL DEFAULT ('0')             --最近时间间隔值(Beat值:秒)
 );
-
 
 --客户信息表
 IF OBJECT_ID('Mes_Customer_List') is not null

@@ -289,15 +289,17 @@ IF OBJECT_ID('MFG_WIP_Data_Abnormal_Point') is not null
 DROP TABLE MFG_WIP_Data_Abnormal_Point;
 CREATE TABLE [dbo].[MFG_WIP_Data_Abnormal_Point] (
     [ID]                 INT             NOT NULL,                        --非系统生成
+    [ProcessCode]        NVARCHAR  (50)  NOT NULL DEFAULT (N''),          --工序编号
     [DisplayValue]       NVARCHAR  (50)  NOT NULL                         --显示内容
 );
 
-INSERT INTO MFG_WIP_Data_Abnormal_Point (ID, DisplayValue)
+INSERT INTO MFG_WIP_Data_Abnormal_Point (ID, ProcessCode, DisplayValue)
 VALUES
-(1, N'铜排气密性检测'),
-(2, N'板芯气密性检测'),
-(3, N'板芯装配'),
-(4, N'终检(预装压条)');
+(1, N'1060', N'铜排气密性检测'),
+(2, N'1090', N'板芯气密性检测'),
+(3, N'2100', N'板芯装配'),
+(4, N'3030', N'终检(预装压条)');
+
 
 --产线下线产品阶段表
 IF OBJECT_ID('MFG_WIP_Data_Abnormal_Product') is not null

@@ -2772,10 +2772,10 @@ AS
     UPDATE Mes_Plc_Parameters
     SET    
         WorkOrderNumber  = Mfg_WO_List.ErpWorkOrderNumber              
-        ,WorkOrderVersion = Mfg_WO_List.MesWorkOrderVersion            
+       ,WorkOrderVersion = Mfg_WO_List.MesWorkOrderVersion            
     FROM 
         Mes_PLC_Parameters
-        ,Mfg_WO_List
+       ,Mfg_WO_List
     WHERE 
         Mes_PLC_Parameters.ID = @ParamId
     AND Mfg_WO_List.ID        = @WoId;
@@ -2785,7 +2785,8 @@ GO
 ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_MT]
       @TagName                AS VARCHAR  (50)       
      ,@TagValue               AS VARCHAR  (50) = ''  
-     ,@ProcessCode            AS VARCHAR  (50) = ''  
+     ,@ProcessCode            AS VARCHAR  (50) = ''
+     ,@PullUser               AS NVARCHAR (50) = N'MES'  
 AS
     DECLARE @WorkOrderNumber  AS VARCHAR (50);
     DECLARE @WorkOrderVersion AS INT;
@@ -2905,8 +2906,8 @@ AS
 
     --产生物料拉料动作.
     INSERT INTO MFG_WO_MTL_Pull 
-          ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,  ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,      PullUser )
-    VALUES( @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty,      @ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty, 'MES'    );
+          ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,  ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,       PullUser )
+    VALUES( @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty,      @ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty, @PullUser );
     --(需要判断当前是否为全局"暂停/正常"标志, 此处涉及到异常恢复情况场景, 比较复杂, 时间关系不考虑)
 GO
 

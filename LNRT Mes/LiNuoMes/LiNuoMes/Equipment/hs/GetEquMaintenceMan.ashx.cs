@@ -90,7 +90,7 @@ namespace LiNuoMes.Equipment.hs
                     strJson += "}";
                     //if (j != pageSize + index - 1 && j != totalRecord - 1)
                     //{
-                    strJson += ",";
+                        strJson += ",";
                     //}
                 }
             }

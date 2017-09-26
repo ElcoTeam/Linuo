@@ -50,8 +50,18 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
-            GetGrid();
+
+            $("#btn_Search").click(function () {
+                if (!$("#content").hasClass("active")) {
+                    $("#content").addClass("active")
+
+                } else {
+                    $("#content").removeClass("active")
+
+                }
+            });
             CreateSelect();
+            fnDate();
         });
 
         //加载表格
@@ -60,10 +70,14 @@
             var $gridTable = $('#gridTable');
             $gridTable.jqGrid({
                 url: "GetReportInfo.ashx",
-                postData: { Action: "MaterialPullReport" },
+                postData: {
+                    Action: "MaterialPullReport",
+                    PullTimeStart: $("#PullTimeStart").val(),
+                    PullTimeEnd: $("#PullTimeEnd").val()
+                },
                 loadonce: true,
                 datatype: 'json',
-                height: $('#areascontent').height() *0.55,
+                height: $('#areascontent').height()-230,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
@@ -137,8 +151,7 @@
             });
 
             //查询事件
-            $("#btn_Search").click(function () {
-
+            $("#lr_btn_querySearch").click(function () {
                 var orderno = $("#orderno").val();
                 var materialCode = $("#materialcode").val();
                 var produce = $("#produce").val();
@@ -212,6 +225,67 @@
             ExportJQGridDataToExcel('#gridTable', '物料拉动报表');
         }
 
+        //初始化拉动时间
+        function fnDate() {
+            var xhr = null;
+            if (window.XMLHttpRequest) {
+                xhr = new window.XMLHttpRequest();
+            } else { // ie
+                xhr = new ActiveObject("Microsoft")
+            }
+            // 通过get的方式请求当前文件
+            xhr.open("get", "/");
+            xhr.send(null);
+            // 监听请求状态变化
+            xhr.onreadystatechange = function () {
+                var time = null,
+                    preDate = null,
+                    curDate = null;
+                if (xhr.readyState === 2) {
+                    var seperator1 = "-";
+                    // 获取请求头里的时间戳
+                    time = xhr.getResponseHeader("Date");
+                    //console.log(xhr.getAllResponseHeaders())
+                    curDate = new Date(time);
+                    preDate = new Date(curDate.getTime() - 24 * 60 * 60 * 1000);
+                    var month = curDate.getMonth() + 1;
+                    var premonth = preDate.getMonth() + 1;
+                    var strDate = curDate.getDate();
+                    var strDate1 = preDate.getDate();
+                    if (month >= 1 && month <= 9) {
+                        month = "0" + month;
+                    }
+                    if (strDate >= 0 && strDate <= 9) {
+                        strDate = "0" + strDate;
+                    }
+                    var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    var predate = preDate.getFullYear() + seperator1 + premonth + seperator1 + strDate1;
+                    $("#PullTimeStart").val(predate);
+                    $("#PullTimeEnd").val(currentdate);
+                    GetGrid();
+                }
+            }
+        }
+
+        //设置开始时间
+        function setStartTime() {
+            if ($("#PullTimeEnd").val() == "") {
+                dialogMsg("请选择结束日期", 0);
+            }
+            else {
+                $('#lr_btn_querySearch').trigger("click");
+            }
+        }
+
+        //设置结束时间
+        function setEndTime() {
+            if ($("#PullTimeStart").val() == "") {
+                dialogMsg("请选择开始日期", 0);
+            }
+            else {
+                $('#lr_btn_querySearch').trigger("click");
+            }
+        }
     </script>
 </head>
 <body data-spy="scroll" data-target=".navbar-example" id="body">
@@ -234,92 +308,64 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">物料拉动报表</strong></div>
-                        <div class="panel-body">
-                           <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">订单编号：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="orderno" placeholder="请输入订单编号">
-                                    </td>
-                                    <th class="formTitle">物料编号：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="materialcode" placeholder="请输入物料编号">
-                                    </td> 
-                                    <th class="formTitle">工序名称：</th>
-                                    <td class="formValue">
-                                         <select class="form-control" id="produce">
-                                         </select>
-                                    </td>
-                                    <th class="formTitle">发送情况：</th>
-                                    <td class="formValue">
-                                         <select class="form-control" id="Status">
-                                            <option value=''>请选择...</option>
-                                            <option value='0'>待响应</option>
-                                            <option value='1'>待确认</option>
-                                            <option value='2'>已完成</option>
-                                         </select>
-                                    </td>
-                                     <th class="formTitle">是否超时：</th>
-                                    <td class="formValue">
-                                         <select class="form-control" id="OTFlag">
-                                            <option value=''>请选择...</option>
-                                            <option value='1'>是</option>
-                                            <option value='0'>否</option>
-                                         </select>
-                                    </td>
-                                </tr>
-                                
-                                <tr>
-                                    <th class="formTitle">响应人：</th>
-                                    <td class="formValue">
-                                         <input type="text" class="form-control" id="ActionUser" placeholder="请输入响应人">
-                                    </td>
-                                    <th class="formTitle">确认人：</th>
-                                    <td class="formValue">
-                                         <input type="text" class="form-control" id="ConfirmUser" placeholder="请输入确认人">
-                                    </td>
-                                   <th class="formTitle">拉动时间：</th>
-                                    <td class="formValue" colspan="3">
-                                         <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                     
-                                   
-                                </tr>
-                               
-                                <tr>
-                                     
-                                    <th class="formTitle">响应时间：</th>
-                                    <td class="formValue" colspan="3">
-                                         <input id="ActionTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="ActionTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                    <th class="formTitle">确认时间：</th>
-                                    <td class="formValue" colspan="3">
-                                         <input id="ConfirmTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ConfirmTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="ConfirmTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ConfirmTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                    
-                                    <td class="formValue">
-                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+                        <div class="lr-layout-tool">
+                             <div class="lr-layout-tool-left">
+                                 <div class="lr-layout-tool-item">
+                                     <span class="formTitle">拉动时间：</span>
+                                     <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}',onpicked:setStartTime})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                     <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}',onpicked:setEndTime})" class="Wdate timeselect" /> 
+                                 </div>
+                                 <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                      <div id="multiple_condition_query" class="lr-query-wrap">
+                                          <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                              <i class="fa fa-search"></i>&nbsp;多条件查询
+                                          </div>
+                                          <div class="lr-query-content" style="width:800px;height:300px;" id="content">
+                                              <div class="lr-query-formcontent" style="display:block"></div>
+                                              <div class="lr-query-arrow">
+                                                  <div class="lr-query-inside"></div>
+                                              </div>
+                                              <div class="lr-query-content-bottom">
+                                                   <%--<a id="lr_btn_queryReset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>--%>
+                                                   <a id="lr_btn_querySearch" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                              </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                  <div class="lr-form-item-title" >订单编号：</div>                                                  <input type="text" class="form-control" id="orderno" placeholder="请输入订单编号">                                              </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                  <div class="lr-form-item-title" >物料编号：</div>                                                  <input type="text" class="form-control" id="materialcode" placeholder="请输入物料编号">                                              </div>                                              <div class=" col-xs-12 lr-form-item">                                                  <div class="lr-form-item-title" >工序名称：</div>                                                   <select class="form-control" id="produce"></select>                                              </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                  <div class="lr-form-item-title" >发送情况：</div>                                                    <select class="form-control" id="Status">
+                                                          <option value=''>请选择...</option>
+                                                          <option value='0'>待响应</option>
+                                                          <option value='1'>待确认</option>
+                                                          <option value='2'>已完成</option>
+                                                    </select>                                              </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                  <div class="lr-form-item-title" >是否超时：</div>                                                   <select class="form-control" id="OTFlag">
+                                                         <option value=''>请选择...</option>
+                                                         <option value='1'>是</option>
+                                                         <option value='0'>否</option>
+                                                   </select>                                              </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                     <div class="lr-form-item-title">响应人：</div>                                                     <input type="text" class="form-control" id="ActionUser" placeholder="请输入响应人">                                              </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                     <div class="lr-form-item-title">确认人：</div>                                                     <input type="text" class="form-control" id="ConfirmUser" placeholder="请输入确认人">                                              </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">响应时间：</div>                                                    <input id="ActionTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate form-control" style="display:inline;" />&nbsp;至&nbsp;
+                                                    <input id="ActionTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate form-control" style="display:inline;"/>                                                </div>
+                                               <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">确认时间：</div>                                                    <input id="ConfirmTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate form-control" style="display:inline;" />&nbsp;至&nbsp;
+                                                    <input id="ConfirmTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate form-control" style="display:inline;"/>                                                </div>
+                                          </div>
+                                      </div>
+                                 </div>
+                              </div>
+                              <div class=" lr-layout-tool-right">
+                                   <div class="btn-group">
+                                        <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
+                                        <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
+                                   </div>
+                               </div>
+                           </div>
+                       
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="titlePanel">
-        <div class="toolbar">
-            <div class="btn-group">
-                <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
-                <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
-            </div>
-         </div>
-         </div>
-         <div class="ui-report" style="margin-top:0.5%; overflow: hidden; ">
+         <div class="ui-report" style="margin-top:3.5%; overflow: hidden; ">
               <div class="gridPanel" id="gridPanel">
                   <div class="printArea">
                       <table id="gridTable"></table>                      
@@ -327,20 +373,7 @@
               </div>
          </div>
     </div>
-    <style>
-      .timeselect {
-            width: 200px;
-            height: 35px;
-            font-size: 25px;
-      }
-     .formTitle{
-          width: 150px;
-      }
-      .form-control{
-          width: 200px;
-      }
-    </style>
-     
+   
 </body>
 </html>
 

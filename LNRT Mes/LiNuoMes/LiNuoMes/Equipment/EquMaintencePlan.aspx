@@ -46,6 +46,17 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
+
+            $("#btn_Search").click(function () {
+                if (!$("#content").hasClass("active")) {
+                    $("#content").addClass("active")
+
+                } else {
+                    $("#content").removeClass("active")
+
+                }
+            });
+
             GetGrid();
             CreateSelect();
         });
@@ -57,27 +68,27 @@
             $gridTable.jqGrid({
                 url: "hs/GetEquMaintencePlan.ashx",
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() -200,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '保养规范编号', name: 'PmSpecCode', hidden: true, sortable: false },
                     {
-                        label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 200, align: 'left', sortable: false
+                        label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 150, align: 'left', sortable: false
                     },
                     { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 200, align: 'left', sortable: false },
                     { label: '保养规范名称', name: 'PmSpecName', index: 'PmSpecName', width: 200, align: 'left', sortable: false },
-                    { label: '保养类型', name: 'PmLevel', index: 'PmLevel', width: 100, align: 'left', sortable: false },
+                    { label: '保养类型', name: 'PmLevel', index: 'PmLevel', width: 80, align: 'left', sortable: false },
                     {
-                        label: '保养规范', name: 'PmSpecFile', index: 'PmSpecFile', width: 250, align: 'left', sortable: false,
+                        label: '保养规范', name: 'PmSpecFile', index: 'PmSpecFile', width: 220, align: 'left', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return '<a id="btn_Search1" class="btn btn-link" onclick=\"btn_look(\'' + rowObject[1] + '\',\'' + rowObject[5] + '\')\">' + rowObject[3] + '操作规范</a>';
 
                         }
                     },
-                    { label: '保养计划编号', name: 'PmPlanCode', index: 'PmPlanCode', width: 200, align: 'left', sortable: false },
-                    { label: '保养计划名称', name: 'PmPlanName', index: 'PmPlanName', width: 300, align: 'left', sortable: false },
+                    { label: '保养计划编号', name: 'PmPlanCode', index: 'PmPlanCode', width: 120, align: 'left', sortable: false },
+                    { label: '保养计划名称', name: 'PmPlanName', index: 'PmPlanName', width: 230, align: 'left', sortable: false },
                     {
-                        label: '首次保养日期', name: 'PmFirstDate', index: 'PmFirstDate', width: 200, align: 'left', sortable: false,
+                        label: '首次保养日期', name: 'PmFirstDate', index: 'PmFirstDate', width: 150, align: 'left', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             if (rowObject[9] == '1900-01-01') {
                                 return "";
@@ -86,10 +97,10 @@
                                 return rowObject[9];
                         }
                     },
-                    { label: '最近一次保养日期', name: 'PmFinishDate', index: 'PmFinishDate', width: 200, align: 'left', sortable: false },
-                    { label: '已保养次数', name: 'PmRecord', index: 'PmRecord', width: 200, align: 'left' },
+                    { label: '最近一次保养日期', name: 'PmFinishDate', index: 'PmFinishDate', width: 150, align: 'left', sortable: false },
+                    { label: '已保养次数', name: 'PmRecord', index: 'PmRecord', width: 100, align: 'left' },
                     {
-                        label: '操作', name: '', index: '', width: 300, align: 'center', sortable: false,
+                        label: '操作', name: '', index: '', width: 200, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return '<span onclick=\"btn_search(\'' + rowObject[0] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\"><i class="fa fa-eye"></i>查看</span>' + '<span onclick=\"btn_edit(\'' + rowObject[0] + '\')\" class=\"label label-success\" style=\"cursor: pointer;margin-left:10px;\"><i class="fa fa-edit"></i>修改</span>' + '<span onclick=\"btn_delete(\'' + rowObject[0] + '\')\" class=\"label label-success\" style=\"cursor: pointer;margin-left:10px;\"><i class="fa fa-trash-o"></i>删除</span>';
                         }
@@ -115,7 +126,7 @@
             });
 
             //查询事件
-            $("#btn_Search").click(function () {
+            $("#lr_btn_querySearch").click(function () {
                 var processName = $("#ProcessName").val();
                 var deviceName = $("#DeviceName").val();
                 var pmSpecName = $("#PmSpecName").val();
@@ -133,6 +144,9 @@
             //        $('#btn_Search').trigger("click");
             //    }
             //});
+            $("#ProcessName").change(function () {
+                $("#lr_btn_querySearch").trigger("click");
+            });
         }
 
         //构造select
@@ -329,50 +343,46 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">设备保养计划管理</strong></div>
-                        <div class="panel-body">
-                            <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">工序名称：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="ProcessName">
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">设备名称：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">
-                                    </td>
-                                     <td class="formValue">
-                                          <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>  
-                                     </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">保养规范名称：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="PmSpecName">
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">保养计划编号：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="PmPlanCode">
-                                       </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">保养计划名称：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="PmPlanName" placeholder="请输入保养计划名称">
-                                    </td>
-                                    
-                                </tr>
-                            </table>
-                        </div>
+                        <div class="lr-layout-tool">
+                            <div class="lr-layout-tool-left">
+                                <div class="lr-layout-tool-item">
+                                    <span class="formTitle">工序名称：</span>
+                                     <select class="form-control" id="ProcessName"></select>
+                                </div>
+                                <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                     <div id="multiple_condition_query" class="lr-query-wrap">
+                                         <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                             <i class="fa fa-search"></i>&nbsp;多条件查询
+                                         </div>
+                                         <div class="lr-query-content" style="width:400px;height:220px;" id="content">
+                                             <div class="lr-query-formcontent" style="display:block"></div>
+                                             <div class="lr-query-arrow">
+                                                 <div class="lr-query-inside"></div>
+                                             </div>
+                                             <div class="lr-query-content-bottom">
+                                                  <%--<a id="lr_btn_queryReset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>--%>
+                                                  <a id="lr_btn_querySearch" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                             </div>
+                                              <div class=" col-xs-12 lr-form-item">                                                 <div class="lr-form-item-title" style="width:120px;">设备名称：</div>                                                 <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称" style="margin-left:30px;">                                             </div>
+                                             <div class=" col-xs-12 lr-form-item">                                                 <div class="lr-form-item-title" style="width:120px;">保养规范名称：</div>                                                 <input type="text" class="form-control" id="PmSpecName" placeholder="请输入保养规范名称" style="margin-left:30px;">                                             </div>
+                                             <div class=" col-xs-12 lr-form-item">                                                 <div class="lr-form-item-title" style="width:120px;">保养计划编号：</div>                                                 <select class="form-control" id="PmPlanCode" style="margin-left:30px;"></select>                                             </div>
+                                             <div class=" col-xs-12 lr-form-item">                                                 <div class="lr-form-item-title" style="width:120px;">保养计划名称：</div>                                                 <input type="text" class="form-control" id="PmPlanName" placeholder="请输入保养计划名称" style="margin-left:30px;">                                             </div>
+                                         </div>
+                                     </div>
+                                </div>
+                             </div>
+                             <div class=" lr-layout-tool-right">
+                                  <div class="btn-group">
+                                      <a id="btn_Add" class="btn btn-default" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>  
+                                  </div>
+                                 </div>
+                          </div>
                     </div>
                 </div>
             </div>
         </div>
 
-         <div class="rows" style="margin-top:0.5%; overflow: hidden; ">
+         <div class="rows" style="margin-top:3.5%; overflow: hidden; ">
              
               <div class="gridPanel">
                    <table id="gridTable"></table>

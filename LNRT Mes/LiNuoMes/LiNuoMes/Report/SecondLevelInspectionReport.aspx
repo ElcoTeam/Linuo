@@ -220,7 +220,7 @@
                         <div class="panel-heading">
                             <table id="panelheading" border="0" style="width:100%">
                                 <tr>
-                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">每日生产完成率报表</strong></th>
+                                    <th><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">二级点检表</strong></th>
                                     <td></td>
                                 </tr>
                             </table>
@@ -230,7 +230,7 @@
                                 <tr>
                                     
                                     <th class="formTitle" >查询日期：</th>
-                                    <td class="formValue" colspan="2" >
+                                    <td class="formValue" >
                                         <input id="StartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'EndTime\')}'})"  class="Wdate timeselect" isvalid="yes" checkexpession="NotNull" />&nbsp;至&nbsp;
                                         <input id="EndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})"  class="Wdate timeselect" isvalid="yes" checkexpession="NotNull" /> 
                                     </td>
@@ -279,6 +279,13 @@
          </div>
          </div>
     </div>
+     <style>
+         .timeselect {
+            width: 150px;
+            height: 35px;
+            font-size: 20px;
+         }
+    </style>
 </body>
 </html>
 

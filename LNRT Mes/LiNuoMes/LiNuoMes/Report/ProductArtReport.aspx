@@ -63,18 +63,18 @@
                 postData: { Action: "ProductArtReport" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height()-280,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
                     { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 200, align: 'center' },
-                    { label: '生产工艺', name: 'ProductArt', index: 'ProductArt', width: 100, align: 'center' },
+                    { label: '生产工艺', name: 'ProductArt', index: 'ProductArt', width: 200, align: 'center' },
                     { label: '值', name: 'Value', index: 'Value', width: 100, align: 'center' },
                     {
-                        label: '记录时间', name: 'Time', index: 'Time', width: 150, align: 'center'
+                        label: '记录时间', name: 'Time', index: 'Time', width: 250, align: 'center'
                     },
                     { label: '生产订单', name: 'WorkOrder', index: 'WorkOrder', width: 200, align: 'left' },
-                    { label: 'RFID码', name: 'RFID', index: 'RFID', width: 200, align: 'left' },
+                    { label: 'MES码', name: 'RFID', index: 'RFID', width: 200, align: 'left' },
                 ],
                 viewrecords: true,
                 rowNum: "10000",
@@ -168,9 +168,6 @@
                                     <td class="formValue">
                                         <input type="text" class="form-control" id="ProductArt" placeholder="请输入设备名称" isvalid="yes" checkexpession="NotNull">
                                     </td>
-                                </tr>
-                               
-                                 <tr>
                                     <th class="formTitle">查询日期</th>
                                     <td class="formValue" colspan="2">
                                           <input id="StartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'EndTime\')}'})"  class="Wdate timeselect" />&nbsp;至&nbsp;
@@ -179,6 +176,10 @@
                                     <td class="formValue">
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
                                     </td> 
+                                </tr>
+                               
+                                 <tr>
+                                   
                                 </tr>
                             </table>
                         </div>
@@ -204,9 +205,9 @@
     </div>
     <style>
          .timeselect {
-            width: 250px;
+            width: 150px;
             height: 35px;
-            font-size: 25px;
+            font-size: 20px;
          }
     </style>
 </body>

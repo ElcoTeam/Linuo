@@ -51,25 +51,30 @@
          });
 
          function InitialPage() {
-             $.ajax({
-                 url: "UserAttendenceEdit.aspx/GetAttendenceInfo",
-                 data: "{DATE:'" + date + "'}",
-                 type: "post",
-                 dataType: "json",
-                 contentType: "application/json;charset=utf-8",
-                 success: function (data) {
-                     if (data == null) return false;
-                     $.each(data.d, function (i, row) {
-                         $("#AttendanceNum").val(row.AttendenceNum);
-                         $("#WorkHours").val(row.WorkHours);
-                         $("#TotalAttendenceHours").val(row.TotalAttendenceHours.trim());
-                         $("#ActiveWorkHours").val(row.ActiveWorkHours.trim());
-                     });
-                     Loading(false);
-                 }, beforeSend: function () {
-                     Loading(true);
-                 }
-             });
+             //$.ajax({
+             //    url: "UserAttendenceEdit.aspx/GetAttendenceInfo",
+             //    data: "{DATE:'" + date + "'}",
+             //    type: "post",
+             //    dataType: "json",
+             //    contentType: "application/json;charset=utf-8",
+             //    success: function (data) {
+             //        if (data == null) return false;
+             //        $.each(data.d, function (i, row) {
+             //            $("#AttendanceNum").val(row.AttendenceNum);
+             //            $("#WorkHours").val(row.WorkHours);
+             //            $("#TotalAttendenceHours").val(row.TotalAttendenceHours.trim());
+             //            $("#ActiveWorkHours").val(row.ActiveWorkHours.trim());
+             //        });
+             //        Loading(false);
+             //    }, beforeSend: function () {
+             //        Loading(true);
+             //    }
+             //});
+             var $gridtable = window.parent.$('#gridTable');
+             $("#AttendanceNum").val($gridtable.jqGridRowValue("AttendanceNum"));
+             $("#WorkHours").val($gridtable.jqGridRowValue("WorkHours"));
+             $("#TotalAttendenceHours").val($gridtable.jqGridRowValue("TotalAttendenceHours"));
+             $("#ActiveWorkHours").val($gridtable.jqGridRowValue("ActiveWorkHours"));
          }
 
          //保存表单

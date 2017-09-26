@@ -58,9 +58,19 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
-            //GetGrid();
+
+            $("#btn_Search").click(function () {
+                if (!$("#content").hasClass("active")) {
+                    $("#content").addClass("active")
+
+                } else {
+                    $("#content").removeClass("active")
+
+                }
+            });
+            
             CreateSelect();
-            //GetChart();
+           
             fnDate();
         });
 
@@ -74,7 +84,7 @@
                 postData: { Action: "EquAlarmReport" },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() *0.2,
+                height: $('#areascontent').height() -600,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
@@ -109,7 +119,7 @@
 
            
             //查询事件
-            $("#btn_Search").click(function () {
+            $("#lr_btn_querySearch").click(function () {
                 processName = $("#ProcessName").val();
                 deviceName = $("#DeviceName").val();
                 DealWithResult = $("#DealWithResult").val();
@@ -370,68 +380,57 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">设备报警管理</strong></div>
-                        <div class="panel-body">
-                            <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">工序名称：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="ProcessName">
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">设备名称：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">
-                                    </td>
-                                    <th class="formTitle">报警时间：</th>
-                                    <td class="formValue" colspan="2">
-                                          <input id="AlarmStartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'AlarmEndTime\')}'})" class="Wdate timeselect"  readonly/>&nbsp;至&nbsp;
-                                          <input id="AlarmEndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'AlarmStartTime\')}'})" class="Wdate timeselect"  readonly /> 
-                                    </td>
-                                                              
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">处理情况：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="DealWithResult">
-                                           <option value=''>请选择...</option>
-                                           <option value='R'>已处理</option>
-                                           <option value='N'>未处理</option>
-                                       </select>
-                                    </td>   
-                                    <th class="formTitle">报警项：</th>
-                                    <td class="formValue">
-                                        <select class="form-control" id="AlarmItem">
-                                           <option value=''>请选择...</option>
-                                           <option value='报警'>报警</option>
-                                           <option value='物料拉动'>物料拉动</option>
-                                       </select>   
-                                    </td>     
-                                    <th class="formTitle">处理完成时间：</th>
-                                    <td class="formValue" colspan="2">
-                                          <input id="DealWithStartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'DealWithEndTime\')}'})" class="Wdate timeselect" readonly />&nbsp;至&nbsp;
-                                          <input id="DealWithEndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'DealWithStartTime\')}'})" class="Wdate timeselect" readonly /> 
-                                    </td> 
-                                    <td class="formValue">
-                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                    </td> 
-                                </tr>
-                                
-                            </table>
-                        </div>
+                         <div class="lr-layout-tool">
+                               <div class="lr-layout-tool-left">
+                                   <div class="lr-layout-tool-item">
+                                       <span class="formTitle">报警时间：</span>
+                                       <input id="AlarmStartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'AlarmEndTime\')}'})" class="Wdate timeselect"  readonly/>&nbsp;至&nbsp;
+                                       <input id="AlarmEndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'AlarmStartTime\')}'})" class="Wdate timeselect"  readonly /> 
+                                   </div>
+                                   <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                        <div id="multiple_condition_query" class="lr-query-wrap">
+                                            <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                                <i class="fa fa-search"></i>&nbsp;多条件查询
+                                            </div>
+                                            <div class="lr-query-content" style="width:800px;height:200px;" id="content">
+                                                <div class="lr-query-formcontent" style="display:block"></div>
+                                                <div class="lr-query-arrow">
+                                                    <div class="lr-query-inside"></div>
+                                                </div>
+                                                <div class="lr-query-content-bottom">
+                                                     <%--<a id="lr_btn_queryReset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>--%>
+                                                     <a id="lr_btn_querySearch" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">工序名称：</div>                                                     <select class="form-control" id="ProcessName" style="margin-left:30px;"></select>                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">设备名称：</div>                                                    <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称" style="margin-left:30px;">                                                </div>                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">处理情况：</div>                                                    <select class="form-control" id="DealWithResult" style="margin-left:30px;">
+                                                           <option value=''>请选择...</option>
+                                                           <option value='R'>已处理</option>
+                                                           <option value='N'>未处理</option>
+                                                    </select>                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">报警项：</div>                                                    <select class="form-control" id="AlarmItem" style="margin-left:30px;">
+                                                           <option value=''>请选择...</option>
+                                                           <option value='报警'>报警</option>
+                                                           <option value='物料拉动'>物料拉动</option>
+                                                    </select>                                                 </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">处理完成时间：</div>                                                    <input id="DealWithStartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'DealWithEndTime\')}'})" class="Wdate form-control" readonly  style="margin-left:30px;display:inline;"/>&nbsp;至&nbsp;
+                                                    <input id="DealWithEndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'DealWithStartTime\')}'})" class="Wdate form-control" readonly  style="display:inline;"/>                                                 </div>
+                                            </div>
+                                        </div>
+                                   </div>
+                                </div>
+                                <div class=" lr-layout-tool-right">
+                                     <div class="btn-group">
+                                          <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
+                                          <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
+                                     </div>
+                                 </div>
+                           </div>
                     </div>
                 </div>
             </div>
         </div>
-
-         <div class="titlePanel">
-        <div class="toolbar">
-            <div class="btn-group">
-                <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
-                <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
-            </div>
-         </div>
-         </div>
-         <div class="ui-report" style="margin-top:0.5%; overflow: hidden; ">
+        
+        <div class="ui-report" style="margin-top:3.5%; overflow: hidden; ">
               <div class="gridPanel" id="gridPanel">
                   <div class="printArea">
                       <table id="gridTable"></table>                      

@@ -491,7 +491,7 @@
                                         <select class="form-control" id="DeviceName"></select>
                                     </td>
                                     <th class="formTitle" >查询日期：</th>
-                                    <td class="formValue" colspan="2" >
+                                    <td class="formValue" >
                                         <input  id="YEAR" type="text"  class="Wdate timeselect"  onfocus="WdatePicker({dateFmt:'yyyy-MM'})" readonly/>
                                     </td>
                                     <td class="formValue">                                     
@@ -534,12 +534,13 @@
          </div>
          </div>
     </div>
-     <%--<style>
-      
-      .form-control{
-          width: 250px;
-      }
-   </style> --%>
+     <style>
+         .timeselect {
+            width: 150px;
+            height: 35px;
+            font-size: 20px;
+         }
+    </style>
 </body>
 </html>
 

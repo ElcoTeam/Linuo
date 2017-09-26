@@ -62,7 +62,7 @@
             $gridTable.jqGrid({
                 url: "hs/GetAttendenceInfo.ashx",
                 datatype: "local",
-                height: $('#areascontent').height() *0.74,
+                height: $('#areascontent').height() -200,
                 colModel: [
                     
                     { label: '日期', name: 'Date', index: 'Date', width: 100, align: 'center',sortable: false },
@@ -134,7 +134,8 @@
             if (date >= 1 && date <= 9) {
                 date = "0" + date;
             }
-            var datetime=$("#DATE").val()+'-'+date;
+            var datetime = $("#DATE").val() + '-' + date;
+           
             dialogOpen({
                 id: "Form", 
                 title: '修改出勤信息:' + datetime,
@@ -142,7 +143,7 @@
                 width: "400px",
                 height: "300px",
                 callBack: function (iframeId) {
-                    top.frames[iframeId].AcceptClick($("#gridTable"));
+                    top.frames[iframeId].AcceptClick();
                 }
             });
         }

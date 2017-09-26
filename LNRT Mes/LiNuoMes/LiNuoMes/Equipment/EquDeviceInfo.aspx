@@ -45,6 +45,17 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
+
+            $("#btn_Search").click(function () {
+                if (!$("#content").hasClass("active")) {
+                    $("#content").addClass("active")
+
+                } else {
+                    $("#content").removeClass("active")
+
+                }
+            });
+
             GetGrid();
             CreateSelect();
         });
@@ -56,7 +67,7 @@
             $gridTable.jqGrid({
                 url: "hs/GetEquDeviceInfo.ashx",
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() -200,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {
@@ -106,7 +117,7 @@
             });
 
             //查询事件
-            $("#btn_Search").click(function () {
+            $("#lr_btn_querySearch").click(function () {
                 var processName = $("#ProcessName").val();
                 var deviceCode = $("#DeviceCode").val();
                 var deviceName = $("#DeviceName").val();
@@ -122,6 +133,9 @@
             //        $('#btn_Search').trigger("click");
             //    }
             //});
+            $("#ProcessName").change( function (){
+                $("#lr_btn_querySearch").trigger("click");
+            });
         }
 
         //构造select
@@ -249,7 +263,36 @@
                 dialogMsg("您还没有上传文档", 0);
                 return false;
             }
-            window.open("../Equipment/hs/GetEquDeviceCRUD.ashx?Action=PartsFileCHECK&objID=" + objID);
+            //window.open("../Equipment/hs/GetEquDeviceCRUD.ashx?Action=PartsFileCHECK&objID=" + objID);
+            $.ajax({
+                url: "../Equipment/hs/GetEquDeviceCRUD.ashx",
+                data: { "Action": "PartsFileCHECK", "objID": objID },
+                type: "post",
+                datatype: "json",
+                success: function (result) {
+                    if(result!="false"){
+                        dialogOpen({
+                            id: "UploadifyForm",
+                            title: '查看设备硬件组成明细',
+                            //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                            url: '../Equipment/FileSearchDialog.aspx?folderId=' + result,
+                            width: "800px",
+                            height: "800px",
+                            btn: null
+                        });
+                    }
+                    else {
+                        dialogMsg("未能找到文件",-1);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    Loading(false);
+                    dialogMsg(errorThrown, -1);
+                },
+                complete: function () {
+                    Loading(false);
+                }
+            });
         }
 
         //查看操作说明
@@ -262,7 +305,36 @@
                 dialogMsg("您还没有上传文档", 0);
                 return false;
             }
-            window.open("../Equipment/hs/GetEquDeviceCRUD.ashx?Action=ManuCHECK&objID=" + objID);
+            // window.open("../Equipment/hs/GetEquDeviceCRUD.ashx?Action=ManuCHECK&objID=" + objID);
+            $.ajax({
+                url: "../Equipment/hs/GetEquDeviceCRUD.ashx",
+                data: { "Action": "ManuCHECK", "objID": objID },
+                type: "post",
+                datatype: "json",
+                success: function (result) {
+                    if (result != "false") {
+                        dialogOpen({
+                            id: "UploadifyForm",
+                            title: '查看设备操作说明书',
+                            //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                            url: '../Equipment/FileSearchDialog.aspx?folderId=' + result,
+                            width: "800px",
+                            height: "800px",
+                            btn: null
+                        });
+                    }
+                    else {
+                        dialogMsg("未能找到文件", -1);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    Loading(false);
+                    dialogMsg(errorThrown, -1);
+                },
+                complete: function () {
+                    Loading(false);
+                }
+            });
         }
 
         //下载硬件组成
@@ -315,44 +387,49 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">设备信息管理</strong></div>
-                        <div class="panel-body">
-                            <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">工序名称：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="ProcessName">
-                                         </select>
-                                    </td>
-                                    <th class="formTitle">设备编号：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DeviceCode" placeholder="请输入设备编号">
-                                    </td>
-                                     <td class="formValue">
-                                          <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>  
-                                     </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">设备名称：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">
-                                    </td>
-                                    
-                                </tr>
-                            </table>
-                        </div>
+                        <div class="lr-layout-tool">
+                               <div class="lr-layout-tool-left">
+                                   <div class="lr-layout-tool-item">
+                                       <span class="formTitle">工序名称：</span>
+                                        <select class="form-control" id="ProcessName"></select>
+                                   </div>
+                                   <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                        <div id="multiple_condition_query" class="lr-query-wrap">
+                                            <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                                <i class="fa fa-search"></i>&nbsp;多条件查询
+                                            </div>
+                                            <div class="lr-query-content" style="width:400px;height:150px;" id="content">
+                                                <div class="lr-query-formcontent" style="display:block"></div>
+                                                <div class="lr-query-arrow">
+                                                    <div class="lr-query-inside"></div>
+                                                </div>
+                                                <div class="lr-query-content-bottom">
+                                                     <%--<a id="lr_btn_queryReset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>--%>
+                                                     <a id="lr_btn_querySearch" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                                </div>
+                                                 <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">设备编号：</div>                                                    <input type="text" class="form-control" id="DeviceCode" placeholder="请输入设备编号">                                                </div>                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">设备名称：</div>                                                    <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">                                                </div>
+                                            </div>
+                                        </div>
+                                   </div>
+                                </div>
+                                <div class=" lr-layout-tool-right">
+                                     <div class="btn-group">
+                                         <a id="btn_Add" class="btn btn-default" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>  
+                                     </div>
+                                 </div>
+                           </div>
+             
                     </div>
                 </div>
             </div>
         </div>
 
-         <div class="rows" style="margin-top:0.5%; overflow: hidden; ">
-             
-              <div class="gridPanel">
-                   <table id="gridTable"></table>
-                   <div id="gridPager"></div>
-              </div>
-         </div>
+        <div class="rows" style="margin-top:3.5%; overflow: hidden; ">   
+             <div class="gridPanel">
+                  <table id="gridTable"></table>
+                  <div id="gridPager"></div>
+             </div>
+        </div>
     </div>
 
 </body>

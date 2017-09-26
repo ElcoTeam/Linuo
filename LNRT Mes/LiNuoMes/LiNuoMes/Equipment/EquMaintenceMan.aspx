@@ -46,12 +46,19 @@
                 }, 200);
             });
 
+            $("#spn_Search").click(function () {
+                if (!$("#content").hasClass("active")) {
+                    $("#content").addClass("active")
 
-            GetGrid();
+                } else {
+                    $("#content").removeClass("active")
+
+                }
+            });
+            //GetGrid();
+            fnDate();
             CreateSelect();
-
             SelectCurrentMaintence();
-
             //一级保养 执行维护
             $("#btn_FirstLevel").click(function () {
                
@@ -132,7 +139,11 @@
             $gridTable.jqGrid({
                 url: "hs/GetEquMaintenceMan.ashx",
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                postData: {
+                    PmStartDate: $("#PmStartDate").val(),
+                    PmFinishDate: $("#PmFinishDate").val()
+                },
+                height: $('#areascontent').height() -200,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '保养规范编号', name: 'PmSpecCode', hidden: true },
@@ -141,7 +152,7 @@
                     },
                     { label: '保养类别', name: 'PmType', index: 'PmType', width: 100, align: 'left', sortable: false },
                     { label: '保养类型', name: 'PmLevel', index: 'PmLevel', width: 100, align: 'left', sortable: false },
-                    { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 150, align: 'left', sortable: false },
+                    { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 200, align: 'left', sortable: false },
                     { label: '保养规范名称', name: 'PmSpecName', index: 'PmSpecName', width: 200, align: 'left', sortable: false },
                     //{
                     //    label: '保养规范', name: 'PmSpecFile', index: 'PmSpecFile', width: 100, align: 'center', sortable: false,
@@ -150,7 +161,7 @@
                     //    }
                     //},
                    
-                    { label: '保养计划名称', name: 'PmPlanName', index: 'PmPlanName', width: 200, align: 'left', sortable: false },
+                    { label: '保养计划名称', name: 'PmPlanName', index: 'PmPlanName', width: 250, align: 'left', sortable: false },
                     {
                         label: '计划内次数', name: 'PmPlanCount', index: 'PmPlanCount', width: 100, align: 'left', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
@@ -195,6 +206,7 @@
                 ],
                 viewrecords: true,
                 rowNum: 30,
+                rownumWidth: 50,
                 rowList: [30, 50, 100],
                 pager: "#gridPager",
                 sortname: 'PmType asc',
@@ -212,10 +224,9 @@
             });
 
             //查询事件
-            $("#btn_Search").click(function () {
+            $("#lr_btn_querySearch").click(function () {
                 var processName = $("#ProcessName").val();
                 var deviceName = $("#DeviceName").val();
-
                 var PmType = $("#PmType").val();
                 var PmLevel = $("#PmLevel").val();
                 var Status = $("#Status").val(); 
@@ -223,9 +234,7 @@
                 var PmPlanName= $("#PmPlanName").val(); 
                 var PmStartDate= $("#PmStartDate").val(); 
                 var PmFinishDate = $("#PmFinishDate").val();
-                //var PmFinishDateStart = $("#PmFinishDateStart").val();
-                //var PmFinishDateEnd = $("#PmFinishDateEnd").val();
-
+               
                 $gridTable.jqGrid('setGridParam', {
                     postData: {
                         ProcessName: processName,
@@ -431,7 +440,28 @@
             });
         }
 
-        //登陆时间
+        //设置开始时间
+        function setStartTime(){
+            if ($("#PmFinishDate").val() == "")
+            {
+                dialogMsg("请选择结束日期",0);
+            }
+            else
+            {
+                $('#lr_btn_querySearch').trigger("click");
+            }
+        }
+
+        //设置结束时间
+        function setEndTime() {
+            if ($("#PmStartDate").val() == "") {
+                dialogMsg("请选择开始日期", 0);
+            }
+            else {
+                $('#lr_btn_querySearch').trigger("click");
+            }
+        }
+        //设置默认时间选择
         function fnDate() {
             var xhr = null;
             if (window.XMLHttpRequest) {
@@ -446,14 +476,13 @@
             xhr.onreadystatechange = function () {
                 var time = null,
                     curDate = null;
-
                 if (xhr.readyState === 2) {
                     var seperator1 = "-";
-
                     // 获取请求头里的时间戳
                     time = xhr.getResponseHeader("Date");
                     //console.log(xhr.getAllResponseHeaders())
                     curDate = new Date(time);
+                    //当前时间
                     var month = curDate.getMonth() + 1;
                     var strDate = curDate.getDate();
                     if (month >= 1 && month <= 9) {
@@ -463,7 +492,9 @@
                         strDate = "0" + strDate;
                     }
                     var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
-                    return currentdate;
+                    $("#PmStartDate").val(currentdate);
+                    $("#PmFinishDate").val(currentdate);
+                    GetGrid();
                 }
             }
         }
@@ -490,89 +521,71 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">设备保养管理</strong></div>
-                        
-                        <div class="panel-body" style="border: 1px solid #e6e6e6;">
-                            <table class="form" border="0">
-                                <tr>                                                
-                                    <td class="formValue" style="text-align:right">                                           
-                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建计划外保养</a>  
-                                         <a id="btn_FirstLevel" class="btn btn-primary"><i class="fa fa-edit"></i>一级保养维护</a>                        
-                                         <a id="btn_SecondLevel" class="btn btn-primary"><i class="fa fa-edit"></i>二级保养维护</a>  
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="panel-body">
-                            <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">工序名称：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="ProcessName">
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">设备名称：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">
-                                    </td>
-                                    <th class="formTitle">保养类别：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="PmType">
-                                           <option value=''>请选择...</option>
-                                           <option value='计划内保养'>计划内保养</option>
-                                           <option value='计划外保养'>计划外保养</option>
-                                       </select>
-                                   </td>                                    
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">保养类型：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="PmLevel">
-                                           <option value=''>请选择...</option>
-                                           <option value='一级保养'>一级保养</option>
-                                           <option value='二级保养'>二级保养</option>
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">执行情况：</th>
-                                    <td class="formValue">
-                                        <select class="form-control" id="Status">
-                                           <option value=''>请选择...</option>
-                                           <option value='已完成'>已完成</option>
-                                           <option value='未完成'>未完成</option>
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">保养规范名称：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="PmSpecName" placeholder="请输入保养规范名称">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">保养计划名称：</th>
-                                    <td class="formValue">
-                                       <input type="text" class="form-control" id="PmPlanName" placeholder="请输入保养计划名称">
-                                    </td>
-                                     <th class="formTitle">计划起止日期：</th>
-                                    <td class="formValue" colspan="3">
-                                          <input id="PmStartDate"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PmFinishDate\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                          <input id="PmFinishDate"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PmStartDate\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+                         <div class="lr-layout-tool">
+                               <div class="lr-layout-tool-left">
+                               <div class="lr-layout-tool-item">
+                                       <span class="formTitle">计划起止日期：</span>
+                                       <input id="PmStartDate"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PmFinishDate\')}',onpicked:setStartTime})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                       <input id="PmFinishDate"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PmStartDate\')}',onpicked:setEndTime})" class="Wdate timeselect" />
+                               </div>
+                               <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                    <div id="multiple_condition_query" class="lr-query-wrap">
+                                    <div class="lr-query-btn" id="spn_Search" style="font-size:10px;width:80px;">
+                                        <i  class="fa fa-search"></i>&nbsp;多条件查询</>  
+                                    </div>
+                                    <div class="lr-query-content" style="width:750px;height:220px;" id="content">
+                                         <div class="lr-query-formcontent" style="display:block"></div>
+                                         <div class="lr-query-arrow">
+                                             <div class="lr-query-inside"></div>
+                                         </div>
+                                         <div class="lr-query-content-bottom">
+                                              <%--<a id="lr_btn_queryReset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>--%>
+                                              <a id="lr_btn_querySearch" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                         </div>
+                                         <div class=" col-xs-12 lr-form-item">                                              <div class="lr-form-item-title">工序名称：</div>                                              <select class="form-control" id="ProcessName"></select>                                         </div>
+                                         <div class=" col-xs-12 lr-form-item">                                              <div class="lr-form-item-title">设备名称：</div>                                              <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">                                         </div>
+                                         <div class=" col-xs-12 lr-form-item">                                              <div class="lr-form-item-title">保养类别：</div>                                              <select class="form-control" id="PmType">
+                                                    <option value=''>请选择...</option>
+                                                    <option value='计划内保养'>计划内保养</option>
+                                                    <option value='计划外保养'>计划外保养</option>
+                                              </select>                                          </div>
+                                          <div class=" col-xs-12 lr-form-item">                                              <div class="lr-form-item-title">保养类型：</div>                                              <select class="form-control" id="PmLevel">
+                                                   <option value=''>请选择...</option>
+                                                   <option value='一级保养'>一级保养</option>
+                                                   <option value='二级保养'>二级保养</option>
+                                               </select>                                          </div>
+                                          <div class=" col-xs-12 lr-form-item">                                              <div class="lr-form-item-title">执行情况：</div>                                              <select class="form-control" id="Status">
+                                                   <option value=''>请选择...</option>
+                                                   <option value='已完成'>已完成</option>
+                                                   <option value='未完成'>未完成</option>
+                                              </select>                                          </div>
+                                          <div class=" col-xs-12 lr-form-item">                                              <div class="lr-form-item-title">保养规范：</div>                                              <input type="text" class="form-control" id="PmSpecName" placeholder="请输入保养规范名称">                                          </div>
+                                          <div class=" col-xs-12 lr-form-item">                                              <div class="lr-form-item-title">保养计划：</div>                                              <input type="text" class="form-control" id="PmPlanName" placeholder="请输入保养计划名称">                                          </div>
+                                     </div>
+                                </div>
+                                </div>
+                                </div>
+                                <div class=" lr-layout-tool-right">
+                                    <div class="btn-group">
+                                         <a id="btn_Add" class="btn btn-default" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建计划外保养</a>  
+                                         <a id="btn_FirstLevel" class="btn btn-default"><i class="fa fa-edit"></i>一级保养维护</a>                        
+                                         <a id="btn_SecondLevel" class="btn btn-default"><i class="fa fa-edit"></i>二级保养维护</a>
+                                         
+                                    </div>
+                                </div>
+                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-         <div class="rows" style="margin-top:0.5%; overflow: hidden; ">
-             
+        <div class="rows" style="margin-top:3.5%; overflow: hidden; ">
               <div class="gridPanel">
                    <table id="gridTable"></table>
                    <div id="gridPager"></div>
               </div>
-         </div>
+        </div>
     </div>
-
 </body>
 </html>
 

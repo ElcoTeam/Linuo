@@ -151,7 +151,32 @@
 
             //查询事件
             $("#btn_Search").click(function () {
-                ReloadGrid();
+                var RFID = $("#RFID").val();
+                var WorkOrderNumber = $("#WorkOrderNumber").val();
+                var GoodsCode = $("#GoodsCode").val();
+                var AbnormalPoint = $("#AbnormalPoint").val();
+                var AbnormalType = $("#AbnormalType").val();
+                var RepairStatus = $("#RepairStatus").val();
+                var FromTime = $("#FromTime").val();
+                var ToTime = $("#ToTime").val();
+                var RepairFromTime = $("#RepairFromTime").val();
+                var RepairToTime = $("#RepairToTime").val();
+
+                $gridTable.jqGrid('setGridParam',
+                    {
+                        postData: {
+                            "WorkOrderNumber": WorkOrderNumber,
+                            "RFID": RFID,
+                            "GoodsCode": GoodsCode,
+                            "AbnormalPoint": AbnormalPoint,
+                            "AbnormalType": AbnormalType,
+                            "RepairStatus": RepairStatus,
+                            "FromTime": FromTime,
+                            "ToTime": ToTime,
+                            "RepairFromTime": RepairFromTime,
+                            "RepairToTime": RepairToTime
+                        }
+                    }).trigger('reloadGrid');
                 
             });
         }
@@ -175,35 +200,7 @@
             });
         }
 
-        function ReloadGrid()
-        {
-            var RFID = $("#RFID").val();
-            var WorkOrderNumber = $("#WorkOrderNumber").val();
-            var GoodsCode = $("#GoodsCode").val();
-            var AbnormalPoint = $("#AbnormalPoint").val();
-            var AbnormalType = $("#AbnormalType").val();
-            var RepairStatus = $("#RepairStatus").val();
-            var FromTime = $("#FromTime").val();
-            var ToTime = $("#ToTime").val();
-            var RepairFromTime = $("#RepairFromTime").val();
-            var RepairToTime = $("#RepairToTime").val();
-
-            $gridTable.jqGrid('setGridParam',
-                {
-                    postData: {
-                        "WorkOrderNumber": WorkOrderNumber,
-                        "RFID": RFID,
-                        "GoodsCode": GoodsCode,
-                        "AbnormalPoint": AbnormalPoint,
-                        "AbnormalType": AbnormalType,
-                        "RepairStatus": RepairStatus,
-                        "FromTime": FromTime,
-                        "ToTime": ToTime,
-                        "RepairFromTime": RepairFromTime,
-                        "RepairToTime": RepairToTime
-                    }
-                }).trigger('reloadGrid');
-        }
+      
         //查看 1：查看
         function btn_search(equid) {
             if (equid == undefined) {

@@ -31,7 +31,6 @@
     <script src="../Content/scripts/utils/learun-ui.js"></script>
     <script src="../Content/scripts/utils/learun-form.js"></script>
 
-
     <script>
         $(function () {
             var n = 1;
@@ -46,6 +45,17 @@
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
+
+            $("#btn_Search").click(function () {
+                if (!$("#content").hasClass("active")) {
+                    $("#content").addClass("active")
+
+                } else {
+                    $("#content").removeClass("active")
+
+                }
+            });
+
             GetGrid();
             CreateSelect();
         });
@@ -57,7 +67,7 @@
             $gridTable.jqGrid({
                 url: "hs/GetEquMaintenceStandard.ashx",
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() -200,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {
@@ -104,7 +114,7 @@
             });
 
             //查询事件
-            $("#btn_Search").click(function () {
+            $("#lr_btn_querySearch").click(function () {
                 var processName = $("#ProcessName").val();
                 var deviceName = $("#DeviceName").val();
                 var pmSpecCode = $("#PmSpecCode").val();
@@ -122,6 +132,9 @@
             //        $('#btn_Search').trigger("click");
             //    }
             //});
+            $("#ProcessName").change(function () {
+                $("#lr_btn_querySearch").trigger("click");
+            });
         }
 
         //构造select
@@ -303,53 +316,50 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">设备保养规范管理</strong></div>
-                        <div class="panel-body">
-                            <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">工序名称：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="ProcessName">
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">设备名称：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称">
-                                    </td>
-                                     <td class="formValue">
-                                          <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>  
-                                     </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">保养规范编号：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="PmSpecCode">
-                                       </select>
-                                    </td>
-                                    <th class="formTitle">保养规范名称：</th>
-                                    <td class="formValue">
-                                         <input type="text" class="form-control" id="PmSpecName" placeholder="请输入保养规范名称">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">保养类型：</th>
-                                    <td class="formValue">
-                                       <select class="form-control" id="PmLevel">
-                                           <option value=''>请选择...</option>
-                                           <option value='一级保养'>一级保养</option>
-                                           <option value='二级保养'>二级保养</option>
-                                       </select>
-                                    </td>
-                                    
-                                </tr>
-                            </table>
-                        </div>
+                          <div class="lr-layout-tool">
+                               <div class="lr-layout-tool-left">
+                                   <div class="lr-layout-tool-item">
+                                       <span class="formTitle">工序名称：</span>
+                                        <select class="form-control" id="ProcessName"></select>
+                                   </div>
+                                   <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                        <div id="multiple_condition_query" class="lr-query-wrap">
+                                            <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                                <i class="fa fa-search"></i>&nbsp;多条件查询
+                                            </div>
+                                            <div class="lr-query-content" style="width:400px;height:220px;" id="content">
+                                                <div class="lr-query-formcontent" style="display:block"></div>
+                                                <div class="lr-query-arrow">
+                                                    <div class="lr-query-inside"></div>
+                                                </div>
+                                                <div class="lr-query-content-bottom">
+                                                     <%--<a id="lr_btn_queryReset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>--%>
+                                                     <a id="lr_btn_querySearch" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                                </div>
+                                                 <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">设备名称：</div>                                                    <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称" style="margin-left:30px;">                                                </div>                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">保养规范编号：</div>                                                    <select class="form-control" id="PmSpecCode" style="margin-left:30px;"></select>                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">保养规范名称：</div>                                                    <input type="text" class="form-control" id="PmSpecName" placeholder="请输入保养规范名称" style="margin-left:30px;">                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title" style="width:120px;">保养类型：</div>                                                    <select class="form-control" id="PmLevel" style="margin-left:30px;">
+                                                        <option value=''>请选择...</option>
+                                                        <option value='一级保养'>一级保养</option>
+                                                        <option value='二级保养'>二级保养</option>
+                                                    </select>                                                </div>
+                                            </div>
+                                        </div>
+                                   </div>
+                                </div>
+                                <div class=" lr-layout-tool-right">
+                                     <div class="btn-group">
+                                         <a id="btn_Add" class="btn btn-default" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>  
+                                     </div>
+                                 </div>
+                           </div>
+                       
                     </div>
                 </div>
             </div>
         </div>
 
-         <div class="rows" style="margin-top:0.5%; overflow: hidden; ">
+         <div class="rows" style="margin-top:3.5%; overflow: hidden; ">
              
               <div class="gridPanel">
                    <table id="gridTable"></table>

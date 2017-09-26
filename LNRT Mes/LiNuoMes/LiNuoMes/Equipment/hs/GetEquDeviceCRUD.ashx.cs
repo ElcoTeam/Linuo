@@ -8,6 +8,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.SessionState;
+using Aspose.Cells;
 
 namespace LiNuoMes.Equipment.hs
 {
@@ -92,44 +93,70 @@ namespace LiNuoMes.Equipment.hs
                 string objID = RequstString("ObjID");
                 string fileName = GetEquPartsFileNameFromDB(objID);
                 string fileType = Path.GetExtension(fileName).ToLower();
-                
+                string fileWithoutType = Path.GetFileNameWithoutExtension(fileName);
+                if (!Directory.Exists(browsePartsFilePath))
+                {
+                    Directory.CreateDirectory(browsePartsFilePath);
+                }
+
                 context.Response.ClearContent();
                 context.Response.ClearHeaders();
                 if (Action == "PartsFileCHECK")
                 {
-                    context.Response.AppendHeader("Content-Disposition", string.Format("inline;filename={0}", fileName));
+                    //context.Response.AppendHeader("Content-Disposition", string.Format("inline;filename={0}", fileName));
+                    if (fileType == ".xlsx" || fileType == ".xls")
+                    {
+                        string path = browsePartsFilePath + Common.StringFilter.FilterSpecial(fileName);
+                        try
+                        {
+                            Workbook wb = new Workbook(path);
+                            wb.Save(browsePartsFilePath + fileWithoutType + ".pdf", SaveFormat.Pdf);
+                            context.Response.Write("./PartsFile/" + fileWithoutType + ".pdf");
+                        }
+                        catch (Exception ex)
+                        {
+                            context.Response.Write("false");
+                        }
+                    }
+                    else
+                    {
+                        context.Response.Write("./PartsFile/" + fileWithoutType + ".pdf");
+                    }
+                    
                 }
                 else
                 {
-                    context.Response.AppendHeader("Content-Disposition", string.Format("attached;filename={0}", HttpContext.Current.Server.UrlEncode(fileName.ToString())));                    
+                    context.Response.AppendHeader("Content-Disposition", string.Format("attached;filename={0}", HttpContext.Current.Server.UrlEncode(fileName.ToString())));
+                    if (fileType == ".docx" || fileType == ".doc")
+                    {
+                        context.Response.AppendHeader("content-type", "application/msword");
+                    }
+                    else if (fileType == ".xlsx" || fileType == ".xls")
+                    {
+                        context.Response.AppendHeader("content-type", "application/x-msexcel");
+                    }
+                    else if (fileType == ".pdf")
+                    {
+                        context.Response.AppendHeader("content-type", "application/pdf");
+                    }
+                    context.Response.ContentType = "application/octet-stream";
+                    context.Response.ContentEncoding = System.Text.Encoding.Default;
+                    try
+                    {
+
+                        FileInfo fileInfo = new FileInfo(browsePartsFilePath + Common.StringFilter.FilterSpecial(fileName));
+                        context.Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
+                        context.Response.WriteFile(browsePartsFilePath + Common.StringFilter.FilterSpecial(fileName));
+                    }
+                    catch (Exception ex)
+                    {
+                        context.Response.Write(ex.Message);
+                    }
+                    context.Response.Flush();
+                    context.Response.Close();
                 }
 
-                if (fileType == ".docx" || fileType == ".doc")
-                {
-                    context.Response.AppendHeader("content-type", "application/msword");
-                }
-                else if (fileType == ".xlsx" || fileType == ".xls")
-                {
-                    context.Response.AppendHeader("content-type", "application/x-msexcel");
-                }
-                else if (fileType == ".pdf")
-                {
-                    context.Response.AppendHeader("content-type", "application/pdf");
-                }
-                context.Response.ContentType = "application/octet-stream";
-                context.Response.ContentEncoding = System.Text.Encoding.Default;
-                try
-                {
-                    FileInfo fileInfo = new FileInfo(browsePartsFilePath + Common.StringFilter.FilterSpecial( fileName));
-                    context.Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
-                    context.Response.WriteFile(browsePartsFilePath + Common.StringFilter.FilterSpecial(fileName));
-                }
-                catch (Exception ex)
-                {
-                    context.Response.Write(ex.Message);
-                }
-                context.Response.Flush();
-                context.Response.Close();
+               
             }
 
             else if (Action == "ManuCHECK" || Action == "ManuDOWNLOAD")
@@ -138,45 +165,72 @@ namespace LiNuoMes.Equipment.hs
                 string fileName = GetEquManuFileNameFromDB(objID);
                 string fileType = Path.GetExtension(fileName).ToLower();
                 FileInfo fileInfo = new FileInfo(browseManualFilePath + fileName);
+                string fileWithoutType = Path.GetFileNameWithoutExtension(fileName);
+                if (!Directory.Exists(browsePartsFilePath))
+                {
+                    Directory.CreateDirectory(browsePartsFilePath);
+                }
+
                 context.Response.ClearContent();
                 context.Response.ClearHeaders();
                 if (Action == "ManuCHECK")
                 {
-                    context.Response.AppendHeader("Content-Disposition", string.Format("inline;filename={0}", fileName));
-                    context.Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
+                    if (fileType == ".docx" || fileType == ".doc")
+                    {
+                        string path = browseManualFilePath + Common.StringFilter.FilterSpecial(fileName);
+                        try
+                        {
+                            Workbook wb = new Workbook(path);
+                            wb.Save(browseManualFilePath + fileWithoutType + ".pdf", SaveFormat.Pdf);
+                            context.Response.Write("./ManualFile/" + fileWithoutType + ".pdf");
+                        }
+                        catch (Exception ex)
+                        {
+                            context.Response.Write("false");
+                        }
+                    }
+                    else
+                    {
+                        context.Response.Write("./ManualFile/" + fileWithoutType + ".pdf");
+                    }
+                    
                 }
                 else
                 {
-                    context.Response.AppendHeader("Content-Disposition", string.Format("attached;filename={0}", fileName));
-                    context.Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
+                    //context.Response.AppendHeader("Content-Disposition", string.Format("attached;filename={0}", fileName));
+                    //context.Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
+                    context.Response.AppendHeader("Content-Disposition", string.Format("attached;filename={0}", HttpContext.Current.Server.UrlEncode(fileName.ToString())));
+                    if (fileType == ".docx" || fileType == ".doc")
+                    {
+                        context.Response.AppendHeader("content-type", "application/msword");
+                    }
+                    else if (fileType == ".xlsx" || fileType == ".xls")
+                    {
+                        context.Response.AppendHeader("content-type", "application/x-msexcel");
+                    }
+                    else if (fileType == ".pdf")
+                    {
+                        context.Response.AppendHeader("content-type", "application/pdf");
+                    }
+                    try
+                    {
+                        if (!Directory.Exists(browseManualFilePath))
+                        {
+                            Directory.CreateDirectory(browseManualFilePath);
+                        }
+                        FileInfo fileInfo1 = new FileInfo(browseManualFilePath + fileName);
+                        context.Response.AddHeader("content-length", fileInfo1.Length.ToString());//文件大小
+                        context.Response.WriteFile(browseManualFilePath + fileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        context.Response.Write(ex.Message);
+                    }
+                    context.Response.Flush();
+                    context.Response.Close();
                 }
-
-                if (fileType == ".docx" || fileType == ".doc")
-                {
-                    context.Response.AppendHeader("content-type", "application/msword");
-                }
-                else if (fileType == ".xlsx" || fileType == ".xls")
-                {
-                    context.Response.AppendHeader("content-type", "application/x-msexcel");
-                }
-                else if (fileType == ".pdf")
-                {
-                    context.Response.AppendHeader("content-type", "application/pdf");
-                }
-                try
-                {
-                    FileInfo fileInfo1 = new FileInfo(browseManualFilePath + fileName);
-                    context.Response.AddHeader("content-length", fileInfo1.Length.ToString());//文件大小
-                    context.Response.WriteFile(browseManualFilePath + fileName);
-                }
-                catch (Exception ex)
-                {
-                    context.Response.Write(ex.Message);
-                }
-                context.Response.Flush();
-                context.Response.Close();
+                
             }
-            context.Response.End();
         }
 
         public bool IsReusable

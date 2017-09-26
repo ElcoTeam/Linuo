@@ -33,24 +33,32 @@
   
     <script>
         $(function () {
-           
+            
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
-            $('#areascontent').height($(window).height()-106);
+            $('#areascontent').height($(window).height() - 106);
             var areaheight = $("#areascontent").height();
             $(window).resize(function (e) {
                 window.setTimeout(function () {
                     $('#gridTable').setGridWidth(($('.gridPanel').width()));
-                    $('#areascontent').height($(window).height()-106);
+                    $('#areascontent').height($(window).height() - 106);
                 }, 200);
             });
-            //GetGrid();
+            $("#btn_Search").click(function () {
+                if (!$("#content").hasClass("active")) {
+                    $("#content").addClass("active")
+                
+                } else {
+                    $("#content").removeClass("active")
+                
+                }
+            });
             CreateSelect();
             fnDate();
         });
 
-       
+
         //加载表格
         function GetGrid() {
             var selectedRowIndex = 0;
@@ -64,7 +72,7 @@
                     PullTimeStart: PullTimeStart,
                     PullTimeEnd: PullTimeEnd
                 },
-                height: $('#areascontent').height() -400,
+                height: $(window).height() - 350,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {
@@ -128,7 +136,7 @@
                         label: '操作', name: 'Status', index: 'Status', width: 110, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 0) {
-                                return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[9] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\">响应</span>'+
+                                return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[9] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\">响应</span>' +
                                        '<span onclick=\"btn_delete(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer; margin-left:10px;\">删除</span>';
                             }
                             else if (cellvalue == -2) {
@@ -158,9 +166,9 @@
                     $("#" + this.id).setSelection(selectedRowIndex, false);
                 }
             });
-           
+
             //查询事件
-            $("#btn_Search").click(function () {
+            $("#lr_btn_querySearch").click(function () {
                 var orderno = $("#orderno").val();
                 var materialCode = $("#materialcode").val();
                 var produce = $("#produce").val();
@@ -193,6 +201,8 @@
 
         }
 
+
+
         //构造select
         function CreateSelect() {
             $("#produce").empty();
@@ -217,11 +227,11 @@
                     dialogMsg("数据访问异常", -1);
                 }
             });
-           
+
         }
 
         //响应
-        function btn_enabled(keyValue, keyNumber, ItemNumber,keyQty) {
+        function btn_enabled(keyValue, keyNumber, ItemNumber, keyQty) {
             if (keyValue == undefined) {
                 keyValue = $("#gridTable").jqGridRowValue("ID");
                 keyNumber = $("#gridTable").jqGridRowValue("WorkOrderNumber");
@@ -324,7 +334,6 @@
                 }
             });
         }
-
         //初始化拉动时间
         function fnDate() {
             var xhr = null;
@@ -389,82 +398,48 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">物料拉动响应</strong></div>
-                        <div class="panel-body">
-                            <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">订单编号：</th>
-                                    <td class="formValue" colspan="2">
-                                        <input type="text" class="form-control" id="orderno" placeholder="请输入订单编号">
-                                    </td>
-                                    <th class="formTitle">物料编号：</th>
-                                    <td class="formValue" colspan="2">
-                                        <input type="text" class="form-control" id="materialcode" placeholder="请输入物料编号">
-                                    </td> 
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">工序名称：</th>
-                                    <td class="formValue" colspan="2">
-                                         <select class="form-control" id="produce">
-                                         </select>
-                                    </td>
-                                    <th class="formTitle">发送情况：</th>
-                                    <td class="formValue" colspan="2">
-                                         <select class="form-control" id="Status">
-                                            <option value=''>请选择...</option>
-                                            <option value='0'>待响应</option>
-                                            <option value='1'>待确认</option>
-                                            <option value='2'>已完成</option>
-                                         </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">拉动时间：</th>
-                                    <td class="formValue" colspan="2">
-                                         <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                    <th class="formTitle">是否超时：</th>
-                                    <td class="formValue" colspan="2">
-                                         <select class="form-control" id="OTFlag">
-                                            <option value=''>请选择...</option>
-                                            <option value='1'>是</option>
-                                            <option value='0'>否</option>
-                                         </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">响应时间：</th>
-                                    <td class="formValue" colspan="2">
-                                         <input id="ActionTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="ActionTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                    <th class="formTitle">响应人：</th>
-                                    <td class="formValue" colspan="2">
-                                         <input type="text" class="form-control" id="ActionUser" placeholder="请输入响应人">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle">确认时间：</th>
-                                    <td class="formValue" colspan="2">
-                                         <input id="ConfirmTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ConfirmTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
-                                         <input id="ConfirmTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ConfirmTimeStart\')}'})" class="Wdate timeselect" /> 
-                                    </td>
-                                    <th class="formTitle">确认人：</th>
-                                    <td class="formValue" colspan="2">
-                                         <input type="text" class="form-control" id="ConfirmUser" placeholder="请输入确认人">
-                                    </td>
-                                    <td class="formValue">
-                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+                        <div class="lr-layout-tool">
+                               <div class="lr-layout-tool-left">
+                                   <div class="lr-layout-tool-item">
+                                       <span class="formTitle">拉动时间：</span>
+                                       <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                       <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
+                                   </div>
+                                   <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                        <div id="multiple_condition_query" class="lr-query-wrap">
+                                            <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                                <i class="fa fa-search"></i>&nbsp;多条件查询
+                                            </div>
+                                            <div class="lr-query-content" style="width:800px;height:320px;" id="content">
+                                                <div class="lr-query-formcontent" style="display:block"></div>
+                                                <div class="lr-query-arrow">
+                                                    <div class="lr-query-inside"></div>
+                                                </div>
+                                                <div class="lr-query-content-bottom">
+                                                     <%--<a id="lr_btn_queryReset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>--%>
+                                                     <a id="lr_btn_querySearch" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                                </div>
+                                                 <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">订单编号：</div>                                                    <input type="text" class="form-control" id="orderno" placeholder="请输入订单编号">                                                </div>                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">物料编号：</div>                                                    <input type="text" class="form-control" id="materialcode" placeholder="请输入物料编号">                                                </div>                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">工序名称：</div>                                                    <select class="form-control" id="produce"></select>                                                </div>                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">发送情况：</div>                                                    <select class="form-control" id="Status">                                                            <option value=''>请选择...</option>                                                            <option value='0'>待响应</option>                                                            <option value='1'>待确认</option>                                                            <option value='2'>已完成</option>                                                    </select>                                                </div>                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">是否超时：</div>                                                    <select class="form-control" id="OTFlag">
+                                                            <option value=''>请选择...</option>
+                                                            <option value='1'>是</option>
+                                                            <option value='0'>否</option>
+                                                    </select>                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                     <div class="lr-form-item-title">响应人：</div>                                                     <input type="text" class="form-control" id="ActionUser" placeholder="请输入响应人">                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                     <div class="lr-form-item-title">确认人：</div>                                                     <input type="text" class="form-control" id="ConfirmUser" placeholder="请输入确认人">                                                </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">响应时间：</div>                                                    <input id="ActionTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate form-control" style="display:inline;" />&nbsp;至&nbsp;
+                                                    <input id="ActionTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate form-control" style="display:inline;"/>                                                 </div>
+                                                <div class=" col-xs-12 lr-form-item">                                                    <div class="lr-form-item-title">确认时间：</div>                                                    <input id="ConfirmTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'ActionTimeEnd\')}'})" class="Wdate form-control" style="display:inline;" />&nbsp;至&nbsp;
+                                                    <input id="ConfirmTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'ActionTimeStart\')}'})" class="Wdate form-control" style="display:inline;"/>                                                 </div>
+                                            </div>
+                                        </div>
+                                   </div>
+                                </div>
+                           </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="rows" style="margin-top:0.5%; overflow: hidden; ">
+        <div class="rows" style="margin-top:3.5%; overflow: hidden; ">
              <div class="gridPanel">
                   <table id="gridTable"></table>
                   <div id="gridPager"></div>
@@ -472,40 +447,10 @@
          </div>
     </div>
 
-    <style>
-         @media screen and (min-width: 1900px) { 
-             .timeselect {
-                 width: 200px;
-                 height: 35px;
-            }
-         } 
-         @media screen and (min-width: 800px ) and (max-width: 1400px) { 
-              .timeselect{
-                 width: 130px;
-                 height: 30px !important;
-                 font-size: 15px;
-             }
-         } 
-     
-        @media screen and (min-width: 1400px ) and (max-width: 1900px) { 
-           
-              .timeselect{
-                 width: 150px;
-                 height: 35px !important;
-                 font-size: 25px;
-             } 
-         }
-
-         @media screen and (max-width: 800px ) { 
-            
-              .timeselect{
-                 width: 40px;
-                 height: 25px !important;
-                 font-size: 10px;
-             }
-          }  
-    </style>
 </body>
 </html>
+
+
+
 
 

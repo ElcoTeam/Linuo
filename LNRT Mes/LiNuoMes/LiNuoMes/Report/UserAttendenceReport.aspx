@@ -175,7 +175,6 @@
                 },
                 gridComplete: function () {
                     //$("#" + this.id).setSelection(selectedRowIndex, false);
-                   
                 }
             });
 

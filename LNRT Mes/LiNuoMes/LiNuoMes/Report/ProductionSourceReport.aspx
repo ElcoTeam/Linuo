@@ -63,7 +63,7 @@
                 postData: { Action: "ProductionSourceReport" },
                 loadonce: true,
                 datatype: "json",
-                height: $('#areascontent').height() *0.7,
+                height: $('#areascontent').height() -350,
                 colModel: [
                     { label: '序号', name: 'Number', index: 'Number', width: 150, align: 'left' },
                     { label: '订单编号', name: 'OrderCode', index: 'OrderCode', width: 150, align: 'left' },

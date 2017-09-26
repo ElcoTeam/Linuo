@@ -87,8 +87,10 @@ namespace LiNuoMes.UserManage.hs
         {
             string str = "";
             string selectstr = "";
+            string selectlinestr = "";
             DataTable dt = new DataTable();
             DataTable selectdt = new DataTable();
+            DataTable selectline = new DataTable();
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand();
@@ -108,6 +110,20 @@ namespace LiNuoMes.UserManage.hs
                 SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);
                 Datapter.Fill(selectdt);
 
+                selectlinestr = "select LineHeadCount,ShiftHours from  Mes_Line_List";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = selectlinestr;
+                SqlDataAdapter Datapter2 = new SqlDataAdapter(cmd);
+                Datapter.Fill(selectline);
+
+                int totalperson = 0;
+                int workhour = 0;
+                for (int j = 0; j < selectline.Rows.Count;j++ )
+                {
+                    totalperson += Convert.ToInt32(selectline.Rows[j]["LineHeadCount"].ToString());
+                    workhour = Convert.ToInt32(selectline.Rows[j]["ShiftHours"].ToString());
+                }
+
                 if (dt != null && dt.Rows.Count > 0 )
                 {
                     dt.Columns.Add("DATE", typeof(System.String));
@@ -121,7 +137,7 @@ namespace LiNuoMes.UserManage.hs
 
                         for (int i = 1; i <= daynum; i++)
                         {                           
-                            dt.Rows.Add(daynum,i.ToString(), "", "", "", "");
+                            dt.Rows.Add(daynum,i.ToString(), totalperson.ToString(), workhour.ToString(), totalperson*workhour, "");
                         }
                         for (int j = 1; j < dt.Rows.Count; j++)
                         {
@@ -132,10 +148,10 @@ namespace LiNuoMes.UserManage.hs
                                 if(count>0)
                                 {
                                     DataRow dr = selectdt.Select("DATE='" + dt.Rows[j]["DATE"].ToString() + "'")[0];
-                                    dt.Rows[j]["AttendenceNum"] = dr["AttendenceNum"].ToString();
-                                    dt.Rows[j]["WorkHours"] = dr["WorkHours"].ToString();
-                                    dt.Rows[j]["TotalAttendenceHours"] = dr["TotalAttendenceHours"].ToString();
-                                    dt.Rows[j]["ActiveWorkHours"] = dr["ActiveWorkHours"].ToString();
+                                    dt.Rows[j]["AttendenceNum"] = dr["AttendenceNum"].ToString().Trim();
+                                    dt.Rows[j]["WorkHours"] = dr["WorkHours"].ToString().Trim();
+                                    dt.Rows[j]["TotalAttendenceHours"] = dr["TotalAttendenceHours"].ToString().Trim();
+                                    dt.Rows[j]["ActiveWorkHours"] = dr["ActiveWorkHours"].ToString().Trim();
                                 }
                             }
                             

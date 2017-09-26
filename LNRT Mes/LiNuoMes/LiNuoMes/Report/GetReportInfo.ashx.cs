@@ -570,11 +570,65 @@ namespace LiNuoMes.Report
                 context.Response.Write(jsc.Serialize(result));
             }
             #endregion
-            #region //产品直通率
+            #region //产品直通率报表
             if (Action == "ProductThroughRateReport")
             {
                 List<ProductThroughRateEntity> productThroughRate = new List<ProductThroughRateEntity>();
+                productThroughRate = GetProductThroughInfoList(productThroughRate);
+                context.Response.Write(jsc.Serialize(productThroughRate));
+            }
+            #endregion
 
+            #region //产品直通率折线图
+            if (Action == "ProductThroughRateChart")
+            {
+                List<ProductThroughRateEntity> productThroughRate = new List<ProductThroughRateEntity>();
+                productThroughRate = GetProductThroughInfoList(productThroughRate);
+                
+                List<ChartWithName> chart = new List<ChartWithName>();
+                List<string> catagory = new List<string>();
+                List<double> datavalue1 = new List<double>();
+                List<double> datavalue2 = new List<double>();
+                List<double> datavalue3 = new List<double>();
+                List<double> datavalue4 = new List<double>();
+
+                for (int i = 0; i < productThroughRate.Count; i+=4 )
+                {
+                    catagory.Add(productThroughRate[i].Date);
+                    datavalue1.Add(Convert.ToDouble(productThroughRate[i].ProcessQty == "" ? "0" : productThroughRate[i].ProcessQty.ToString()));
+                    datavalue2.Add(Convert.ToDouble(productThroughRate[i+1].ProcessQty == "" ? "0" : productThroughRate[i+1].ProcessQty.ToString()));
+                    datavalue3.Add(Convert.ToDouble(productThroughRate[i+2].ProcessQty == "" ? "0" : productThroughRate[i+2].ProcessQty.ToString()));
+                    datavalue4.Add(Convert.ToDouble(productThroughRate[i+3].ProcessQty == "" ? "0" : productThroughRate[i+3].ProcessQty.ToString()));
+                    if (i == productThroughRate.Count - 4)
+                    {
+                        break;
+                    }
+                }
+                chart.Add(new ChartWithName()
+                {
+                    name = productThroughRate[0].ProcessName.ToString(),
+                    catagory = catagory,
+                    datavalue = datavalue1
+                });
+                chart.Add(new ChartWithName()
+                {
+                    name = productThroughRate[1].ProcessName.ToString(),
+                    catagory = catagory,
+                    datavalue = datavalue2
+                });
+                chart.Add(new ChartWithName()
+                {
+                    name = productThroughRate[2].ProcessName.ToString(),
+                    catagory = catagory,
+                    datavalue = datavalue3
+                });
+                chart.Add(new ChartWithName()
+                {
+                    name = productThroughRate[3].ProcessName.ToString(),
+                    catagory = catagory,
+                    datavalue = datavalue4
+                });
+                context.Response.Write(jsc.Serialize(chart));
             }
             #endregion
             #region //年度产量对比
@@ -1322,8 +1376,11 @@ namespace LiNuoMes.Report
             string date = RequstString("DATE");
             string str = "";
             string selectstr = "";
+            string selectlinestr = "";
             DataTable dt = new DataTable();
             DataTable selectdt = new DataTable();
+            DataTable selectline = new DataTable();
+
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand();
@@ -1340,6 +1397,21 @@ namespace LiNuoMes.Report
                 cmd.CommandText = selectstr;
                 SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);
                 Datapter1.Fill(selectdt);
+
+                selectlinestr = "select LineHeadCount,ShiftHours from  Mes_Line_List";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = selectlinestr;
+                SqlDataAdapter Datapter2 = new SqlDataAdapter(cmd);
+                Datapter.Fill(selectline);
+
+                int totalperson = 0;
+                int workhour = 0;
+                for (int j = 0; j < selectline.Rows.Count; j++)
+                {
+                    totalperson += Convert.ToInt32(selectline.Rows[j]["LineHeadCount"].ToString());
+                    workhour = Convert.ToInt32(selectline.Rows[j]["ShiftHours"].ToString());
+                }
+
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     dt.Columns.Add("DATE", typeof(System.String));
@@ -1353,7 +1425,7 @@ namespace LiNuoMes.Report
 
                         for (int i = 1; i <= daynum; i++)
                         {
-                            dt.Rows.Add(daynum, i.ToString(), "", "", "", "");
+                            dt.Rows.Add(daynum, i.ToString(), totalperson.ToString(), workhour.ToString(), totalperson * workhour, "");
                         }
                         for (int j = 1; j < dt.Rows.Count; j++)
                         {
@@ -1364,10 +1436,10 @@ namespace LiNuoMes.Report
                                 if (count > 0)
                                 {
                                     DataRow dr = selectdt.Select("DATE='" + dt.Rows[j]["DATE"].ToString() + "'")[0];
-                                    dt.Rows[j]["AttendenceNum"] = dr["AttendenceNum"].ToString();
-                                    dt.Rows[j]["WorkHours"] = dr["WorkHours"].ToString();
-                                    dt.Rows[j]["TotalAttendenceHours"] = dr["TotalAttendenceHours"].ToString();
-                                    dt.Rows[j]["ActiveWorkHours"] = dr["ActiveWorkHours"].ToString();
+                                    dt.Rows[j]["AttendenceNum"] = dr["AttendenceNum"].ToString().Trim();
+                                    dt.Rows[j]["WorkHours"] = dr["WorkHours"].ToString().Trim();
+                                    dt.Rows[j]["TotalAttendenceHours"] = dr["TotalAttendenceHours"].ToString().Trim();
+                                    dt.Rows[j]["ActiveWorkHours"] = dr["ActiveWorkHours"].ToString().Trim();
                                 }
                             }
                         }
@@ -2439,5 +2511,91 @@ namespace LiNuoMes.Report
             return user;
         }
 
+
+        /// <summary>
+        /// 产品直通率报表
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<ProductThroughRateEntity> GetProductThroughInfoList(List<ProductThroughRateEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            StartTime += " 00:00:00";
+            EndTime += " 23:59:59";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_ProductThroughRate";
+                SqlParameter[] sqlPara = new SqlParameter[2];
+                sqlPara[0] = new SqlParameter("@StartTime", StartTime);
+                sqlPara[1] = new SqlParameter("@EndTime", EndTime);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int k = 0; k < dt.Rows.Count ; k=k+4)
+                    {
+                       
+                        string result1 = string.IsNullOrEmpty(dt.Rows[k]["PassRateValue"].ToString()) ? "" : dt.Rows[k]["PassRateValue"].ToString();
+                        string result2 = string.IsNullOrEmpty(dt.Rows[k]["PassRateValue"].ToString()) ? "" : dt.Rows[k+1]["PassRateValue"].ToString();
+                        string result3 = string.IsNullOrEmpty(dt.Rows[k]["PassRateValue"].ToString()) ? "" : dt.Rows[k+2]["PassRateValue"].ToString();
+                        string result4 = string.IsNullOrEmpty(dt.Rows[k]["PassRateValue"].ToString()) ? "" : dt.Rows[k+3]["PassRateValue"].ToString();
+                        if (string.IsNullOrEmpty(result1) || string.IsNullOrEmpty(result2) || string.IsNullOrEmpty(result3)||string.IsNullOrEmpty(result4))
+                        {
+                            dt.Rows[k]["DailyThroughRate"] = DBNull.Value;
+                            dt.Rows[k + 1]["DailyThroughRate"] = DBNull.Value;
+                            dt.Rows[k + 2]["DailyThroughRate"] = DBNull.Value;
+                            dt.Rows[k + 3]["DailyThroughRate"] = DBNull.Value;
+                        }
+                        else
+                        {
+                            dt.Rows[k]["DailyThroughRate"] =(Convert.ToDouble(result1) * Convert.ToDouble(result2) * Convert.ToDouble(result3) * Convert.ToDouble(result4));
+                            dt.Rows[k+1]["DailyThroughRate"] = (Convert.ToDouble(result1) * Convert.ToDouble(result2) * Convert.ToDouble(result3) * Convert.ToDouble(result4));
+                            dt.Rows[k+2]["DailyThroughRate"] = (Convert.ToDouble(result1) * Convert.ToDouble(result2) * Convert.ToDouble(result3) * Convert.ToDouble(result4));
+                            dt.Rows[k+3]["DailyThroughRate"] = (Convert.ToDouble(result1) * Convert.ToDouble(result2) * Convert.ToDouble(result3) * Convert.ToDouble(result4));
+                        }
+                        if (k == dt.Rows.Count - 4)
+                        {
+                            break;
+                        }
+                    }
+
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        ProductThroughRateEntity itemList = new ProductThroughRateEntity();
+                        itemList.Date = dt.Rows[i]["TPoint1"].ToString();
+                        itemList.ProcessName = dt.Rows[i]["ProcessName"].ToString();
+                        itemList.ProcessQty = dt.Rows[i]["totalcount"].ToString();
+                        itemList.ScrapQty = dt.Rows[i]["BaoFeiNum"].ToString();
+                        itemList.UnFinishQty = dt.Rows[i]["UnFinishNum"].ToString();
+                        itemList.RepairQty = dt.Rows[i]["BuXiuQty"].ToString();
+                        itemList.PassRate = dt.Rows[i]["PassRate"].ToString();
+                        if (string.IsNullOrEmpty(dt.Rows[i]["DailyThroughRate"].ToString()) )
+                        {
+                            itemList.DailyThroughRate = "";
+                        }
+                        else
+                        {
+                            itemList.DailyThroughRate = Convert.ToDecimal(dt.Rows[i]["DailyThroughRate"].ToString()).ToString("p2"); 
+                        }
+                       
+                        dataEntity.Add(itemList);
+                    }
+
+                }
+            }
+            return dataEntity;
+        }
     }
 }

@@ -111,6 +111,12 @@ namespace LiNuoMes.Mfg
                 result = setPlcParamWo(result);
                 context.Response.Write(jsc.Serialize(result));
             }
+            else if (Action == "MFG_PLC_TRIG_MT")
+            {
+                ResultMsg result = new ResultMsg();
+                result = setPlcTrigMT(result);
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MFG_WIP_BKF_ITEM_LIST")
             {
                 List<WipBkfItemEntity> dataEntity;
@@ -1932,6 +1938,57 @@ namespace LiNuoMes.Mfg
                         result.result = "success";
                         result.msg = "保存数据成功!";
                     }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        public ResultMsg setPlcTrigMT(ResultMsg result)
+        {
+            String TagName  = RequstString("ParamName");
+            String TagValue = RequstString("ParamValue");
+            String ProcessCode = RequstString("ProcessCode");
+
+            if (TagName.Length == 0) TagName = "";
+            if (TagValue.Length == 0) TagValue = "";
+            if (ProcessCode.Length == 0) ProcessCode = "";
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+
+                    SqlParameter[] sqlPara = new SqlParameter[4];
+
+                    sqlPara[0] = new SqlParameter("@TagName", TagName);
+                    sqlPara[1] = new SqlParameter("@TagValue", TagValue);
+                    sqlPara[2] = new SqlParameter("@ProcessCode", ProcessCode);
+                    sqlPara[3] = new SqlParameter("@PullUser", UserName);
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mfg_Plc_Trig_MT";
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    cmd.Dispose();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
                 }
                 catch (Exception ex)
                 {

@@ -34,6 +34,7 @@
     <script src="../Content/scripts/utils/learun-form.js"></script>
     
     <script>
+        var selectedRowIndex = 0;
         $(function () {
             var n = 1;
             if ($('#areascontent').height() > $(window).height() - 20) {
@@ -54,7 +55,6 @@
         //加载表格
         function InitPage() {
             var strBtnStyle = "cursor:pointer;margin-left:5px;font-weight:700;padding:.2em .6em .3em;font-size:14px;";
-            var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
             $gridTable.jqGrid({
                 url: "GetSetMfg.ashx",
@@ -108,31 +108,33 @@
         }
 
         //编辑信息
-        function showdlg(OPtype, ParamId) {
-            if (ParamId == undefined) {
-                ParamId = $("#gridTable").getRowData(selectedRowIndex)["ID"];
-            }
+        function showdlg(OPtype, SelectedId) {
+
+            var ParamId   = $("#gridTable").getRowData(SelectedId)["ID"];
+            var ParamName = $("#gridTable").getRowData(SelectedId)["ParamName"];
+            var ParamDsca = $("#gridTable").getRowData(SelectedId)["ParamDsca"];
+
             var sTitle;
             var sUrl;
             var sWidth;
             var sHeight;
             if (OPtype == "EDIT") {
                 sTitle = "设定物料拉动订单";
-                sUrl = "MaterialPullMointorEdit.aspx?";
+                sUrl = "MaterialPullMointorEdit.aspx?ParamId=" + ParamId;
                 sWidth = "960px";
                 sHeight = "600px";
             }
             else if (OPtype == "TRIG") {
                 sTitle = "物料拉动手动触发";
-                sUrl = "MaterialPullManualTrig.aspx?";
-                sWidth = "640px";
-                sHeight = "480px";
+                sUrl = "MaterialPullMonitorTrig.aspx?ParamName=" + ParamName + "&ParamDsca=" + encodeURI(encodeURI(ParamDsca));
+                sWidth = "400px";
+                sHeight = "150px";
             }
 
             dialogOpen({
                 id: "Form",
                 title: sTitle,
-                url: sUrl + "ParamId=" + ParamId,
+                url: sUrl,
                 width: sWidth,
                 height: sHeight,
                 callBack: function (iframeId) {

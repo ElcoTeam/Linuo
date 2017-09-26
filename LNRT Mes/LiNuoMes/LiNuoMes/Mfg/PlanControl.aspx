@@ -181,9 +181,9 @@
                 colModel: [
                     { label: 'ID',          name: 'ID', hidden: true },
                     { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 50, align: 'center', sortable: false },
-                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 120, align: 'center', sortable: false },
-                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: 160, align: 'center', sortable: false },
-                    { label: '产品物料描述', name: 'GoodsDsca', index: 'GoodsDsca', width: 350, align: 'center', sortable: false },
+                    { label: '订单编号', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 100, align: 'center', sortable: false },
+                    { label: '产品物料编码', name: 'GoodsCode', index: 'GoodsCode', width: 120, align: 'center', sortable: false },
+                    { label: '产品物料描述', name: 'GoodsDsca', index: 'GoodsDsca', width: 360, align: 'center', sortable: false },
                     {
                         label: '订单类型', name: 'WorkOrderType', index: 'WorkOrderType', width: 80, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {

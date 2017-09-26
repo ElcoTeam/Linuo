@@ -2819,6 +2819,7 @@ AS
     SELECT 
         @WorkOrderNumber  = WorkOrderNumber
        ,@WorkOrderVersion = WorkOrderVersion
+       ,@ProcessCode      = Mes_PLC_Parameters.ProcessCode
     FROM 
         Mes_PLC_Parameters
        ,Mes_PLC_List
@@ -2831,7 +2832,7 @@ AS
     --如果工单为空, 则需要进行一下初始化
     IF ISNULL(@WorkOrderNumber, '') = ''
     BEGIN
-        SELECT @WorkOrderNumber  = '', @WorkOrderVersion = -1;
+        SELECT @WorkOrderNumber = '', @WorkOrderVersion = -1;
         EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT; 
         EXEC [usp_Mfg_Plc_Param_WO_Update] @TagName, @WorkOrderNumber, @WorkOrderVersion;
     END

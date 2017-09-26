@@ -1,4 +1,30 @@
+/*
+select 
+* 
+from 
+UserM_Menu 
+WHERE 
+MENUNO IN ('3002', '3003', '3004', '3005', '3006', '3007', '3008')
+order by MenuNo;
 
+delete 
+from 
+UserM_Menu 
+WHERE 
+MENUNO IN ('3002', '3003', '3004', '3005', '3006', '3007', '3008');
+
+
+INSERT INTO UserM_Menu( MenuNo,	MenuName,	MenuAddr,	ParentNo,	Image1)
+VALUES
+('3002', '物料拉动管理',      '../Mfg/MaterialPullMonitor.aspx',	'3000', 'fa fa-bar-chart ls' ),
+('3003', '物料拉动响应',      '../Mfg/MaterialPullResponse.aspx',	'3000', 'fa fa-bar-chart ls' ),
+('3004', '物料拉动确认',      '../Mfg/MaterialPullConfirm.aspx',	'3000', 'fa fa-bar-chart ls' ),
+('3005', '反冲物料料号管理',   '../Mfg/MaterialBkfConfig.aspx',	'3000', 'fa fa-tasks ls'     ),
+('3006', '反冲物料申请',      '../Mfg/MaterialBkfApply.aspx',	    '3000', 'fa fa-tasks ls'     ),
+('3007', '反冲物料响应',      '../Mfg/MaterialBkfResponse.aspx',	'3000', 'fa fa-tasks ls'     ),
+('3008', '反冲物料确认',      '../Mfg/MaterialBkfConfirm.aspx',	'3000', 'fa fa-tasks ls'     );
+
+*/
 
 begin tran
 

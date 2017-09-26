@@ -2720,8 +2720,28 @@ AS
         ItemNumber = @ItemNumber; 
 GO
 
+--获取物料拉动当下的物料拉动工单清单
+ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Param_WO_List]
+AS
+    SELECT 
+        PAM.*,
+        WOL.ErpGoodsCode GoodsCode,
+        WOL.ErpGoodsDsca GoodsDsca,
+        WOL.MesWorkOrderType WorkOrderType
+    FROM 
+        Mes_PLC_Parameters AS PAM 
+    INNER JOIN Mes_PLC_List AS PLC ON PAM.PLCID = PLC.ID
+    LEFT JOIN MFG_WO_List  WOL ON PAM.WorkOrderNumber = WOL.ErpWorkOrderNumber and PAM.WorkOrderVersion = WOL.MesWorkOrderVersion
+    WHERE
+         PAM.ApplModel = 'MT'
+     AND PLC.GoodsCode = '0000000000'
+    ORDER BY 
+        PAM.ProcessCode
+       ,PAM.ParamName 
+GO
+
 --更新PLC参数表的当下正在物料拉动物料的工单.
-ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Param_Update_WO]
+ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Param_WO_Update]
      @TagName            AS VARCHAR (50) = ''
     ,@WorkOrderNumber    AS VARCHAR (50) = ''
     ,@WorkOrderVersion   AS INT          = -1
@@ -2735,8 +2755,30 @@ AS
                ,Mes_PLC_List 
             WHERE 
                 Mes_PLC_Parameters.PLCID     = Mes_PLC_List.ID
-            AND Mes_PLC_List.GoodsCode       = '0000000000'   
+            AND Mes_PLC_List.GoodsCode       = '0000000000'
+            AND Mes_PLC_Parameters.ApplModel = 'MT'
             AND Mes_PLC_Parameters.ParamName = @TagName;
+GO
+
+--更新PLC参数表的当下正在物料拉动物料的工单(使用ID值作为限制条件).
+ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Param_WO_UpdateById]
+     @WoId               AS INT = 0
+    ,@ParamId            AS INT = 0
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回值
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = '';
+    UPDATE Mes_Plc_Parameters
+    SET    
+        WorkOrderNumber  = Mfg_WO_List.ErpWorkOrderNumber              
+        ,WorkOrderVersion = Mfg_WO_List.MesWorkOrderVersion            
+    FROM 
+        Mes_PLC_Parameters
+        ,Mfg_WO_List
+    WHERE 
+        Mes_PLC_Parameters.ID = @ParamId
+    AND Mfg_WO_List.ID        = @WoId;
 GO
 
 -- PLC 触发了 物料拉动 动作
@@ -2778,10 +2820,11 @@ AS
        ,@WorkOrderVersion = WorkOrderVersion
     FROM 
         Mes_PLC_Parameters
-       ,Mes_PLC_List 
+       ,Mes_PLC_List
     WHERE 
         Mes_PLC_Parameters.PLCID     = Mes_PLC_List.ID
     AND Mes_PLC_List.GoodsCode       = '0000000000'
+    AND Mes_PLC_Parameters.ApplModel = 'MT'
     AND Mes_PLC_Parameters.ParamName = @TagName;
 
     --如果工单为空, 则需要进行一下初始化
@@ -2789,7 +2832,7 @@ AS
     BEGIN
         SELECT @WorkOrderNumber  = '', @WorkOrderVersion = -1;
         EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT; 
-        EXEC [usp_Mfg_Plc_Param_Update_WO] @TagName, @WorkOrderNumber, @WorkOrderVersion;
+        EXEC [usp_Mfg_Plc_Param_WO_Update] @TagName, @WorkOrderNumber, @WorkOrderVersion;
     END
 
     IF ISNULL(@WorkOrderNumber, '') = ''
@@ -2817,7 +2860,7 @@ AS
             --说明当下没有排程计划. 此时直接返回
             RETURN;
         END 
-        EXEC [usp_Mfg_Plc_Param_Update_WO] @TagName, @WorkOrderNumber, @WorkOrderVersion;
+        EXEC [usp_Mfg_Plc_Param_WO_Update] @TagName, @WorkOrderNumber, @WorkOrderVersion;
         EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT;
 
         IF @WaitingResponse > 0 

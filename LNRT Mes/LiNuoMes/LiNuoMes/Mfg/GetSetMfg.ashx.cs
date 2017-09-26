@@ -98,6 +98,19 @@ namespace LiNuoMes.Mfg
                 dataEntity = getWoSubPlanList(dataEntity);
                 context.Response.Write(jsc.Serialize(dataEntity));
             }
+            else if (Action == "MFG_PLC_PARAM_WO_LIST")
+            {
+                List<PlcParamWoEntity> dataEntity;
+                dataEntity = new List<PlcParamWoEntity>();
+                dataEntity = getPlcParamWoList(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            else if (Action == "MFG_PLC_PARAM_WO_UPDATE")
+            {
+                ResultMsg result = new ResultMsg();
+                result = setPlcParamWo(result);
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MFG_WIP_BKF_ITEM_LIST")
             {
                 List<WipBkfItemEntity> dataEntity;
@@ -642,6 +655,41 @@ namespace LiNuoMes.Mfg
                         itemList.LeftQty4 = dt.Rows[i]["LeftQty4"].ToString();
                         itemList.Status = dt.Rows[i]["Status"].ToString();
                         itemList.SubPlanFlag = dt.Rows[i]["SubPlanFlag"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        public List<PlcParamWoEntity> getPlcParamWoList(List<PlcParamWoEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Mfg_Plc_Param_WO_List";
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        PlcParamWoEntity itemList = new PlcParamWoEntity();
+                        itemList.ID               = dt.Rows[i]["ID"].ToString();
+                        itemList.InturnNumber     = ( i + 1 ).ToString(); 
+                        itemList.WorkOrderNumber  = dt.Rows[i]["WorkOrderNumber"].ToString();
+                        itemList.WorkOrderVersion = dt.Rows[i]["WorkOrderVersion"].ToString();
+                        itemList.GoodsCode        = dt.Rows[i]["GoodsCode"].ToString();
+                        itemList.GoodsDsca        = dt.Rows[i]["GoodsDsca"].ToString();
+                        itemList.WorkOrderType    = dt.Rows[i]["WorkOrderType"].ToString();
+                        itemList.ProcessCode      = dt.Rows[i]["ProcessCode"].ToString();
+                        itemList.ParamName        = dt.Rows[i]["ParamName"].ToString();
+                        itemList.ParamValue       = dt.Rows[i]["ParamValue"].ToString();
+                        itemList.ParamDsca        = dt.Rows[i]["ParamDsca"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }
@@ -1830,6 +1878,71 @@ namespace LiNuoMes.Mfg
             return result;
         }
 
+        public ResultMsg setPlcParamWo(ResultMsg result)
+        {
+            String WoId = RequstString("WoId");
+            String ParamId = RequstString("ParamId");
+
+            if (WoId.Length == 0) WoId = "0";
+            if (ParamId.Length == 0) ParamId = "";
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+
+                    SqlParameter[] sqlPara = new SqlParameter[4];
+
+                    sqlPara[0] = new SqlParameter("@WoId", Convert.ToInt32(WoId));
+                    sqlPara[1] = new SqlParameter("@ParamId", Convert.ToInt32(ParamId));
+                    sqlPara[2] = new SqlParameter("@CatchError", 0);
+                    sqlPara[3] = new SqlParameter("@RtnMsg", "");
+
+                    sqlPara[2].Direction = ParameterDirection.Output;
+                    sqlPara[3].Direction = ParameterDirection.Output;
+                    sqlPara[3].Size = 100;
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mfg_Plc_Param_WO_UpdateById";
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+                    cmd.ExecuteNonQuery();
+
+                    if (sqlPara[2].Value.ToString() != "0")
+                    {
+                        transaction.Rollback();
+                        result.result = "failed";
+                        result.msg = sqlPara[3].Value.ToString();
+                        cmd.Dispose();
+                        return result;
+                    }
+                    else
+                    {
+                        transaction.Commit();
+                        cmd.Dispose();
+                        result.result = "success";
+                        result.msg = "保存数据成功!";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
         public bool IsReusable
         {
             get
@@ -1929,6 +2042,21 @@ namespace LiNuoMes.Mfg
         public string Phantom      { set; get; }
         public string Bulk         { set; get; }
         public string Backflush    { set; get; }
+    }
+
+    public class PlcParamWoEntity
+    {
+        public string ID               { set; get; }
+        public string InturnNumber     { set; get; }
+        public string WorkOrderNumber  { set; get; }
+        public string WorkOrderVersion { set; get; }
+        public string GoodsCode        { set; get; }
+        public string GoodsDsca        { set; get; }
+        public string WorkOrderType    { set; get; }
+        public string ProcessCode      { set; get; }
+        public string ParamName        { set; get; }
+        public string ParamValue       { set; get; }
+        public string ParamDsca        { set; get; }
     }
 
     public class WipAbnormalPoint

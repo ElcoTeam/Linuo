@@ -9,7 +9,7 @@ using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.SessionState;
 using Aspose.Words;
-using Aspose.Words.Saving;
+
 namespace LiNuoMes.Equipment.hs
 {
     /// <summary>
@@ -96,46 +96,71 @@ namespace LiNuoMes.Equipment.hs
                     fileName = GetEquPmStandardFileNameFromDB(objID);
                 }
                 string fileType = Path.GetExtension(fileName).ToLower();
-                
+                FileInfo fileInfo = new FileInfo(browsePmSpecFilePath + fileName);
+                string fileWithoutType = Path.GetFileNameWithoutExtension(fileName);
+                if (!Directory.Exists(browsePmSpecFilePath))
+                {
+                    Directory.CreateDirectory(browsePmSpecFilePath);
+                }
                 context.Response.ClearContent();
                 context.Response.ClearHeaders();
-                if (Action == "StandardFileDOWNLOAD")
+                if (Action == "StandardFileCHECK" || Action == "PmStandardFileCHECK")
                 {
-                    //context.Response.AppendHeader("Content-Disposition", string.Format("inline;filename={0}", fileName));
-                    context.Response.AppendHeader("Content-Disposition", string.Format("attached;filename={0}", fileName));
+                    if (fileType == ".docx" || fileType == ".doc")
+                    {
+                        string path = browsePmSpecFilePath + Common.StringFilter.FilterSpecial(fileName);
+                        try
+                        {
+                            //读取doc文档
+                            Document doc = new Document(path);
+                            ////保存为PDF文件，此处的SaveFormat支持很多种格式，如图片，epub,rtf 等等
+                            doc.Save(browsePmSpecFilePath + fileWithoutType + ".pdf", Aspose.Words.SaveFormat.Pdf);
+                            //Workbook wb = new Workbook(path);
+                            //wb.Save(browseManualFilePath + fileWithoutType + ".pdf", SaveFormat.Pdf);
+                            context.Response.Write("./PmSpecFile/" + fileWithoutType + ".pdf");
+                            
+                        }
+                        catch (Exception ex)
+                        {
+                            context.Response.Write("false");
+                        }
+                    }
+                    else
+                    {
+                        context.Response.Write("./PmSpecFile/" + fileWithoutType + ".pdf");
+                    }
                     
                 }
                 else
                 {
-                    context.Response.AppendHeader("Content-Disposition", string.Format("attached;filename={0}", fileName));
+                    if (fileType == ".docx" || fileType == ".doc")
+                    {
+                        context.Response.AppendHeader("content-type", "application/msword");
+                    }
+                    else if (fileType == ".xlsx" || fileType == ".xls")
+                    {
+                        context.Response.AppendHeader("content-type", "application/x-msexcel");
+                    }
+                    else if (fileType == ".pdf")
+                    {
+                        context.Response.AppendHeader("content-type", "application/pdf");
+                    }
+
+                    try
+                    {
+                        FileInfo fileInfo1 = new FileInfo(browsePmSpecFilePath + Common.StringFilter.FilterSpecial(fileName));
+                        context.Response.AddHeader("content-length", fileInfo1.Length.ToString());//文件大小
+                        context.Response.WriteFile(browsePmSpecFilePath + Common.StringFilter.FilterSpecial(fileName));
+                    }
+                    catch (Exception ex)
+                    {
+                        context.Response.Write(ex.Message);
+                    }
+                    context.Response.Flush();
+                    context.Response.Close();
                     
                 }
 
-                if (fileType == ".docx" || fileType == ".doc")
-                {
-                    context.Response.AppendHeader("content-type", "application/msword");
-                }
-                else if (fileType == ".xlsx" || fileType == ".xls")
-                {
-                    context.Response.AppendHeader("content-type", "application/x-msexcel");
-                }
-                else if (fileType == ".pdf")
-                {
-                    context.Response.AppendHeader("content-type", "application/pdf");
-                }
-                
-                try
-                {
-                    FileInfo fileInfo1 = new FileInfo(browsePmSpecFilePath +Common.StringFilter.FilterSpecial( fileName));
-                    context.Response.AddHeader("content-length", fileInfo1.Length.ToString());//文件大小
-                    context.Response.WriteFile(browsePmSpecFilePath + Common.StringFilter.FilterSpecial(fileName));
-                }
-                catch (Exception ex)
-                {
-                    context.Response.Write(ex.Message);
-                }
-                context.Response.Flush();
-                context.Response.Close();
             }
         }
 
@@ -329,6 +354,7 @@ namespace LiNuoMes.Equipment.hs
                             string targetFileName = dataEntity.PmSpecCode + fileType;
                             if (fileType == ".docx" || fileType == ".doc")
                             {
+
                                 //读取doc文档
                                 Document doc = new Document(browsePmSpecFilePath + Common.StringFilter.FilterSpecial(targetFileName));
                                 ////保存为PDF文件，此处的SaveFormat支持很多种格式，如图片，epub,rtf 等等

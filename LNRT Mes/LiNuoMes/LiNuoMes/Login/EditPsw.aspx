@@ -154,7 +154,13 @@
                   
            </div>
       </div>
+    <style>
+        .item col-xs-12{
+            width:100%;
+        }
+    </style>
 </body>
+    
 </html>
 
 

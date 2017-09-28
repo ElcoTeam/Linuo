@@ -281,7 +281,37 @@
                 dialogMsg("您还没有上传文档", 0);
                 return false;
             }
-            window.open("../Equipment/hs/GetEquMaintenceStandardCRUD.ashx?Action=StandardFileCHECK&objID=" + objID);
+            //window.open("../Equipment/hs/GetEquMaintenceStandardCRUD.ashx?Action=StandardFileCHECK&objID=" + objID);
+            $.ajax({
+                url: "../Equipment/hs/GetEquMaintenceStandardCRUD.ashx",
+                data: { "Action": "StandardFileCHECK", "objID": objID },
+                type: "post",
+                datatype: "json",
+                success: function (result) {
+                    if (result != "false") {
+                        dialogOpen({
+                            id: "UploadifyForm",
+                            title: '查看保养规范',
+                            //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                            url: '../Equipment/FileSearchDialog.aspx?folderId=' + result,
+                            width: "800px",
+                            height: "800px",
+                            btn: null
+                        });
+                    }
+                    else {
+                        dialogMsg("未能找到文件", -1);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    Loading(false);
+                    dialogMsg(errorThrown, -1);
+                },
+                complete: function () {
+                    Loading(false);
+                }
+            });
+
         }
 
         //下载保养规范

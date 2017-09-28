@@ -87,13 +87,15 @@ namespace LiNuoMes.Equipment.hs
                                 a.AlarmStatus as  DealWithResult,
                                 CONVERT(varchar(16),DealWithTime, 120) as DealWithTime,
                                 DealWithOper,DealWithComment 
-                                from Mes_PLC_AlarmFiles a  
-                                left join Equ_DeviceInfoList c on a.DeviceCode=c.DeviceCode  
-                                left join Mes_Process_List b on c.ProcessCode=b.ProcessCode 
-                                left join TagsInfo1 d on a.Tag=d.Tag ";
+                                from Mes_PLC_AlarmFiles a 
+                                left join Mes_PLC_List plc on a.DeviceCode=plc.PLCCode
+                                left join Mes_Process_List b on plc.ProcessCode=b.ProcessCode 
+                                left join Equ_DeviceInfoList c on b.ProcessCode=c.ProcessCode  
+                                left join TagsInfo1 d on a.Tag=d.Tag
+                                where  ExecFlag is not null and  plc.GoodsCode='0000000000'";
                 if (equinfo.ID != "")
                 {
-                    str1 += " WHERE a.ID = " + equinfo.ID + " ";
+                    str1 += " and a.ID = " + equinfo.ID + " ";
                 }
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = str1;

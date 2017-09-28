@@ -9,7 +9,7 @@ using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.SessionState;
 using Aspose.Cells;
-
+using Aspose.Words;
 namespace LiNuoMes.Equipment.hs
 {
     /// <summary>
@@ -110,7 +110,7 @@ namespace LiNuoMes.Equipment.hs
                         try
                         {
                             Workbook wb = new Workbook(path);
-                            wb.Save(browsePartsFilePath + fileWithoutType + ".pdf", SaveFormat.Pdf);
+                            wb.Save(browsePartsFilePath + fileWithoutType + ".pdf",Aspose.Cells.SaveFormat.Pdf);
                             context.Response.Write("./PartsFile/" + fileWithoutType + ".pdf");
                         }
                         catch (Exception ex)
@@ -180,8 +180,12 @@ namespace LiNuoMes.Equipment.hs
                         string path = browseManualFilePath + Common.StringFilter.FilterSpecial(fileName);
                         try
                         {
-                            Workbook wb = new Workbook(path);
-                            wb.Save(browseManualFilePath + fileWithoutType + ".pdf", SaveFormat.Pdf);
+                            //读取doc文档
+                            Document doc = new Document(path);
+                            ////保存为PDF文件，此处的SaveFormat支持很多种格式，如图片，epub,rtf 等等
+                            doc.Save(browseManualFilePath + fileWithoutType + ".pdf",Aspose.Words.SaveFormat.Pdf);
+                            //Workbook wb = new Workbook(path);
+                            //wb.Save(browseManualFilePath + fileWithoutType + ".pdf", SaveFormat.Pdf);
                             context.Response.Write("./ManualFile/" + fileWithoutType + ".pdf");
                         }
                         catch (Exception ex)

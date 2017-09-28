@@ -70,7 +70,8 @@
                  $("#DealWithComment").attr("disabled", true);
              }
 
-             if (actionname == 1 || actionname == 2 ) {
+             if (actionname == 1 || actionname == 2) {
+                 
                  $.ajax({
                      url: "../Equipment/hs/GetAlarmCRUD.ashx",
                      data: {
@@ -82,7 +83,7 @@
                      success: function (data) {
                          data = JSON.parse(data);
                          $("#ProcessName").val("" + data.ProcessCode + "");
-                         $("#DeviceName").val(data.DeviceName.trim());
+                         $("#DeviceName").val(window.parent.$('#gridTable').jqGridRowValue("DeviceName").trim());
                          $("#AlarmItem").val(data.AlarmItem.trim());
                          $("#AlarmTime").val(data.AlarmTime);
                          $("#DealWithTime").val(data.DealWithTime);
@@ -110,7 +111,7 @@
                      success: function (data) {
                          data = JSON.parse(data);
                          $("#ProcessName").val("" + data.ProcessCode + "");
-                         $("#DeviceName").val(data.DeviceName.trim());
+                         $("#DeviceName").val(window.parent.$('#gridTable').jqGridRowValue("DeviceName").trim());
                          $("#AlarmItem").val(data.AlarmItem.trim());
                          $("#AlarmTime").val(data.AlarmTime);
                          

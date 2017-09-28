@@ -391,6 +391,9 @@
        
          //保存表单
          function AcceptClick(grid) {
+             if (!$('#ruleinfo').Validform()) {
+                 return false;
+             }
              var ProcessName = $("#ProcessName").val().trim();
              var PmLevel = $("#PmLevel").val();
              var DeviceName = $("#DeviceName").val().trim();
@@ -404,11 +407,11 @@
              var PmPreAlarmDates = $("#PmPreAlarmDates").val().trim();
              var PmPlanComment = $("#Description").val().trim();
 
-             if(PmLevel=='二级保养'){
-                 if (!$('#ruleinfo').Validform()) {
-                     return false;
-                 }
-             }
+             //if(PmLevel=='二级保养'){
+             //    if (!$('#ruleinfo').Validform()) {
+             //        return false;
+             //    }
+             //}
 
              $.ajax({
                  url: "../Equipment/hs/GetEquMaintencePlanCRUD.ashx",
@@ -505,11 +508,11 @@
                  <tr>
                     <th class="formTitle">保养周期(月)</th>
                     <td class="formValue">
-                       <input id="PmCycleTime" type="text" class="form-control" placeholder="请输入保养周期" isvalid="yes" checkexpession="PositiveNum"/>  
+                       <input id="PmCycleTime" type="text" class="form-control" placeholder="请输入保养周期" isvalid="yes" checkexpession="PositiveNumOrNull"/>  
                     </td>
                     <th class="formTitle">保养耗时(分)</th>
                     <td class="formValue">
-                       <input id="PmTimeUsage" type="text" class="form-control" placeholder="请输入保养耗时" isvalid="yes" checkexpession="PositiveNum"/>     
+                       <input id="PmTimeUsage" type="text" class="form-control" placeholder="请输入保养耗时" isvalid="yes" checkexpession="PositiveNumOrNull"/>     
                     </td>
                    
                 </tr>
@@ -526,7 +529,7 @@
                 <tr >
                     <th class="formTitle">提前提醒天数(天)</th>
                     <td class="formValue">
-                       <input id="PmPreAlarmDates" type="text" class="form-control" value="3" isvalid="yes" checkexpession="PositiveNum"/>
+                       <input id="PmPreAlarmDates" type="text" class="form-control"  isvalid="yes" checkexpession="PositiveNumOrNull"/>
                     </td>
                    
                 </tr>

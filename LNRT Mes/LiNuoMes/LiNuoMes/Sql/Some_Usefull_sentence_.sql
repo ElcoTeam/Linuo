@@ -227,51 +227,48 @@ SET
 
 --select * from Mes_PLC_TagList where [所属模块] ='物料拉动'
 /*
---ALTER TABLE [Mes_PLC_TagList] ADD PlcCabinet varchar(5) null;
 
 TRUNCATE TABLE [Mes_PLC_TagList];
 
-DELETE FROM Mes_PLC_Parameters WHERE PLCID IN (SELECT ID FROM Mes_PLC_List WHERE GoodsCode IN ('0000000000','000000002120360056'));
-DELETE FROM MES_PLC_LIST WHERE GoodsCode IN ('0000000000','000000002120360056');
+DELETE FROM Mes_PLC_Parameters WHERE PLCID IN (SELECT ID FROM Mes_PLC_List WHERE GoodsCode IN ('0000000000'));
+DELETE FROM MES_PLC_LIST WHERE GoodsCode IN ('0000000000');
 
 UPDATE Mes_Plc_TagList set PlcCabinet  =  left(tag, patindex('%[._]%',tag)-1);
 
 INSERT INTO Mes_PLC_List (GoodsCode, PLCName, PLCCode, PLCType, PLCModel, PLCCabinet)
-SELECT DISTINCT '000000002120360056' GoodsCode, DeviceName PLCName, DeviceCode PLCCode, PLCBrand PLCType, PlcModel PlcModel, PLCCabinet PLCCabinet 
-from Mes_PLC_TagList ORDER BY PLCCODE;
+SELECT DISTINCT '2120360056' GoodsCode, DeviceName PLCName, DeviceCode PLCCode, PLCBrand PLCType, PlcModel PlcModel, PLCCabinet PLCCabinet FROM Mes_PLC_TagList ORDER BY PLCCODE;
 
 INSERT INTO Mes_PLC_Parameters (PLCID, ParamName, ParamValue, ParamType, OperateType, ParamDsca, ItemNumber, ProcessCode, ApplModel)
 SELECT PLC.ID PLCID, 
-TagList.Tag ParamName, 
-ISNULL([TagList].[产品A参数值(ParaValueA)], '')  ParamValue, 
-TagList.OPCType ParamType, 
-[TagList].[I/OType] OperateType, 
-TagList.TagName ParamDsca,
-CASE TagList.[所属模块] 
-    WHEN '物料拉动' THEN [参数值说明（ValueInf）]
-    ELSE ''
-END ItemNumber, 
-CASE TagList.[所属模块] 
-    WHEN '物料拉动' THEN [产品A参数值(ParaValueA)]
-    ELSE ''
-END ProcessCode,
-CASE TagList.[所属模块] 
-    WHEN '参数派发'    THEN 'VS'
-    WHEN '物料拉动'    THEN 'MT'
-    WHEN '显示'        THEN 'NA'
-    WHEN 'RFID（检测到位）'     THEN 'RT'
-    WHEN '报警'     THEN 'AT'
-    WHEN '备用'     THEN 'NA'
-    ELSE                 'NA'
-END ApplModel
+    TagList.Tag ParamName, 
+    ISNULL([TagList].[产品A参数值(ParaValueA)], '')  ParamValue, 
+    TagList.OPCType ParamType, 
+    [TagList].[I/OType] OperateType, 
+    TagList.TagName ParamDsca,
+    CASE TagList.[所属模块] 
+        WHEN '物料拉动' THEN [参数值说明（ValueInf）]
+        ELSE ''
+    END ItemNumber, 
+    CASE TagList.[所属模块] 
+        WHEN '物料拉动' THEN [产品A参数值(ParaValueA)]
+        ELSE ''
+    END ProcessCode,
+    CASE TagList.[所属模块] 
+        WHEN '参数派发'             THEN 'VS'
+        WHEN '物料拉动'             THEN 'MT'
+        WHEN '显示'                THEN 'NA'
+        WHEN 'RFID（检测到位）'     THEN 'RT'
+        WHEN '报警'                THEN 'AT'
+        WHEN '备用'                THEN 'NA'
+        ELSE                           'NA'
+    END ApplModel
 FROM Mes_PLC_TagList TagList,
      Mes_PLC_List  PLC
 WHERE 
     TagList.DeviceCode = PLC.PLCCode 
 AND TagList.PlcCabinet = PLC.PlcCabinet 
-AND PLC.GoodsCode      = '000000002120360056'
+AND PLC.GoodsCode      = '2120360056'
 ORDER BY PLCID;
-
 
 UPDATE MES_PLC_LIST SET ProcessCode = '1010' where plccode in ('CP16','CP17','CP18','RP05');
 UPDATE MES_PLC_LIST SET ProcessCode = '1020' where plccode in ('CP15');
@@ -294,19 +291,21 @@ UPDATE MES_PLC_LIST SET ProcessCode = '3010' where plccode in ('RP03');
 UPDATE MES_PLC_LIST SET ProcessCode = '3020' where plccode in ('CP11');
 UPDATE MES_PLC_LIST SET ProcessCode = '3110' where plccode in ('RP04','CP14');
 
-
 UPDATE MES_PLC_Parameters 
-SET MES_PLC_Parameters.ProcessCode = PRO.ProcessCode 
-FROM [dbo].[Mes_Process_List] AS PRO
-WHERE MES_PLC_Parameters.ApplModel= 'MT'
-AND [MES_PLC_Parameters].ParamValue = PRO.ProcessName;
+SET 
+    MES_PLC_Parameters.ProcessCode = PRO.ProcessCode 
+FROM 
+    [dbo].[Mes_Process_List] AS PRO
+WHERE 
+    MES_PLC_Parameters.ApplModel  = 'MT'
+AND MES_PLC_Parameters.ParamValue = PRO.ProcessName;
 
 UPDATE MES_PLC_Parameters SET OperateCommand = 'WRITE' WHERE OperateType = 'W' OR OperateType = 'RW';
-UPDATE MES_PLC_Parameters SET ApplModel = 'QS' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE [参数值说明（ValueInf）] ='随订单变化');
-UPDATE MES_PLC_Parameters SET ApplModel = 'NA' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE [参数值说明（ValueInf）] ='现在取消不用');
-UPDATE MES_PLC_Parameters SET ApplModel = 'CS' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '换更产品请求');
-UPDATE MES_PLC_Parameters SET ApplModel = 'ET' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '有功电能');
-UPDATE MES_PLC_Parameters SET ApplModel = 'QT' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname LIKE '完成数量%');
+UPDATE MES_PLC_Parameters SET ApplModel      = 'QS' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE [参数值说明（ValueInf）] ='随订单变化');
+UPDATE MES_PLC_Parameters SET ApplModel      = 'NA' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE [参数值说明（ValueInf）] ='现在取消不用');
+UPDATE MES_PLC_Parameters SET ApplModel      = 'CS' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '换更产品请求');
+UPDATE MES_PLC_Parameters SET ApplModel      = 'ET' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '有功电能');
+UPDATE MES_PLC_Parameters SET ApplModel      = 'QT' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname LIKE '完成数量%');
 
 UPDATE Mes_PLC_Parameters
 SET 

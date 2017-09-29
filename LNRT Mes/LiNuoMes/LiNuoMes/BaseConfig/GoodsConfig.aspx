@@ -43,7 +43,7 @@
             var areaheight = $("#areascontent").height();
             $(window).resize(function (e) {
                 window.setTimeout(function () {
-                    $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                    $('#gridTable').setGridWidth(($('.gridPanel').width()) - 1);
                     $('#areascontent').height($(window).height()-106);
                 }, 200);
             });
@@ -60,27 +60,34 @@
                 url: "GetSetBaseConfig.ashx",
                 postData: { Action: "MES_GOODS_CONFIG_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() - 300,
+                height: $('#areascontent').height() - 160,
                 colModel: [
                     { label: 'ID',          name: 'ID', hidden: true },
-                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: tWidth * 5 / 100, align: 'center', sortable: false },
-                    { label: '产品物料编号', name: 'GoodsCode', index: 'GoodsCode', width: tWidth * 20 / 100, align: 'center', sortable: false },
+                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: tWidth * 4 / 100, align: 'center', sortable: false },
+                    { label: '产品编码', name: 'GoodsCode', index: 'GoodsCode', width: tWidth * 12 / 100, align: 'center', sortable: false },
                     { label: '长', name: 'DimLength', index: 'DimLength', width: tWidth * 5 / 100, align: 'center', sortable: false },
                     { label: '宽', name: 'DimWidth', index: 'DimWidth', width: tWidth * 5 / 100, align: 'center', sortable: false },
                     { label: '高', name: 'DimHeight', index: 'DimHeight', width: tWidth * 5 / 100, align: 'center', sortable: false },
-                    { label: '单位生产耗时', name: 'UnitCostTime', index: 'UnitCostTime', width: tWidth * 5 / 100, align: 'center', sortable: false },
+                    { label: '单位耗时', name: 'UnitCostTime', index: 'UnitCostTime', width: tWidth * 5 / 100, align: 'center', sortable: false },
                     {
-                        label: '物料拉动料号维护', name: 'PLCParameters', index: 'PLCParameters', width: tWidth * 15 / 100, align: 'center', sortable: false,
+                        label: '物料拉动料号维护', width: tWidth * 14 / 100, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return '<span onclick=\"btn_PlcPullCheck( \'' + rowObject.GoodsCode + '\')\" class=\"label label-success\" style=\"cursor: pointer;\"                 ><i class="fa fa-check-square-o"></i>查看</span>'
                                  + '<span onclick=\"btn_PlcPullEdit(  \'' + rowObject.GoodsCode + '\')\" class=\"label label-success\" style=\"cursor: pointer;margin-left:20px;\"><i class="fa fa-edit"></i>修改</span>';
                         }
                     },
                     {
-                        label: 'PLC参数', name: 'PLCParameters', index: 'PLCParameters', width: tWidth * 15 / 100, align: 'center', sortable: false,
+                        label: 'PLC参数维护', width: tWidth * 14 / 100, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return '<span onclick=\"btn_PLCCheck( \'' + rowObject.GoodsCode + '\')\" class=\"label label-success\" style=\"cursor: pointer;\"                 ><i class="fa fa-check-square-o"></i>查看</span>'
                                  + '<span onclick=\"btn_PLCEdit(  \'' + rowObject.GoodsCode + '\')\" class=\"label label-success\" style=\"cursor: pointer;margin-left:20px;\"><i class="fa fa-edit"></i>修改</span>';
+                        }
+                    },
+                    {
+                        label: '产品用料分布维护', width: tWidth * 14 / 100, align: 'center', sortable: false,
+                        formatter: function (cellvalue, options, rowObject) {
+                            return '<span onclick=\"btn_MubCheck( \'' + rowObject.GoodsCode + '\')\" class=\"label label-success\" style=\"cursor: pointer;\"                 ><i class="fa fa-check-square-o"></i>查看</span>'
+                                 + '<span onclick=\"btn_MubEdit(  \'' + rowObject.GoodsCode + '\')\" class=\"label label-success\" style=\"cursor: pointer;margin-left:20px;\"><i class="fa fa-edit"></i>修改</span>';
                         }
                     },
                     {
@@ -145,6 +152,15 @@
         function btn_PLCEdit(GoodsCode) {
             window.location.href = "./PLCConfig.aspx?FMType=MAINTAIN&OPtype=EDIT&GoodsCode=" + GoodsCode;
         }
+
+        function btn_MubCheck(GoodsCode) {
+            window.location.href = "./MubConfig.aspx?FMType=MAINTAIN&OPtype=CHECK&GoodsCode=" + GoodsCode;
+        }
+
+        function btn_MubEdit(GoodsCode) {
+            window.location.href = "./MubConfig.aspx?FMType=MAINTAIN&OPtype=EDIT&GoodsCode=" + GoodsCode;
+        }
+
 
         //新建
         function btn_Add(event) {
@@ -257,33 +273,26 @@
                                 </tr>
                             </table>
                         </div>
-                        <div class="panel-body" style="text-align:left">
-                            <table id="form1" class="form" border="0">
+                        <div class="panel-body" style="padding: 5px;text-align:left">
+                            <table border="0">
                                 <tr>
-                                    <th class="formTitle" style="width:320px;text-align:right">产品物料编号：</th>
-                                    <td class="formValue" colspan="2">
-                                        <input type="text" class="form-control" id="GoodsCode" placeholder="请输入产品物料编码">
+                                    <td style="text-align:right">产品物料编号：</td>
+                                    <td>
+                                        <input type="text" id="GoodsCode" placeholder="请输入产品物料编码">
                                     </td>
-                                </tr>
-                                <tr>
-                                    <th class="formTitle" style="text-align:right">长：</th>
-                                    <td class="formValue" colspan="2">
-                                        <input type="text" class="form-control" id="DimLength" placeholder="长度">
+                                    <td style="padding-left: 15px;text-align:right">长：</td>
+                                    <td>
+                                        <input type="text" id="DimLength" placeholder="长度">
                                     </td>
-                                </tr>
-                                <tr>
-
-                                    <th class="formTitle" style="width:50px;text-align:right">宽：</th>
-                                    <td class="formValue" colspan="2">
-                                        <input type="text" class="form-control" id="DimWidth" placeholder="高度">
+                                    <td style="padding-left: 15px;text-align:right">宽：</td>
+                                    <td>
+                                        <input type="text" id="DimWidth" placeholder="高度">
                                     </td>
-                                 </tr>
-                                 <tr>
-                                   <th class="formTitle" style="width:50px;text-align:right">高：</th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DimHeight" placeholder="宽度">
+                                   <td style="padding-left: 15px;text-align:right">高：</td>
+                                    <td>
+                                        <input type="text" id="DimHeight" placeholder="宽度">
                                     </td>
-                                    <td class="formValue" style="padding-right: 5px;text-align:right">                                           
+                                    <td style="padding-left: 15px;text-align:right">                                           
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>
                                     </td>
@@ -294,8 +303,7 @@
                 </div>
             </div>
         </div>
-
-         <div class="rows" style="margin-top:0.5%; overflow: hidden; ">
+         <div class="rows" style="overflow: hidden; ">
               <div class="gridPanel">
                    <table id="gridTable"></table>
                    <div id="gridPager"></div>
@@ -315,7 +323,7 @@
            } 
            .form-control {
                font-size:15px;
-               width:200px;
+               width:100px;
                height:30px;
            }
            .aa{
@@ -333,7 +341,7 @@
            } 
            .form-control {
                font-size:15px;
-               width:200px;
+               width:100px;
                height:30px;
            }
            .aa{

@@ -249,7 +249,7 @@
             font-size:15px; 
         }
       
-        @media screen and (max-width: 1400px) { 
+       @media screen and (max-width: 1400px) { 
            .formTitle {
                font-size:15px;
                width:400px;

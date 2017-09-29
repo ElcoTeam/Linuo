@@ -10,6 +10,7 @@ using System.Web;
 using System.Web.Services;
 using System.Web.SessionState;
 using System.Web.Script.Serialization;
+using LiNuoMes.Common;
 
 
 namespace LiNuoMes.BaseConfig
@@ -1914,6 +1915,24 @@ namespace LiNuoMes.BaseConfig
 
             return strTemp + fileType;
         }
+
+        public DataTable ReadExcelFile(string sFile)
+        {
+            try
+            {
+                using (ExcelOperate excelHelper = new ExcelOperate(sFile))
+                {
+                    DataTable dt = excelHelper.ExcelToDataTable("MySheet", true);                    
+                    return dt;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception: " + ex.Message);
+                return null;
+            }
+        }
+
     }
 
     public class CustomerEntity

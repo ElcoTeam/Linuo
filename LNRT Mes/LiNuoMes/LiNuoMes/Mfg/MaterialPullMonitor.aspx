@@ -36,19 +36,14 @@
     <script>
         var selectedRowIndex = 0;
         $(function () {
-            var n = 1;
-            if ($('#areascontent').height() > $(window).height() - 20) {
-                $('#areascontent').css("margin-right", "0px");
-            }
             $('#areascontent').height($(window).height() - 120);
-            var areaheight = $("#areascontent").height();
             $(window).resize(function (e) {
                 window.setTimeout(function () {
                     $('#gridTable').setGridWidth(($('.gridPanel').width()));
                     $('#areascontent').height($(window).height() - 120);
+                    $('#gridTable').setGridHeight($('#areascontent').height() - 180);
                 }, 200);
             });
-
             InitPage();
         });
 
@@ -60,7 +55,7 @@
                 url: "GetSetMfg.ashx",
                 postData: { Action: "MFG_PLC_PARAM_WO_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() - 120,
+                height: $('#areascontent').height() - 180,
                 rowNum: -1,
                 jsonReader: {
                     repeatitems: false,   //此两个参数影响了是否刷新之后高亮选中记录: 如果直接设定为true, 则无论id项设定与否都可以实现高亮选中
@@ -87,8 +82,8 @@
                         label: '操 作', width: 100, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             var ret = "";
-                            ret += '<button onclick=\"showdlg(\'EDIT\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>修改订单</button>';
-                            ret += '<button onclick=\"showdlg(\'TRIG\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>手动拉动</button>';
+                            ret += '<button onclick=\"showdlg(\'EDIT\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>修改</button>';
+                            ret += '<button onclick=\"showdlg(\'TRIG\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>拉动</button>';
                             return ret;
                         }
                     },
@@ -118,9 +113,16 @@
             var sUrl;
             var sWidth;
             var sHeight;
+
             if (OPtype == "EDIT") {
                 sTitle = "设定物料拉动订单";
                 sUrl = "MaterialPullMointorEdit.aspx?ParamId=" + ParamId;
+                sWidth = "960px";
+                sHeight = "600px";
+            }
+            if (OPtype == "EDITALL") {
+                sTitle = "所有工位统一设定物料拉动订单";
+                sUrl = "MaterialPullMointorEdit.aspx?ParamId=-1";
                 sWidth = "960px";
                 sHeight = "600px";
             }
@@ -168,6 +170,16 @@
                                 </tr>
                             </table>
                         </div>
+                        <div class="panel-body" style="text-align:left">
+                            <table id="form1" class="form" border="0">
+                                <tr>
+                                    <td class="formValue" style="text-align:right">                                            
+                                        <a id="btn_SetAll" class="btn btn-primary" onclick="showdlg('EDITALL', -1)"><i class="fa fa-flag"></i>&nbsp;所有工位统一设定物料拉动订单</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
                         <div class="panel-body" style="text-align:left">
                         </div>
                     </div>

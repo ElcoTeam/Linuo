@@ -601,6 +601,38 @@ CREATE TABLE [dbo].[Mes_Process_List] (
 
 );
 
+--产品用料分布
+IF OBJECT_ID('Mes_Mub_List') is not null
+DROP TABLE Mes_Mub_List;
+CREATE TABLE [dbo].[Mes_Mub_List] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [GoodsCode]          VARCHAR  (50)   NOT NULL,                        --产品的物料编码
+    [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --原料编码
+    [ItemDsca]           NVARCHAR (50)   NOT NULL,                        --原料描述
+    [ProcessCode]        VARCHAR  (50)   NOT NULL DEFAULT (''),           --工序编号
+    [ProcessName]        NVARCHAR (50)   NOT NULL DEFAULT (N''),          --工序名称
+    [MubPercent]         NUMERIC  (18, 4)NOT NULL DEFAULT (100),          --PLC计数用量
+    [UploadUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户
+    [UploadTime]         DATETIME        NOT NULL DEFAULT GETDATE()       --上传时间
+)
+
+--产品用料分布(文件上传临时用)
+IF OBJECT_ID('Mes_Mub_List_UP') is not null
+DROP TABLE Mes_Mub_List_UP;
+CREATE TABLE [dbo].[Mes_Mub_List_UP] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [TargetFileName]     NVARCHAR (50)   NOT NULL DEFAULT (N'') ,         --文件上传之后在服务器上保留的文件名称 
+    [GoodsCode]          VARCHAR  (50)   NOT NULL,                        --产品的物料编码
+    [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --原料编码
+    [ItemDsca]           NVARCHAR (50)   NOT NULL,                        --原料描述
+    [ProcessCode]        VARCHAR  (50)   NOT NULL DEFAULT (''),           --工序编号
+    [ProcessName]        NVARCHAR (50)   NOT NULL DEFAULT (N''),          --工序名称
+    [MubPercent]         NUMERIC  (18, 4)NOT NULL DEFAULT (100),          --PLC计数用量
+    [UploadUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户
+    [UploadTime]         DATETIME        NOT NULL DEFAULT GETDATE()       --上传时间
+)
+
+
 --物料编码表 (注意: 此处没有PLC_Code, 需要和Mes_PLC_List进行笛卡尔积计算得来PLC的配置.)
 IF OBJECT_ID('Mes_Goods_List') is not null
 DROP TABLE Mes_Goods_List;

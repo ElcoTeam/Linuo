@@ -1665,6 +1665,28 @@ AS
 GO
 
 --产品物料编码维护 -> 新增产品
+ALTER PROCEDURE  [dbo].[usp_Mes_Mub_List_Add]
+     @TargetFileName     AS NVARCHAR (50)    = ''    --文件上传之后在服务器上保留的文件名称 
+    ,@GoodsCode          AS VARCHAR  (50)    = ''    --产品的物料编码
+    ,@ItemNumber         AS VARCHAR  (50)    = ''    --原料编码
+    ,@ItemDsca           AS NVARCHAR (50)    = ''    --物料描述
+    ,@ProcessCode        AS VARCHAR  (50)    = ''    --工序编号
+    ,@ProcessName        AS NVARCHAR (50)    = N''   --工序名称
+    ,@MubPercent         AS NUMERIC  (18, 4) = 100   --PLC计数用量
+    ,@UploadUser         AS NVARCHAR (50)    = N''   --更新用户
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+
+    INSERT INTO Mes_Mub_List_UP
+    ( [TargetFileName],  [GoodsCode],  [ItemNumber],  [ItemDsca],  [ProcessCode],  [ProcessName],  [MubPercent],  [UploadUser]) VALUES
+    ( @TargetFileName,   @GoodsCode,   @ItemNumber,   @ItemDsca,   @ProcessCode,   @ProcessName,   @MubPercent,   @UploadUser );
+    RETURN
+GO
+
+--产品物料编码维护 -> 新增产品
 ALTER PROCEDURE  [dbo].[usp_Mes_Goods_List_Add]
      @GoodsCode          AS VARCHAR  (50) --产品的物料编码
     ,@GoodsDsca          AS NVARCHAR (50) --产品的物料描述
@@ -2769,6 +2791,7 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Param_WO_UpdateById]
 AS
     SET @CatchError = 0
     SET @RtnMsg     = '';
+
     UPDATE Mes_Plc_Parameters
     SET    
         WorkOrderNumber  = Mfg_WO_List.ErpWorkOrderNumber              
@@ -2777,8 +2800,15 @@ AS
         Mes_PLC_Parameters
        ,Mfg_WO_List
     WHERE 
-        Mes_PLC_Parameters.ID = @ParamId
-    AND Mfg_WO_List.ID        = @WoId;
+       (   @ParamId <> -1 AND Mes_PLC_Parameters.ID = @ParamId   
+        OR @ParamId =  -1 AND Mes_PLC_Parameters.PLCID IN ( SELECT ID 
+                                                            FROM Mes_PLC_List 
+                                                            WHERE 
+                                                                GoodsCode                    = '0000000000' 
+                                                            AND Mes_PLC_Parameters.ApplModel = 'MT'
+                                                           ) 
+       )
+    AND Mfg_WO_List.ID = @WoId;
 GO
 
 -- PLC 触发了 物料拉动 动作

@@ -18,7 +18,10 @@ INSERT INTO Mes_PLC_Parameters (PLCID, ParamName, ParamValue, ParamType, Operate
 SELECT 
     PLC.ID                                          PLCID, 
     TagList.Tag                                     ParamName, 
-    ISNULL([TagList].[产品A参数值(ParaValueA)], '')  ParamValue, 
+    CASE TagList.[所属模块] 
+        WHEN '物料拉动' THEN [产品B参数值(ParaValueB)]
+        ELSE ISNULL([TagList].[产品A参数值(ParaValueA)], '')
+    END                                             ParamValue, 
     TagList.OPCType                                 ParamType, 
     [TagList].[I/OType]                             OperateType, 
     TagList.TagName                                 ParamDsca,

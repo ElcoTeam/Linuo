@@ -113,6 +113,18 @@ namespace LiNuoMes.BaseConfig
                 result = doUploadFile(result, file);
                 context.Response.Write(jsc.Serialize(result));
             }
+            else if (Action == "MES_MUB_CONFIG_FILE_UPLOAD")
+            {
+                HttpPostedFile file = System.Web.HttpContext.Current.Request.Files["Filedata"];
+                ResultMsg_FileUPload result = new ResultMsg_FileUPload();
+                result = doUploadFile(result, file);
+                if (result.result == "success")
+                {
+                    DataTable dt = ReadExcelFile(uploadFilePath + result.targetFileName);
+                    result = addMubDataInDB(dt, result);
+                }
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MFG_WO_LIST_FILE_UPLOAD")
             {
                 HttpPostedFile file = System.Web.HttpContext.Current.Request.Files["Filedata"];
@@ -1677,6 +1689,101 @@ namespace LiNuoMes.BaseConfig
                     cmd.Dispose();
                     result.result = "failed";
                     result.msg = "读取(保存)失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        public ResultMsg_FileUPload addMubDataInDB(DataTable dt, ResultMsg_FileUPload result)
+        {
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    string GoodsCode = RequstString("GoodsCode");
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mes_Mub_List_Add";
+                    SqlParameter[] sqlPara = new SqlParameter[10];
+
+                    for (int i=0; i < sqlPara.Length; i++)
+                    {
+                        sqlPara[i] = new SqlParameter();
+                        sqlPara[i].IsNullable = true;
+                        sqlPara[i].SqlDbType = SqlDbType.VarChar;
+                        sqlPara[i].Direction = ParameterDirection.Input;
+                    }
+
+                    sqlPara[0].ParameterName = "@TargetFileName";
+                    sqlPara[1].ParameterName = "@GoodsCode";
+                    sqlPara[2].ParameterName = "@ItemNumber";
+                    sqlPara[3].ParameterName = "@ItemDsca";
+                    sqlPara[4].ParameterName = "@ProcessCode";
+                    sqlPara[5].ParameterName = "@ProcessName";
+                    sqlPara[6].ParameterName = "@MubPercent";
+                    sqlPara[7].ParameterName = "@UploadUser";
+                    sqlPara[8].ParameterName = "@CatchError";
+                    sqlPara[9].ParameterName = "@RtnMsg";
+
+                    sqlPara[6].SqlDbType = SqlDbType.Float;
+                    sqlPara[8].SqlDbType = SqlDbType.Int;
+                    sqlPara[8].Direction = ParameterDirection.Output;
+                    sqlPara[9].Direction = ParameterDirection.Output;
+                    sqlPara[9].Size      = 100;
+
+                    sqlPara[0].Value = result.targetFileName;
+                    sqlPara[1].Value = GoodsCode;
+                    sqlPara[7].Value = UserName;
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+
+                    if (dt == null) 
+                    {
+                        result.result = "failed";
+                        result.msg = "上传文件记录数为空!";
+                    }
+
+                    for (int i = 1; i < dt.Rows.Count; ++i)
+                    {
+                        for (int j = 2; j < 7; j++)
+                        {
+                            sqlPara[j].Value = dt.Rows[i][j];
+                        }
+                        cmd.ExecuteNonQuery();
+
+                        if (sqlPara[8].Value.ToString() != "0")
+                        {
+                            transaction.Rollback();
+                            result.result = "failed";
+                            result.msg = sqlPara[9].Value.ToString();
+                            cmd.Dispose();
+                            return result;
+                        }
+
+                        for (int j = 2; j < 7; j++)
+                        {
+                            sqlPara[j].Value = "";
+                        }
+                    }
+                    transaction.Commit();
+                    cmd.Dispose();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
                 }
             }
             return result;

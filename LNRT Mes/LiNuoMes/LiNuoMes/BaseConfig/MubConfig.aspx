@@ -33,7 +33,9 @@
     <script src="../Content/scripts/utils/learun-ui.js"></script>
     <script src="../Content/scripts/utils/learun-form.js"></script>
     
-     <script>
+    <script>
+        var GoodsCode = "";
+        var OPtype = "";           //操作类型: CHECK, EDIT
         $(function () {
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
@@ -52,6 +54,14 @@
 
         //加载表格
         function InitPage() {
+            GoodsCode = request("GoodsCode");
+            OPtype = request("OPtype");
+            $("#GoodsCode").html(GoodsCode);
+            if (OPtype == "CHECK") {
+                $("#btn_OK").remove();
+                $("#btn_UP").remove();
+            }
+
             var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
             var tWidth = $('.gridPanel').width();
@@ -62,10 +72,10 @@
                 height: $('#areascontent').height() - 170,
                 width: tWidth - 1,
                 colModel: [
-                    { label: 'ID', name: 'ID', hidden: true },
-                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: tWidth * 5 / 100, align: 'center', sortable: false },
-                    { label: '物料编码', name: 'ItemNumber', index: 'ItemNumber', width: tWidth * 15 / 100, align: 'center', sortable: false },
-                    { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: tWidth * 30 / 100, align: 'center', sortable: false },
+                    { label: 'ID',  name: 'ID', hidden: true },
+                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber',  width: tWidth * 5 / 100,  align: 'center', sortable: false },
+                    { label: '物料编码', name: 'ItemNumber', index: 'ItemNumber',   width: tWidth * 15 / 100, align: 'center', sortable: false },
+                    { label: '物料描述', name: 'ItemDsca',   index: 'ItemDsca',     width: tWidth * 30 / 100, align: 'center', sortable: false },
                     { label: '工序编号', name: 'ProcessCode', index: 'ProcessCode', width: tWidth * 10 / 100, align: 'center', sortable: false },
                     { label: '工序描述', name: 'ProcessName', index: 'ProcessName', width: tWidth * 30 / 100, align: 'center', sortable: false },
                     { label: '工序用料占比(%)', name: 'MubPercent', index: 'MubPercent', width: tWidth * 15 / 100, align: 'center', sortable: false }
@@ -84,6 +94,31 @@
             });
         }
 
+
+        function onbtn_DL(event) {
+
+        }
+
+        function onbtn_UP(event) {
+            if (OPtype == "CHECK") {
+                onbtn_RT(null);
+                return;
+            }
+
+            if (OPtype == "EDIT") {
+                dialogOpen({
+                    id: "UploadifyMubExcel",
+                    title: '上传文件',
+                    url: './UploadifyMubExcel.aspx',
+                    width: "600px",
+                    height: "180px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].AcceptClick($("#UploadedFile"), $("#TargetFile"), GoodsCode);
+                    }
+                });
+            }
+        }
+
         function onbtn_OK(event) {
             if (OPtype == "CHECK") {
                 onbtn_RT(null);
@@ -91,12 +126,11 @@
             }
 
             if (OPtype == "EDIT") {
-                onSaveParameters();
+                //onSaveParameters();
             }
         }
 
         function onbtn_RT(event) {
-            //window.location.href = "./GoodsConfig.aspx";
             window.history.back();
         }
 
@@ -160,11 +194,14 @@
                             </table>
                         </div>
                         <div class="panel-body" style="text-align:left">
-                            <table id="form1" class="form" border="0">
+                            <table border="0" style="width:100%">
                                 <tr>
                                     <th class="formTitle">产品物料编码：<span id="GoodsCode" class="formTitle">Goods Code</span></th>
-                                    <td class="formValue"></td>
-                                    <td class="formValue">                                           
+                                    <td class="formValue" style="text-align:right;padding-left:10px">
+                                        <span id="UploadedFile" class="formTitle"></span>||||                                           
+                                        <span id="TargetFile" class="formTitle"></span>                                           
+                                        <a id="btn_UP" class="btn btn-primary" onclick="onbtn_UP(event)"><i class="fa fa-upload"></i>&nbsp;上传</a>  
+                                        <a id="btn_DL" class="btn btn-primary" onclick="onbtn_DL(event)"><i class="fa fa-download"></i>&nbsp;下载</a>  
                                         <a id="btn_OK" class="btn btn-primary" onclick="onbtn_OK(event)"><i class="fa fa-check"></i>&nbsp;确认</a>  
                                         <a id="btn_RT" class="btn btn-primary" onclick="onbtn_RT(event)"><i class="fa fa-reply"></i>&nbsp;返回</a>
                                     </td>
@@ -197,7 +234,7 @@
            } 
            .form-control {
                font-size:15px;
-               width:220px;
+               width:160px;
                height:30px;
                margin-left:5px;
                margin-right:5px;
@@ -220,13 +257,17 @@
            } 
            .form-control {
                font-size:15px;
-               width:220px;
+               width:160px;
                height:30px;
                margin-left:5px;
                margin-right:5px;
            }
+           .aa{
+               width:200px;
+               height:30px;
+           }
            #form1{
-               margin: 0px 0px 0px 150px;
+               margin-left:0px;
            }
        } 
 

@@ -1664,6 +1664,113 @@ AS
         PmPlan.PmFirstDate = CONVERT(DATE,GETDATE())
 GO
 
+--产品物料编码维护 -> 获取清单
+ALTER PROCEDURE  [dbo].[usp_Mes_Mub_List]
+     @GoodsCode          AS VARCHAR  (50)    = ''    --产品的物料编码
+    ,@TargetFileName     AS NVARCHAR (50)    = ''    --文件上传之后在服务器上保留的文件名称 
+    ,@OPtype             AS VARCHAR  (50)    = ''    --用以判断是刚刚上传的数据文件的返显还是显示数据库中的配置文件的显示
+AS
+    IF @OPtype = 'UPLOADREVIEW'
+    BEGIN    
+        SELECT * 
+        FROM Mes_Mub_List_UP
+        WHERE 
+            TargetFileName = @TargetFileName
+        AND GoodsCode      = '0000000000'
+        ORDER BY ID;
+    END
+    ELSE
+    BEGIN
+        SELECT * 
+        FROM Mes_Mub_List
+        WHERE 
+            GoodsCode      = @GoodsCode
+        ORDER BY ID;
+    END  
+GO
+
+--产品物料编码维护 -> 获取清单模板(物料分布)下载
+ALTER PROCEDURE  [dbo].[usp_Mes_Mub_List_Template]
+     @GoodsCode          AS VARCHAR  (50)    = ''    --产品的物料编码
+    ,@TargetFileName     AS NVARCHAR (50)    = ''    --文件上传之后在服务器上保留的文件名称 
+    ,@OPtype             AS VARCHAR  (50)    = ''    --用以判断是刚刚上传的数据文件的返显还是显示数据库中的配置文件的显示
+AS
+        SELECT 
+             GoodsCode  [产品物料编码]
+            ,ItemNumber [物料编码(*)]
+            ,ItemDsca   [物料描述(*)]
+            ,ProcessCode [工序编号(*)]
+            ,ProcessName [工序名称(*)]
+            ,MubPercent  [工序用料占比%(*)]
+        FROM Mes_Mub_List
+        WHERE 
+            GoodsCode = @GoodsCode
+        ORDER BY ID;
+GO
+
+--产品物料编码维护 -> 保存数据
+ALTER PROCEDURE  [dbo].[usp_Mes_Mub_List_Save]
+     @TargetFileName     AS NVARCHAR (50)    = ''    --文件上传之后在服务器上保留的文件名称 
+    ,@GoodsCode          AS VARCHAR  (50)    = ''    --产品的物料编码
+    ,@UploadUser         AS NVARCHAR (50)    = N''   --更新用户
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+    IF @TargetFileName = ''
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg = '没有找到上传成功的文件';
+        RETURN;
+    END
+
+    DECLARE @ExistCount INT;
+    SELECT 
+         @ExistCount = COUNT(1) 
+    FROM 
+    Mes_Mub_List_UP
+    WHERE 
+          TargetFileName = @TargetFileName 
+      AND GoodsCode      = '0000000000'
+
+    IF @ExistCount = 0 
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg = '系统未发现您曾经上传过有效数据记录!';
+        RETURN;
+    END
+
+    SELECT 
+         @ExistCount = COUNT(1) 
+    FROM 
+    Mes_Mub_List_UP
+    WHERE 
+          TargetFileName = @TargetFileName 
+      AND GoodsCode      = '0000000000'
+      AND ProcessCode NOT IN (SELECT ProcessCode FROM Mes_Process_List)   
+     
+    IF @ExistCount > 0 
+    BEGIN
+        SET @CatchError = 1;
+        SET @RtnMsg = '系统发现您上传的数据记录中有不认识的工序编号, 请核对后重新上传!';
+        RETURN;
+    END
+
+    DELETE FROM Mes_Mub_List WHERE GoodsCode = @GoodsCode;
+
+    INSERT INTO Mes_Mub_List ([GoodsCode],  [ItemNumber],  [ItemDsca],  [ProcessCode],  [ProcessName],  [MubPercent],  [UploadUser])
+    SELECT                    @GoodsCode,   [ItemNumber],  [ItemDsca],  [ProcessCode],  [ProcessName],  [MubPercent],  @UploadUser
+
+    FROM 
+    Mes_Mub_List_UP
+    WHERE 
+          TargetFileName = @TargetFileName 
+      AND GoodsCode      = '0000000000';
+
+    RETURN
+GO
+
 --产品物料编码维护 -> 新增产品
 ALTER PROCEDURE  [dbo].[usp_Mes_Mub_List_Add]
      @TargetFileName     AS NVARCHAR (50)    = ''    --文件上传之后在服务器上保留的文件名称 

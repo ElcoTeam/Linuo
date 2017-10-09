@@ -11,7 +11,6 @@ using HtmlAgilityPack;
 using System.Text.RegularExpressions;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
-using NPOI.XWPF.UserModel;
 using NPOI.SS.Util;
 
 namespace ExportToExcel
@@ -198,34 +197,34 @@ namespace ExportToExcel
 
 
             NPOI.SS.UserModel.ICellStyle tagStyle = hssfworkbook.CreateCellStyle();
-            tagStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.CENTER;
-            tagStyle.VerticalAlignment = VerticalAlignment.CENTER;
+            tagStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+            tagStyle.VerticalAlignment = VerticalAlignment.Center;
             //tagStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.THIN;
             //tagStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.THIN;
             IFont font = hssfworkbook.CreateFont();
             font.FontHeightInPoints = 16;
-            font.Boldweight = (short)NPOI.SS.UserModel.FontBoldWeight.BOLD;
+            font.Boldweight = (short)NPOI.SS.UserModel.FontBoldWeight.Bold;
             font.FontName = "宋体";
             tagStyle.SetFont(font);//HEAD 样式
             cell0.CellStyle = tagStyle;
             NPOI.SS.UserModel.ICellStyle tagStyle1 = hssfworkbook.CreateCellStyle();
-            tagStyle1.Alignment = NPOI.SS.UserModel.HorizontalAlignment.CENTER;
-            tagStyle1.VerticalAlignment = VerticalAlignment.CENTER;
+            tagStyle1.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+            tagStyle1.VerticalAlignment = VerticalAlignment.Center;
             cell1.CellStyle = tagStyle1;
            
             // 标题样式  
             NPOI.SS.UserModel.ICellStyle cellStyle = hssfworkbook.CreateCellStyle();
-            cellStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.CENTER;
-            cellStyle.VerticalAlignment = VerticalAlignment.CENTER;
-            cellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.THIN;
-            cellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.THIN;
-            cellStyle.BottomBorderColor = NPOI.HSSF.Util.HSSFColor.BLACK.index;
-            cellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.THIN;
-            cellStyle.LeftBorderColor = NPOI.HSSF.Util.HSSFColor.BLACK.index;
-            cellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.THIN;
-            cellStyle.RightBorderColor = NPOI.HSSF.Util.HSSFColor.BLACK.index;
-            cellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.THIN;
-            cellStyle.TopBorderColor = NPOI.HSSF.Util.HSSFColor.BLACK.index;
+            cellStyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+            cellStyle.VerticalAlignment = VerticalAlignment.Center;
+            cellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.BottomBorderColor = NPOI.HSSF.Util.HSSFColor.Black.Index;
+            cellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.LeftBorderColor = NPOI.HSSF.Util.HSSFColor.Black.Index;
+            cellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.RightBorderColor = NPOI.HSSF.Util.HSSFColor.Black.Index;
+            cellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.TopBorderColor = NPOI.HSSF.Util.HSSFColor.Black.Index;
 
             #endregion
 

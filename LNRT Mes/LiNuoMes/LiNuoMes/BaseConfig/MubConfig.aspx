@@ -36,6 +36,7 @@
     <script>
         var GoodsCode = "";
         var OPtype = "";           //操作类型: CHECK, EDIT
+
         $(function () {
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
@@ -56,6 +57,7 @@
         function InitPage() {
             GoodsCode = request("GoodsCode");
             OPtype = request("OPtype");
+
             $("#GoodsCode").html(GoodsCode);
             if (OPtype == "CHECK") {
                 $("#btn_OK").remove();
@@ -65,9 +67,14 @@
             var selectedRowIndex = 0;
             var $gridTable = $('#gridTable');
             var tWidth = $('.gridPanel').width();
+
             $gridTable.jqGrid({
                 url: "GetSetBaseConfig.ashx",
-                postData: { Action: "MES_GOODS_CONFIG_LIST" },
+                postData: {
+                    "Action": "MES_GOODS_MUB_LIST",
+                    "GoodsCode": GoodsCode,
+                    "OPtype": OPtype
+                },
                 datatype: "json",
                 height: $('#areascontent').height() - 170,
                 width: tWidth - 1,
@@ -95,10 +102,6 @@
         }
 
 
-        function onbtn_DL(event) {
-
-        }
-
         function onbtn_UP(event) {
             if (OPtype == "CHECK") {
                 onbtn_RT(null);
@@ -113,10 +116,49 @@
                     width: "600px",
                     height: "180px",
                     callBack: function (iframeId) {
-                        top.frames[iframeId].AcceptClick($("#UploadedFile"), $("#TargetFile"), GoodsCode);
+                        top.frames[iframeId].AcceptClick($("#UploadedFileName"), $("#TargetFileName"), $('#gridTable'));
                     }
                 });
             }
+        }
+
+        function onSaveMubData() {
+            var TargetFileName = $("#TargetFileName").text();
+
+            if (TargetFileName == '') {
+                dialogMsg("请先上传配置文件!", -1);
+                return;
+            }
+
+            $.ajax({
+                url: "GetSetBaseConfig.ashx",
+                data: {
+                    "ACTION": "MES_GOODS_MUB_LIST_SAVE",
+                    "GoodsCode": GoodsCode,
+                    "OPtype": OPtype,
+                    "TargetFileName": TargetFileName                    
+                },
+                type: "post",
+                datatype: "json",
+                success: function (data) {
+                    data = JSON.parse(data);
+                    if (data.result == "success") {
+                        dialogMsg('保存成功!', 1);
+                        window.setTimeout(function () {
+                            onbtn_RT(null);
+                        }, 1000);
+                    }
+                    else if (data.result == "failed") {
+                        dialogMsg(data.msg, -1);
+                    }
+                    else {
+                        dialogMsg(data.msg, -1);
+                    }
+                },
+                error: function (msg) {
+                    dialogMsg(msg.responseText, -1);
+                }
+            });
         }
 
         function onbtn_OK(event) {
@@ -126,7 +168,7 @@
             }
 
             if (OPtype == "EDIT") {
-                //onSaveParameters();
+                onSaveMubData();
             }
         }
 
@@ -134,6 +176,9 @@
             window.history.back();
         }
 
+        function onbtn_DL(event) {
+            window.open("./GetSetBaseConfig.ashx?Action=MES_MUB_CONFIG_FILE_DOWNLOAD&GoodsCode=" + GoodsCode);
+        }
 
         //编辑信息
         function showdlg(OPtype, GoodsId) {
@@ -196,13 +241,13 @@
                         <div class="panel-body" style="text-align:left">
                             <table border="0" style="width:100%">
                                 <tr>
-                                    <th class="formTitle">产品物料编码：<span id="GoodsCode" class="formTitle">Goods Code</span></th>
+                                    <td class="formTitle">产品物料编码：<span id="GoodsCode" class="formTitle"></span></td>
                                     <td class="formValue" style="text-align:right;padding-left:10px">
-                                        <span id="UploadedFile" class="formTitle"></span>||||                                           
-                                        <span id="TargetFile" class="formTitle"></span>                                           
+                                        <span id="TargetFileName" style="visibility:hidden"></span>                                           
+                                        <span id="UploadedFileName" class="formTitle"></span>                                           
                                         <a id="btn_UP" class="btn btn-primary" onclick="onbtn_UP(event)"><i class="fa fa-upload"></i>&nbsp;上传</a>  
                                         <a id="btn_DL" class="btn btn-primary" onclick="onbtn_DL(event)"><i class="fa fa-download"></i>&nbsp;下载</a>  
-                                        <a id="btn_OK" class="btn btn-primary" onclick="onbtn_OK(event)"><i class="fa fa-check"></i>&nbsp;确认</a>  
+                                        <a id="btn_OK" class="btn btn-primary" onclick="onbtn_OK(event)"><i class="fa fa-floppy-o"></i>&nbsp;保存</a>  
                                         <a id="btn_RT" class="btn btn-primary" onclick="onbtn_RT(event)"><i class="fa fa-reply"></i>&nbsp;返回</a>
                                     </td>
                                 </tr>

@@ -30,7 +30,7 @@
 <script>
     var g_InputObj;
     var g_HiddenObj;
-    var g_GoodsCode;
+    var g_Grid;
 
     $(function () {
         uploadify();
@@ -45,7 +45,7 @@
             buttonText: "选择文件",
             formData: {
                 "Action": 'MES_MUB_CONFIG_FILE_UPLOAD',
-                "GoodsCode" : "1234567890"
+                "GoodsCode" : "0000000000"
             },
             height: 30,
             width: 90,
@@ -69,6 +69,12 @@
                     Loading(false);
                     g_InputObj.text(result.sourceFileName);
                     g_HiddenObj.text(result.targetFileName);
+                    g_Grid.jqGrid('setGridParam',{
+                        postData: {
+                            "TargetFileName": result.targetFileName,
+                            "OPtype" : "UPLOADREVIEW"
+                        }
+                    }).trigger('reloadGrid');
                     window.setTimeout(function () {
                         dialogClose();
                     }, 1000);
@@ -89,10 +95,10 @@
         });
     }
 
-    function AcceptClick(inputobj, hiddenobj, goodsCode) {
+    function AcceptClick(inputobj, hiddenobj, gridobj) {
         g_InputObj = inputobj;
         g_HiddenObj = hiddenobj;
-        g_GoodsCode = goodsCode;
+        g_Grid = gridobj;
         $('#uploadify').uploadify('upload', '*');
     }
 

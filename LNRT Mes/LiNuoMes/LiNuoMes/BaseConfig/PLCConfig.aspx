@@ -233,7 +233,7 @@
                                 <tr>
                                     <th class="formTitle">产品物料编码：<span id="GoodsCode" class="formTitle">Goods Code</span></th>
                                     <td class="formValue" style="text-align:right;padding-left:10px">                                           
-                                        <a id="btn_OK" class="btn btn-primary" onclick="onbtn_OK(event)"><i class="fa fa-check"></i>&nbsp;确认</a>  
+                                        <a id="btn_OK" class="btn btn-primary" onclick="onbtn_OK(event)"><i class="fa fa-floppy-o"></i>&nbsp;保存</a>  
                                         <a id="btn_RT" class="btn btn-primary" onclick="onbtn_RT(event)"><i class="fa fa-reply"></i>&nbsp;返回</a>
                                     </td>
                                 </tr>

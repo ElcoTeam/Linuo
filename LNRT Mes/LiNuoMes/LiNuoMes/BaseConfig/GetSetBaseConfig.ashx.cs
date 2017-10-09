@@ -125,6 +125,35 @@ namespace LiNuoMes.BaseConfig
                 }
                 context.Response.Write(jsc.Serialize(result));
             }
+            else if (Action == "MES_MUB_CONFIG_FILE_DOWNLOAD")
+            {
+                ResultMsg_FileDownload result = new ResultMsg_FileDownload();
+                result = WriteExcelFile(result);
+                if (result.result == "success")
+                {
+                    context.Response.ClearContent();
+                    context.Response.ClearHeaders();
+                    context.Response.AppendHeader("Content-Disposition", string.Format("attached; filename={0}", result.targetFileName));
+                    context.Response.AppendHeader("content-type", "application/x-msexcel");
+                    try
+                    {
+                        FileInfo objFile = new FileInfo(uploadFilePath + result.targetFileName);
+                        context.Response.AppendHeader("content-length", objFile.Length.ToString());
+                        context.Response.WriteFile(uploadFilePath + result.targetFileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        context.Response.Write(ex.Message);
+                    }
+
+                    context.Response.Flush();
+                    context.Response.Close();
+                }
+                else
+                {
+                     context.Response.Write(result.msg);
+                }
+            }
             else if (Action == "MFG_WO_LIST_FILE_UPLOAD")
             {
                 HttpPostedFile file = System.Web.HttpContext.Current.Request.Files["Filedata"];
@@ -241,6 +270,19 @@ namespace LiNuoMes.BaseConfig
                 dataEntity = new GoodsEntity();
                 dataEntity = GetGoodsDetailObj(dataEntity, findItem);
                 context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            else if (Action == "MES_GOODS_MUB_LIST")
+            {
+                List<GoodsMubEntity> dataEntity;
+                dataEntity = new List<GoodsMubEntity>();
+                dataEntity = GetGoodsMubListObj(dataEntity);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            else if (Action == "MES_GOODS_MUB_LIST_SAVE")
+            {
+                ResultMsg result = new ResultMsg();
+                result = saveMubDataInDb(result);
+                context.Response.Write(jsc.Serialize(result));
             }
             else if (Action == "MES_GOODS_CONFIG_LIST")
             {
@@ -1003,6 +1045,65 @@ namespace LiNuoMes.BaseConfig
             return dataEntity;
         }
 
+        public List<GoodsMubEntity> GetGoodsMubListObj(List<GoodsMubEntity> dataEntity)
+        {
+            string GoodsCode = RequstString("GoodsCode");
+            string TargetFileName = RequstString("TargetFileName");
+            string OPtype = RequstString("OPtype");
+
+            DataTable dt = new DataTable();
+            string ReturnValue = string.Empty;
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Mes_Mub_List";
+
+                SqlParameter[] sqlPara = new SqlParameter[3];
+                for (int i = 0; i < sqlPara.Length; i++)
+                {
+                    sqlPara[i] = new SqlParameter();
+                    sqlPara[i].IsNullable = true;
+                    sqlPara[i].SqlDbType = SqlDbType.VarChar;
+                    sqlPara[i].Direction = ParameterDirection.Input;
+                }
+                sqlPara[0].ParameterName = "@GoodsCode";
+                sqlPara[1].ParameterName = "@TargetFileName";
+                sqlPara[2].ParameterName = "@OPtype";
+
+                sqlPara[0].Value = GoodsCode;
+                sqlPara[1].Value = TargetFileName;
+                sqlPara[2].Value = OPtype;
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        GoodsMubEntity itemList = new GoodsMubEntity();
+                        itemList.ID            = dt.Rows[i]["ID"].ToString();
+                        itemList.InturnNumber  = (i + 1).ToString();
+                        itemList.ItemNumber    = dt.Rows[i]["ItemNumber"].ToString();
+                        itemList.ItemDsca      = dt.Rows[i]["ItemDsca"].ToString();
+                        itemList.ProcessCode   = dt.Rows[i]["ProcessCode"].ToString();
+                        itemList.ProcessName   = dt.Rows[i]["ProcessName"].ToString();
+                        itemList.MubPercent    = dt.Rows[i]["MubPercent"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
         public GoodsEntity GetGoodsDetailObj(GoodsEntity dataEntity, GoodsEntity findItem)
         {
             DataTable dt = new DataTable();
@@ -1751,11 +1852,11 @@ namespace LiNuoMes.BaseConfig
                         result.msg = "上传文件记录数为空!";
                     }
 
-                    for (int i = 1; i < dt.Rows.Count; ++i)
+                    for (int i = 0; i < dt.Rows.Count; ++i)
                     {
                         for (int j = 2; j < 7; j++)
                         {
-                            sqlPara[j].Value = dt.Rows[i][j];
+                            sqlPara[j].Value = dt.Rows[i][j-1];
                         }
                         cmd.ExecuteNonQuery();
 
@@ -1772,6 +1873,66 @@ namespace LiNuoMes.BaseConfig
                         {
                             sqlPara[j].Value = "";
                         }
+                    }
+                    transaction.Commit();
+                    cmd.Dispose();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        public ResultMsg saveMubDataInDb(ResultMsg result)
+        {
+            string GoodsCode      = RequstString("GoodsCode");
+            string TargetFileName = RequstString("TargetFileName");
+            string OPtype = RequstString("OPtype");
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mes_Mub_List_Save";
+                    SqlParameter[] sqlPara = new SqlParameter[5];
+
+                    sqlPara[0] = new SqlParameter("@TargetFileName", TargetFileName);
+                    sqlPara[1] = new SqlParameter("@GoodsCode", GoodsCode);
+                    sqlPara[2] = new SqlParameter("@UploadUser", UserName);
+                    sqlPara[3] = new SqlParameter("@CatchError", 0);
+                    sqlPara[4] = new SqlParameter("@RtnMsg", "");
+
+                    sqlPara[3].Direction = ParameterDirection.Output;
+                    sqlPara[4].Direction = ParameterDirection.Output;
+                    sqlPara[4].Size      = 100;
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+
+                    cmd.ExecuteNonQuery();
+
+                    if (sqlPara[3].Value.ToString() != "0")
+                    {
+                        transaction.Rollback();
+                        result.result = "failed";
+                        result.msg = sqlPara[4].Value.ToString();
+                        cmd.Dispose();
+                        return result;
                     }
                     transaction.Commit();
                     cmd.Dispose();
@@ -2027,9 +2188,9 @@ namespace LiNuoMes.BaseConfig
         {
             try
             {
-                using (ExcelOperate excelHelper = new ExcelOperate(sFile))
+                using (ExcelOperate excelOper = new ExcelOperate(sFile))
                 {
-                    DataTable dt = excelHelper.ExcelToDataTable("MySheet", true);                    
+                    DataTable dt = excelOper.ExcelToDataTable("MySheet", true);                    
                     return dt;
                 }
             }
@@ -2040,6 +2201,48 @@ namespace LiNuoMes.BaseConfig
             }
         }
 
+        public ResultMsg_FileDownload WriteExcelFile(ResultMsg_FileDownload result)
+        {
+            string GoodsCode = RequstString("GoodsCode");
+            result.targetFileName = getTemporaryFileName(".xlsx");
+            DataTable dt = new DataTable();
+            string ReturnValue = string.Empty;
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Mes_Mub_List_Template";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                sqlPara[0] = new SqlParameter("@GoodsCode", GoodsCode);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                try
+                {
+                    using (ExcelOperate excelHelper = new ExcelOperate(uploadFilePath + result.targetFileName))
+                    {
+                        int count = excelHelper.DataTableToExcel(dt, "MySheet", true);
+                        result.result = "success";
+                        result.msg = string.Format("下载成功, 有{0}条记录生成.", count);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result.result = "failed";
+                    result.msg = "下载失败." + ex.Message;
+                }
+
+            }
+            return result;                   
+        }
     }
 
     public class CustomerEntity
@@ -2085,6 +2288,17 @@ namespace LiNuoMes.BaseConfig
         public string DimHeight     { set; get; }
         public string DimWidth      { set; get; }
         public string UnitCostTime  { set; get; }
+    }
+
+    public class GoodsMubEntity
+    {
+        public string ID            { set; get; }
+        public string InturnNumber  { set; get; }
+        public string ItemNumber    { set; get; }
+        public string ItemDsca      { set; get; }
+        public string ProcessCode   { set; get; }
+        public string ProcessName   { set; get; }
+        public string MubPercent    { set; get; }
     }
 
     public class ThresholdEntity
@@ -2181,6 +2395,13 @@ namespace LiNuoMes.BaseConfig
         public string result { set; get; }
         public string msg { set; get; }
         public string sourceFileName { set; get; }
+        public string targetFileName { set; get; }
+    }
+
+    public class ResultMsg_FileDownload
+    {
+        public string result { set; get; }
+        public string msg { set; get; }
         public string targetFileName { set; get; }
     }
 

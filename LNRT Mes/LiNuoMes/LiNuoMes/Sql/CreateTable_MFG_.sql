@@ -671,7 +671,7 @@ CREATE TABLE [dbo].[Mes_PLC_List] (
 );
 
 --PLC信息参数配置表
---需要拉动的物料, 针对具体产品需要对此记录进行编辑(设定料号和放置位置号)
+--如果有需要拉动的物料, 针对具体产品需要对此记录进行编辑(设定料号和放置位置号)
 IF OBJECT_ID('Mes_PLC_Parameters') is not null
 DROP TABLE Mes_PLC_Parameters;
 CREATE TABLE [dbo].[Mes_PLC_Parameters] (
@@ -692,6 +692,19 @@ CREATE TABLE [dbo].[Mes_PLC_Parameters] (
     [WorkOrderNumber]    VARCHAR  (50)   NOT NULL DEFAULT (N''),          --订单编码-用以物料拉动之记录值
     [WorkOrderVersion]   INT             NOT NULL DEFAULT (-1),           --订单版本-用以物料拉动之记录值
     [Status]             INT             NOT NULL DEFAULT (0)             --订单状态: 0:新增, -1:修改, -2:删除
+);
+
+--PLC信息参数配置表上传时候的临时存储表
+IF OBJECT_ID('Mes_PLC_Parameters_UP') is not null
+DROP TABLE Mes_PLC_Parameters_UP;
+CREATE TABLE [dbo].Mes_PLC_Parameters_UP (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [TargetFileName]     NVARCHAR (50)   NOT NULL DEFAULT (N'') ,         --文件上传之后在服务器上保留的文件名称 
+    [PAMID]              INT             NOT NULL,                        --PAMID
+    [PLCID]              INT             NOT NULL,                        --PLCID
+    [ParamValue]         VARCHAR  (50)       NULL DEFAULT (''),           --PLC参数数值
+    [UploadUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户
+    [UploadTime]         DATETIME        NOT NULL DEFAULT GETDATE()       --更新时间
 );
 
 --PLC信息参数类别表

@@ -1990,15 +1990,94 @@ GO
 
 --获得指定的PLC的配置参数清单
 ALTER PROCEDURE [dbo].[usp_Mes_Plc_Parameters_List]
-     @PLCID            AS INT                  --PLCID
+     @PLCID            AS INT                      --PLCID
+    ,@TargetFileName   AS NVARCHAR (50)    = ''    --文件上传之后在服务器上保留的文件名称 
+    ,@UploadView       AS VARCHAR  (50)    = ''    --用以判断是刚刚上传的数据文件的返显还是显示数据库中的配置文件的显示
 AS
-     SELECT *
-     FROM Mes_PLC_Parameters
-     WHERE PLCID = @PLCID
-     AND OperateType IN ( 'W', 'RW') AND ApplModel = 'VS'
-     ORDER BY ParamName
+    IF @UploadView = 'UPLOADREVIEW'
+    BEGIN
+        SELECT 
+             PAM.ID
+            ,PAM.PLCID
+            ,PAM.ParamName
+            ,PAM.ParamDsca
+            ,ISNULL(PUP.ParamValue, PAM.ParamValue) ParamValue
+            ,PAM.ParamType
+            ,PAM.OperateType
+            ,PAM.ItemNumber
+        FROM Mes_PLC_Parameters PAM
+            LEFT JOIN Mes_PLC_Parameters_UP PUP ON PAM.ID = PUP.PAMID             
+        WHERE 
+            PAM.PLCID     = @PLCID
+        AND PAM.ApplModel = 'VS'
+        AND PAM.OperateType IN ( 'W', 'RW') 
+        AND PUP.TargetFileName = @TargetFileName
+        ORDER BY ParamName
+    END 
+    ELSE
+    BEGIN
+        SELECT 
+             ID
+            ,PLCID
+            ,ParamName
+            ,ParamDsca
+            ,ParamValue
+            ,ParamType
+            ,OperateType
+            ,ItemNumber
+        FROM Mes_PLC_Parameters
+        WHERE 
+            PLCID = @PLCID
+        AND OperateType IN ( 'W', 'RW') 
+        AND ApplModel = 'VS'
+        ORDER BY ParamName
+    END
 GO
 
+--产品物料编码维护 -> 新增产品
+ALTER PROCEDURE  [dbo].[usp_Mes_Plc_Parameters_Upload]
+     @PLCID              AS INT                      --PLC标识字
+    ,@PAMID              AS INT                      --参数标识字
+    ,@ParamValue         AS VARCHAR  (50)            --参数值
+    ,@TargetFileName     AS NVARCHAR (50)    = ''    --文件上传之后在服务器上保留的文件名称 
+    ,@UploadUser         AS NVARCHAR (50)    = N''   --更新用户
+    ,@CatchError         AS INT           OUTPUT     --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT     --返回状态
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = ''
+
+    INSERT INTO Mes_PLC_Parameters_UP
+    ( [TargetFileName],  [PLCID],  [PAMID],  [ParamValue],  [UploadUser]) VALUES
+    ( @TargetFileName,   @PLCID,   @PAMID,   @ParamValue,   @UploadUser );
+    RETURN
+GO
+
+--获得指定的PLC的配置参数清单(配置文件下载之用)
+ALTER PROCEDURE [dbo].[usp_Mes_Plc_Parameters_List_Template]
+     @GoodsCode            AS VARCHAR(50)      --产品编号
+AS
+
+    SELECT 
+        PLC.ID                     [PLC标识字(不要修改)],
+        PAM.ID                     [参数标识字(不要修改)],
+        ISNULL(PRS.ProcessName,'') [工序名称],
+        PLC.PLCCabinet             [电器机柜],
+        PLC.PLCName                [PLC名称],
+        PAM.ParamName              [参数名称],
+        PAM.ParamDsca              [参数描述],
+        PAM.ParamType              [参数类型],
+        PAM.ParamValue             [参数值(可修改)]
+    FROM Mes_PLC_List PLC
+      INNER JOIN Mes_PLC_Parameters PAM ON PLC.ID = PAM.PLCID
+      LEFT JOIN Mes_Process_List PRS ON PRS.ProcessCode = PLC.ProcessCode
+    WHERE 
+         PLC.GoodsCode = @GoodsCode
+     AND PAM.ApplModel = 'VS'     
+     AND PAM.OperateType IN ( 'W', 'RW') 
+    ORDER BY 
+         PLC.ProcessCode, PLC.PLCCabinet, PLC.PLCName
+GO
 
 --获得PLC物料拉动参数清单
 ALTER PROCEDURE [dbo].[usp_Mes_Plc_Pull_List]

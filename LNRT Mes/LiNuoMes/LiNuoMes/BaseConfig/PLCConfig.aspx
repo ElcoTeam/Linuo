@@ -33,7 +33,7 @@
     <script src="../Content/scripts/utils/learun-ui.js"></script>
     <script src="../Content/scripts/utils/learun-form.js"></script>
     
-     <script>
+    <script>
          var GoodsCode = "";
          var OPtype = "";           //操作类型: CHECK, EDIT
          var FMType = "MAINTAIN";   //form类型: MAINTAIN, SEND, 当初设想把PLC参数设定和参数派发做到一个界面里面, 迫于项目的时间压力只好分开完成.
@@ -50,40 +50,43 @@
                  }, 200);
              });
 
-             InitPage();
-        });
-
-        //加载表格
-         function InitPage() {
              GoodsCode = request("GoodsCode");
              OPtype = request("OPtype");
              $("#GoodsCode").html(GoodsCode);
              $("#FormTitle").html("PLC参数维护");
-             $("[PLC_PANEL]").remove();
 
              if (OPtype == "CHECK") {
                  $("#btn_OK").remove();
+                 $("#btn_UP").remove();
              }
 
-             $.ajax({
-                 url: "GetSetBaseConfig.ashx",
-                 data: {
-                     "Action": "MES_PLC_CONFIG_LIST",
-                     "GoodsCode": GoodsCode 
-                 },
-                 type: "post",
-                 datatype: "json",
-                 success: function (data) {
-                     data = JSON.parse(data);
-                     initPLCContent(data);
-                 },
-                 error: function (msg) {
-                     alert(msg.responseText);
-                 }
-             });
+             InitPage("", "");
+        });
+
+        //加载表格
+         function InitPage(UploadView, TargetFileName) {
+            $("[PLC_PANEL]").remove();            
+            $.ajax({
+                url: "GetSetBaseConfig.ashx",
+                data: {
+                    "Action": "MES_PLC_CONFIG_LIST",
+                    "GoodsCode": GoodsCode,
+                    "UploadView": UploadView,
+                    "TargetFileName": TargetFileName
+                },
+                type: "post",
+                datatype: "json",
+                success: function (data) {
+                    data = JSON.parse(data);
+                    initPLCContent(data, UploadView);
+                },
+                error: function (msg) {
+                    alert(msg.responseText);
+                }
+            });
         }
 
-        function initPLCContent(data) {
+         function initPLCContent(data, UploadView) {
             for (i in data)
             {
                 var trow;
@@ -113,6 +116,11 @@
                     }
                     else {
                         $("#" + PARAME_ID).bind("change", onParamChange);
+                    }
+
+                    //UPLOADREVIEW:说明是上传之后回调而返显出来的结果.
+                    if (UploadView == "UPLOADREVIEW") {
+                        $("#" + PARAME_ID).attr("OPEDIT", true);
                     }
                 }
             }
@@ -175,6 +183,26 @@
             return tmpList;
         }
 
+        function onbtn_UP(event) {
+            if (OPtype == "CHECK") {
+                onbtn_RT(null);
+                return;
+            }
+
+            if (OPtype == "EDIT") {
+                dialogOpen({
+                    id: "UploadifyMubExcel",
+                    title: '上传文件',
+                    url: './UploadifyPlcExcel.aspx',
+                    width: "600px",
+                    height: "180px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].AcceptClick($("#UploadedFileName"), $("#TargetFileName"), InitPage);
+                    }
+                });
+            }
+        }
+
         function onbtn_OK(event) {
             if (OPtype == "CHECK") {
                 onbtn_RT(null);
@@ -191,17 +219,14 @@
             window.history.back();
         }
 
+        function onbtn_DL(event) {
+            window.open("./GetSetBaseConfig.ashx?Action=MES_PLC_CONFIG_FILE_DOWNLOAD&GoodsCode=" + GoodsCode);
+        }
 
         function onParamChange(event) {
             $(this).attr("OPEDIT", true);
             //console.log($(this).attr("OPEDIT"));
             //console.log($("#" + PARAME_ID).ID);
-        }
-
-        function request(name) {
-            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-            var r = window.location.search.substr(1).match(reg);
-            if (r != null) return unescape(r[2]); return null;
         }
 
     </script>
@@ -232,7 +257,11 @@
                             <table border="0" style="width:100%">
                                 <tr>
                                     <th class="formTitle">产品物料编码：<span id="GoodsCode" class="formTitle">Goods Code</span></th>
-                                    <td class="formValue" style="text-align:right;padding-left:10px">                                           
+                                    <td class="formValue" style="text-align:right;padding-left:10px">   
+                                        <span id="TargetFileName" style="visibility:hidden"></span>
+                                        <span id="UploadedFileName" class="formTitle"></span>
+                                        <a id="btn_UP" class="btn btn-primary" onclick="onbtn_UP(event)"><i class="fa fa-upload"></i>&nbsp;上传</a>  
+                                        <a id="btn_DL" class="btn btn-primary" onclick="onbtn_DL(event)"><i class="fa fa-download"></i>&nbsp;下载</a>  
                                         <a id="btn_OK" class="btn btn-primary" onclick="onbtn_OK(event)"><i class="fa fa-floppy-o"></i>&nbsp;保存</a>  
                                         <a id="btn_RT" class="btn btn-primary" onclick="onbtn_RT(event)"><i class="fa fa-reply"></i>&nbsp;返回</a>
                                     </td>

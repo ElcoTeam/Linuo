@@ -125,10 +125,31 @@ namespace LiNuoMes.BaseConfig
                 }
                 context.Response.Write(jsc.Serialize(result));
             }
-            else if (Action == "MES_MUB_CONFIG_FILE_DOWNLOAD")
+            else if (Action == "MES_PLC_PARAM_FILE_UPLOAD")
             {
+                HttpPostedFile file = System.Web.HttpContext.Current.Request.Files["Filedata"];
+                ResultMsg_FileUPload result = new ResultMsg_FileUPload();
+                result = doUploadFile(result, file);
+                if (result.result == "success")
+                {
+                    DataTable dt = ReadExcelFile(uploadFilePath + result.targetFileName);
+                    result = addPlcDataInDB(dt, result);
+                }
+                context.Response.Write(jsc.Serialize(result));
+            }
+            else if (Action == "MES_PLC_CONFIG_FILE_DOWNLOAD" || Action == "MES_MUB_CONFIG_FILE_DOWNLOAD")
+            {
+                string FileType = string.Empty;
+                if (Action == "MES_PLC_CONFIG_FILE_DOWNLOAD"){
+                    FileType = "PLC";
+                }
+                else if (Action == "MES_MUB_CONFIG_FILE_DOWNLOAD")
+                {
+                    FileType = "MUB";                
+                }
+
                 ResultMsg_FileDownload result = new ResultMsg_FileDownload();
-                result = WriteExcelFile(result);
+                result = WriteExcelFile(result, FileType);
                 if (result.result == "success")
                 {
                     context.Response.ClearContent();
@@ -1443,6 +1464,9 @@ namespace LiNuoMes.BaseConfig
         {
             string findGoodsCode  = RequstString("GoodsCode");
             string findSenderType = RequstString("SenderType");
+            string TargetFileName = RequstString("TargetFileName");
+            string UploadView     = RequstString("UploadView");
+
             string ReturnValue = string.Empty;
             if (findSenderType == "") findSenderType = "VS";
 
@@ -1477,7 +1501,7 @@ namespace LiNuoMes.BaseConfig
                         //如果是发送变更产品请求, 则就不需要获取PLC的详细参数清单了.
                         if (findSenderType == "VS")
                         {
-                            string strSql1 = string.Format("usp_Mes_Plc_Parameters_List {0}", plc_entity.ID);
+                            string strSql1 = string.Format("usp_Mes_Plc_Parameters_List {0}, '{1}', '{2}'", plc_entity.ID, TargetFileName, UploadView);
                             cmd.CommandType = CommandType.Text;
                             cmd.CommandText = strSql1;
                             SqlDataAdapter Datapter1 = new SqlDataAdapter(cmd);
@@ -1890,11 +1914,104 @@ namespace LiNuoMes.BaseConfig
             return result;
         }
 
+        public ResultMsg_FileUPload addPlcDataInDB(DataTable dt, ResultMsg_FileUPload result)
+        {
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    string GoodsCode = RequstString("GoodsCode");
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mes_Plc_Parameters_Upload";
+                    SqlParameter[] sqlPara = new SqlParameter[7];
+
+                    for (int i=0; i < sqlPara.Length; i++)
+                    {
+                        sqlPara[i] = new SqlParameter();
+                        sqlPara[i].IsNullable = true;
+                        sqlPara[i].SqlDbType = SqlDbType.VarChar;
+                        sqlPara[i].Direction = ParameterDirection.Input;
+                    }
+
+                    sqlPara[0].ParameterName = "@PLCID";
+                    sqlPara[1].ParameterName = "@PAMID";
+                    sqlPara[2].ParameterName = "@ParamValue";
+                    sqlPara[3].ParameterName = "@TargetFileName";
+                    sqlPara[4].ParameterName = "@UploadUser";
+                    sqlPara[5].ParameterName = "@CatchError";
+                    sqlPara[6].ParameterName = "@RtnMsg";
+
+                    sqlPara[0].SqlDbType = SqlDbType.Int;
+                    sqlPara[1].SqlDbType = SqlDbType.Int;
+                    sqlPara[5].SqlDbType = SqlDbType.Int;
+
+                    sqlPara[5].Direction = ParameterDirection.Output;
+                    sqlPara[6].Direction = ParameterDirection.Output;
+                    sqlPara[6].Size      = 100;
+
+                    sqlPara[3].Value = result.targetFileName;
+                    sqlPara[4].Value = UserName;
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+
+                    if (dt == null) 
+                    {
+                        result.result = "failed";
+                        result.msg = "上传文件记录数为空!";
+                    }
+
+                    for (int i = 0; i < dt.Rows.Count; ++i)
+                    {
+                        sqlPara[0].Value = dt.Rows[i][0];
+                        sqlPara[1].Value = dt.Rows[i][1];
+                        sqlPara[2].Value = dt.Rows[i][8];
+
+                        cmd.ExecuteNonQuery();
+
+                        if (sqlPara[5].Value.ToString() != "0")
+                        {
+                            transaction.Rollback();
+                            result.result = "failed";
+                            result.msg = sqlPara[6].Value.ToString();
+                            cmd.Dispose();
+                            return result;
+                        }
+
+                        for (int j = 0; j < 3; j++)
+                        {
+                            sqlPara[j].Value = "";
+                        }
+                    }
+                    transaction.Commit();
+                    cmd.Dispose();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
         public ResultMsg saveMubDataInDb(ResultMsg result)
         {
             string GoodsCode      = RequstString("GoodsCode");
             string TargetFileName = RequstString("TargetFileName");
-            string OPtype = RequstString("OPtype");
+            string OPtype         = RequstString("OPtype");
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand();
@@ -2201,7 +2318,7 @@ namespace LiNuoMes.BaseConfig
             }
         }
 
-        public ResultMsg_FileDownload WriteExcelFile(ResultMsg_FileDownload result)
+        public ResultMsg_FileDownload WriteExcelFile(ResultMsg_FileDownload result, string FileType)
         {
             string GoodsCode = RequstString("GoodsCode");
             result.targetFileName = getTemporaryFileName(".xlsx");
@@ -2214,7 +2331,15 @@ namespace LiNuoMes.BaseConfig
                 cmd.Connection = conn;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.CommandText = "usp_Mes_Mub_List_Template";
+
+                if (FileType == "MUB")
+                {
+                    cmd.CommandText = "usp_Mes_Mub_List_Template";
+                }
+                else if (FileType == "PLC")
+                {
+                    cmd.CommandText = "usp_Mes_Plc_Parameters_List_Template"; 
+                }
                 SqlParameter[] sqlPara = new SqlParameter[1];
                 sqlPara[0] = new SqlParameter("@GoodsCode", GoodsCode);
                 foreach (SqlParameter para in sqlPara)

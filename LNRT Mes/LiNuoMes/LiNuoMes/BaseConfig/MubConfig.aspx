@@ -145,7 +145,7 @@
                     if (data.result == "success") {
                         dialogMsg('保存成功!', 1);
                         window.setTimeout(function () {
-                            onbtn_RT(null);
+                          //  onbtn_RT(null);
                         }, 1000);
                     }
                     else if (data.result == "failed") {
@@ -180,38 +180,6 @@
             window.open("./GetSetBaseConfig.ashx?Action=MES_MUB_CONFIG_FILE_DOWNLOAD&GoodsCode=" + GoodsCode);
         }
 
-        //编辑信息
-        function showdlg(OPtype, GoodsId) {
-            if (GoodsId == undefined) {
-                GoodsId = $("#gridTable").jqGridRowValue("ID");
-            }
-
-            if (OPtype == undefined) {
-                OPtype = "CHECK";
-            }
-
-            var sTitle = "";
-            if (OPtype == "CHECK") {
-                sTitle = "查看产品物料编码";
-            }
-            else if (OPtype == "EDIT") {
-                sTitle = "修改产品物料编码";
-            }
-            else if (OPtype == "ADD") {
-                sTitle = "新增产品物料编码";
-            }
-
-            dialogOpen({
-                id: "Form",
-                title: sTitle,
-                url: "GoodsConfigDetailEdit.aspx?OPtype=" + OPtype + "&GoodsId=" + GoodsId,
-                width: "600px",
-                height: "480px",
-                callBack: function (iframeId) {
-                    top.frames[iframeId].AcceptClick($("#gridTable"));
-                }
-            });
-        }
 
     </script>
 </head>
@@ -243,8 +211,8 @@
                                 <tr>
                                     <td class="formTitle">产品物料编码：<span id="GoodsCode" class="formTitle"></span></td>
                                     <td class="formValue" style="text-align:right;padding-left:10px">
-                                        <span id="TargetFileName" style="visibility:hidden"></span>                                           
-                                        <span id="UploadedFileName" class="formTitle"></span>                                           
+                                        <span id="TargetFileName" style="visibility:hidden"></span>
+                                        <span id="UploadedFileName" class="formTitle"></span>
                                         <a id="btn_UP" class="btn btn-primary" onclick="onbtn_UP(event)"><i class="fa fa-upload"></i>&nbsp;上传</a>  
                                         <a id="btn_DL" class="btn btn-primary" onclick="onbtn_DL(event)"><i class="fa fa-download"></i>&nbsp;下载</a>  
                                         <a id="btn_OK" class="btn btn-primary" onclick="onbtn_OK(event)"><i class="fa fa-floppy-o"></i>&nbsp;保存</a>  

@@ -1696,16 +1696,27 @@ ALTER PROCEDURE  [dbo].[usp_Mes_Mub_List_Template]
     ,@OPtype             AS VARCHAR  (50)    = ''    --用以判断是刚刚上传的数据文件的返显还是显示数据库中的配置文件的显示
 AS
         SELECT 
-             GoodsCode  [产品物料编码]
-            ,ItemNumber [物料编码(*)]
-            ,ItemDsca   [物料描述(*)]
-            ,ProcessCode [工序编号(*)]
-            ,ProcessName [工序名称(*)]
-            ,MubPercent  [工序用料占比%(*)]
+             GoodsCode   [产品物料编码(参考列,上传时被忽略)]
+            ,ItemNumber  [物料编码(可以修改)]
+            ,ItemDsca    [物料描述(可以修改)]
+            ,ProcessCode [工序编号(可以修改)]
+            ,ProcessName [工序名称(可以修改)]
+            ,MubPercent  [工序用料占比%(可以修改)]
         FROM Mes_Mub_List
         WHERE 
             GoodsCode = @GoodsCode
-        ORDER BY ID;
+
+        UNION ALL
+        
+        SELECT 
+             @GoodsCode
+            ,'0000000000'
+            ,'样例物料,只为提供工序编号和名称,上传时会被忽略'
+            ,ProcessCode
+            ,ProcessName
+            ,0.0 
+        FROM 
+            Mes_Process_List 
 GO
 
 --产品物料编码维护 -> 保存数据
@@ -2061,12 +2072,12 @@ AS
     SELECT 
         PLC.ID                     [PLC标识字(不要修改)],
         PAM.ID                     [参数标识字(不要修改)],
-        ISNULL(PRS.ProcessName,'') [工序名称],
-        PLC.PLCCabinet             [电器机柜],
-        PLC.PLCName                [PLC名称],
-        PAM.ParamName              [参数名称],
-        PAM.ParamDsca              [参数描述],
-        PAM.ParamType              [参数类型],
+        ISNULL(PRS.ProcessName,'') [工序名称(参考列,上传时会被忽略)],
+        PLC.PLCCabinet             [电器机柜(参考列,上传时会被忽略)],
+        PLC.PLCName                [PLC名称(参考列,上传时会被忽略)],
+        PAM.ParamName              [参数名称(参考列,上传时会被忽略)],
+        PAM.ParamDsca              [参数描述(参考列,上传时会被忽略)],
+        PAM.ParamType              [参数类型(参考列,上传时会被忽略)],
         PAM.ParamValue             [参数值(可修改)]
     FROM Mes_PLC_List PLC
       INNER JOIN Mes_PLC_Parameters PAM ON PLC.ID = PAM.PLCID

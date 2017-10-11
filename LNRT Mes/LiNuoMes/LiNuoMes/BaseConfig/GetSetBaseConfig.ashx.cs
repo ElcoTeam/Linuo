@@ -1882,8 +1882,13 @@ namespace LiNuoMes.BaseConfig
                         {
                             sqlPara[j].Value = dt.Rows[i][j-1];
                         }
-                        cmd.ExecuteNonQuery();
+                        
+                        if (sqlPara[2].Value == "0000000000")
+                        {
+                            continue;
+                        }
 
+                        cmd.ExecuteNonQuery();
                         if (sqlPara[8].Value.ToString() != "0")
                         {
                             transaction.Rollback();

@@ -2072,6 +2072,7 @@ AS
     SELECT 
         PLC.ID                     [PLC标识字(不要修改)],
         PAM.ID                     [参数标识字(不要修改)],
+        @GoodsCode                 [产品编码(参考列,上传时会被忽略)],
         ISNULL(PRS.ProcessName,'') [工序名称(参考列,上传时会被忽略)],
         PLC.PLCCabinet             [电器机柜(参考列,上传时会被忽略)],
         PLC.PLCName                [PLC名称(参考列,上传时会被忽略)],

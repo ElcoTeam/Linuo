@@ -1882,8 +1882,8 @@ namespace LiNuoMes.BaseConfig
                         {
                             sqlPara[j].Value = dt.Rows[i][j-1];
                         }
-                        
-                        if (sqlPara[2].Value == "0000000000")
+
+                        if (sqlPara[2].Value.ToString() == "0000000000")
                         {
                             continue;
                         }
@@ -1978,7 +1978,7 @@ namespace LiNuoMes.BaseConfig
                     {
                         sqlPara[0].Value = dt.Rows[i][0];
                         sqlPara[1].Value = dt.Rows[i][1];
-                        sqlPara[2].Value = dt.Rows[i][8];
+                        sqlPara[2].Value = dt.Rows[i][9];
 
                         cmd.ExecuteNonQuery();
 
@@ -2294,7 +2294,8 @@ namespace LiNuoMes.BaseConfig
             strSecond = (dt.Second > 9) ? dt.Second.ToString() : "0" + dt.Second.ToString();
             strMillisecond = dt.Millisecond.ToString();
 
-            strTemp = strYear 
+            strTemp = 
+                  strYear + "_"
                 + strMonth + "_"
                 + strDay + "_" 
                 + strHour + "_"

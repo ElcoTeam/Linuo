@@ -2874,6 +2874,7 @@ GO
 
 ALTER PROCEDURE [dbo_Mfg_Plc_Trig_MT_Require]
      @TagName            AS VARCHAR (50) 
+    ,@ProcessCode        AS VARCHAR (50)
     ,@WorkOrderNumber    AS VARCHAR (50)
     ,@WorkOrderVersion   AS INT
     ,@WorkOrderStatus    AS INT             OUTPUT
@@ -2886,6 +2887,8 @@ ALTER PROCEDURE [dbo_Mfg_Plc_Trig_MT_Require]
     ,@UOM                AS NVARCHAR(15)    OUTPUT
     ,@ItemDsca           AS NVARCHAR(50)    OUTPUT
     ,@WaitingResponse    AS INT             OUTPUT
+    ,@BkfMTLFlag         AS INT             OUTPUT
+    ,@MubPercent         AS NUMERIC (18, 4) OUTPUT
 AS
     --找到工单的状态, 产品, 计划产量
     SELECT 
@@ -2899,7 +2902,7 @@ AS
 
     --得到需要拉动的物料
     SELECT
-        @ItemNumber = Mes_PLC_Parameters.ItemNumber     
+        @ItemNumber = Mes_PLC_Parameters.ItemNumber
     FROM 
         Mes_PLC_Parameters
        ,Mes_PLC_List 
@@ -2910,24 +2913,36 @@ AS
 
     --得到本工单已经拉动物料数量(可能是包含了未确认的, 但是已经响应了的数量)
     SELECT 
-        @ActionQty = ISNULL(SUM(ActionQty), 0), @WaitingResponse = ISNULL(SUM(CASE [Status] WHEN 0 THEN 1 ELSE 0 END), 0)
+         @ActionQty       = ISNULL(SUM(ActionQty), 0)
+        ,@WaitingResponse = ISNULL(SUM(CASE [Status] WHEN 0 THEN 1 ELSE 0 END), 0)
     FROM
         MFG_WO_MTL_Pull
     WHERE 
          WorkOrderNumber   = @WorkOrderNumber
      AND WorkOrderVersion  = @WorkOrderVersion
      AND ItemNumber        = @ItemNumber
+     AND ProcessCode       = @ProcessCode
      AND [Status]         >= 0;
+  
+    --得到本工位的对应的物料的用量比例(%), 如果不存在则会默认值为100%.
+    SELECT @MubPercent = MubPercent 
+    FROM Mes_Mub_List 
+    WHERE
+        GoodsCode   = @GoodsCode
+    AND ItemNumber  = @ItemNumber
+    AND ProcessCode = @ProcessCode;
     
+    SELECT @MubPercent = ISNULL(@MubPercent, 100.0);
+
     --得到本工单对应此种物料的需求数量
     SELECT 
-        @RequireQty = ISNULL(SUM(Qty), 0)
+        @RequireQty = ISNULL(SUM(Qty), 0) * @MubPercent/100
     FROM
         MFG_WO_MTL_List
     WHERE 
          WorkOrderNumber  = @WorkOrderNumber
      AND WorkOrderVersion = @WorkOrderVersion
-     AND ItemNumber       = @ItemNumber;   
+     AND ItemNumber       = @ItemNumber;  
 
     --得到本物料的物料拉动阈值.
     SELECT 
@@ -2938,6 +2953,14 @@ AS
         Mes_Threshold_List
     WHERE
         ItemNumber = @ItemNumber; 
+
+    SELECT 
+        @BkfMTLFlag = COUNT(1) 
+    FROM 
+        MFG_WIP_BKF_Item_List
+    WHERE 
+        ItemNumber = @ItemNumber;
+
 GO
 
 --获取物料拉动当下的物料拉动工单清单
@@ -3034,6 +3057,9 @@ AS
     DECLARE @NextWorkOrderVersion AS INT;         --下一订单版本
     DECLARE @NextWOPlanQty        AS INT;         --下一工单计划产量
 
+    DECLARE @BkfMTLFlag           AS INT;         --要拉动的物料是否为反冲料标志: 0:不是反冲料; >0: 是反冲料.
+    DECLARE @MubPercent           AS NUMERIC (18, 4); --多个工位共享料的物料用量比例(%).
+
 
     IF UPPER(@TagValue) = 'FALSE' OR UPPER(@TagValue) = '0'
     BEGIN
@@ -3071,68 +3097,84 @@ AS
         RETURN;
     END 
 
-    EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT;
 
-    IF @WaitingResponse > 0 
+
+    EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @ProcessCode, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT, @BkfMTLFlag OUTPUT, @MubPercent OUTPUT;
+
+    --反冲料, 只依据于阈值管理的数量进行物料的数量拉动, 并且其他各种条件均不考虑.
+    IF @BkfMTLFlag > 0 
     BEGIN
-        --说明当下, 此工位的此种物料尚有未完成的拉料记录, 因此抛弃此次触发
-        RETURN;
+        SELECT @ApplyQty             = @ThresholdQty
+              ,@WorkOrderNumber      = ''
+              ,@WorkOrderVersion     = 0
+              ,@NextWorkOrderNumber  = ''
+              ,@NextWorkOrderVersion = 0
+              ,@NextWOPlanQty        = 0
+              ,@ActionQty            = 0
+              ,@ApplyQty             = 0;
     END
-
-    --判断已经拉动的物料数量是否满足了要求
-    SET @ApplyQty = @RequireQty - @ActionQty;
-    IF @ApplyQty <= 0
+    ELSE
     BEGIN
-        --如果当下已经完成的拉动请求已经可以满足当下的拉动订单, 则需要取得下一个可以使用的订单. 然后继续进行后续的物料拉动步骤.
-        EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT;
-        IF ISNULL(@WorkOrderNumber, '') = ''
-        BEGIN
-            --说明当下没有排程计划. 此时直接返回
-            RETURN;
-        END 
-        EXEC [usp_Mfg_Plc_Param_WO_Update] @TagName, @WorkOrderNumber, @WorkOrderVersion;
-        EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT;
-
         IF @WaitingResponse > 0 
         BEGIN
             --说明当下, 此工位的此种物料尚有未完成的拉料记录, 因此抛弃此次触发
             RETURN;
         END
 
-        --继续进行补料运算.
+        --判断已经拉动的物料数量是否满足了要求
         SET @ApplyQty = @RequireQty - @ActionQty;
         IF @ApplyQty <= 0
         BEGIN
-            --如果下一个工单仍然已经满足了要求, 说明有另外一个信号同时触发了需求或者本工单物料需求数量过小, 抛弃此次触发.
-            RETURN;
+            --如果当下已经完成的拉动请求已经可以满足当下的拉动订单, 则需要取得下一个可以使用的订单. 然后继续进行后续的物料拉动步骤.
+            EXEC [usp_Mfg_Wo_List_get_Next_Available] @WorkOrderNumber OUTPUT, @WorkOrderVersion OUTPUT;
+            IF ISNULL(@WorkOrderNumber, '') = ''
+            BEGIN
+                --说明当下没有排程计划. 此时直接返回
+                RETURN;
+            END 
+            EXEC [usp_Mfg_Plc_Param_WO_Update] @TagName, @WorkOrderNumber, @WorkOrderVersion;
+            EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @ProcessCode, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT, @BkfMTLFlag OUTPUT, @MubPercent OUTPUT;
+
+            IF @WaitingResponse > 0 
+            BEGIN
+                --说明当下, 此工位的此种物料尚有未完成的拉料记录, 因此抛弃此次触发
+                RETURN;
+            END
+
+            --继续进行补料运算.
+            SET @ApplyQty = @RequireQty - @ActionQty;
+            IF @ApplyQty <= 0
+            BEGIN
+                --如果下一个工单仍然已经满足了要求, 说明有另外一个信号同时触发了需求或者本工单物料需求数量过小, 抛弃此次触发.
+                RETURN;
+            END 
         END 
-    END 
-    
-    --最终的拉动请求数量: 剩余需求 与 拉动阈值 二者之中的较小值作为此次的拉动请求数量.
-    SET @ApplyQty = (@ApplyQty + @ThresholdQty)/2 - ABS(@ApplyQty - @ThresholdQty)/2;    
+        
+        --最终的拉动请求数量: 剩余需求 与 拉动阈值 二者之中的较小值作为此次的拉动请求数量.
+        SET @ApplyQty = (@ApplyQty + @ThresholdQty)/2 - ABS(@ApplyQty - @ThresholdQty)/2;    
 
-    --取得下一工单的相应信息.
-    SELECT @NextWorkOrderNumber = @WorkOrderNumber, @NextWorkOrderVersion = @WorkOrderVersion;
-    EXEC [usp_Mfg_Wo_List_get_Next_Available] @NextWorkOrderNumber OUTPUT, @NextWorkOrderVersion OUTPUT;
+        --取得下一工单的相应信息.
+        SELECT @NextWorkOrderNumber = @WorkOrderNumber, @NextWorkOrderVersion = @WorkOrderVersion;
+        EXEC [usp_Mfg_Wo_List_get_Next_Available] @NextWorkOrderNumber OUTPUT, @NextWorkOrderVersion OUTPUT;
 
-    SELECT @NextWOPlanQty = ISNULL(MesPlanQty, 0)
-    FROM MFG_WO_List
-    WHERE
-            ErpWorkOrderNumber  = @NextWorkOrderNumber
-        AND MesWorkOrderVersion = @NextWorkOrderVersion;
-    
-    --如果当下工单的状态为"待生产", 则需要设置工单为"产前调整中",
-    IF @WorkOrderStatus = 0 
-    BEGIN
-        UPDATE MFG_WO_List 
-        SET 
-            MesStatus = 1 
+        SELECT @NextWOPlanQty = ISNULL(MesPlanQty, 0)
+        FROM MFG_WO_List
         WHERE
-            ErpWorkOrderNumber  = @WorkOrderNumber
-        AND MesWorkOrderVersion = @WorkOrderVersion
-        AND MesStatus           = 0; --此条件不可以省略, 因为我们是提前获取状态的时候, 当时并没有为表加锁.
-    END
-
+                ErpWorkOrderNumber  = @NextWorkOrderNumber
+            AND MesWorkOrderVersion = @NextWorkOrderVersion;
+        
+        --如果当下工单的状态为"待生产", 则需要设置工单为"产前调整中",
+        IF @WorkOrderStatus = 0 
+        BEGIN
+            UPDATE MFG_WO_List 
+            SET 
+                MesStatus = 1 
+            WHERE
+                ErpWorkOrderNumber  = @WorkOrderNumber
+            AND MesWorkOrderVersion = @WorkOrderVersion
+            AND MesStatus           = 0; --此条件不可以省略, 因为我们是提前获取状态的时候, 当时并没有为表加锁.
+        END
+    END 
     --产生物料拉料动作.
     INSERT INTO MFG_WO_MTL_Pull 
           ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,  ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,       PullUser )

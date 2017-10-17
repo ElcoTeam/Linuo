@@ -90,7 +90,7 @@
                 var strListContent = '<div PLC_PANEL style="margin-top:10px; overflow: hidden; border: 1px solid #65e8f5; background-color: #fff;">'
                                 + '<table id="' + PLC_ID + '" border="0" style="width:100%">'
                                 + '<tr style="background-color:ButtonFace"> '
-                                + '<td class="formTitle" style="font-weight:bold; color:blueviolet; padding-left:10px;text-align:left;" colspan="6">'
+                                + '<td class="formTitle" style="font-weight:bold; color:blueviolet; padding-left:10px;text-align:left;" colspan="3">'
                                 + '[' + data[i].PLCCabinet + '.' + data[i].PLCCode + ']: ' + data[i].ProcessName + '-' + data[i].PLCName
                                 + '</td>'
                                 + '</tr>'
@@ -98,20 +98,23 @@
                 $("#areascontent").append(strListContent);
                 var Parames = data[i].Parames;
                 for (j in Parames) {
-                //    if (j % 3 == 0) {                                
-                        trow = $("<tr></tr>");
-                        $("#" + PLC_ID).append(trow);
-                //    }
-                    var PARAME_ID = "PARAME_" + Parames[j].ID;
-                    var tdTitle = $('<td class="formTitle">(' + Parames[j].ParamDsca + ')料号:</td>');
-                    var tdValue = $('<td><input id="' + PARAME_ID + '" type="text" class="form-control" value="' + Parames[j].ItemNumber + '"</td>');
+                    trow = $('<tr></tr>');
+                    $("#" + PLC_ID).append(trow);
+                    var PARAME_ID  = "PARAME_"  + Parames[j].ID;
+                    var BTNATTA_ID = "BTNATTA_" + Parames[j].ID;
+                    var tdTitle = $('<td class="formTitle" style="width:50%">' + Parames[j].ParamName  + ' - ' + Parames[j].ParamDsca + ':</td>');
+                    var tdValue = $('<td style="width:200px"><input id="' + PARAME_ID + '" type="text" class="form-control" value="' + Parames[j].ItemNumber + '"></td>');
+                    var tdAtta = $('<td style="text-align:left; padding-left:5px"><a id="' + BTNATTA_ID + '" style="height:30px; padding-top:4px" class="btn btn-default" onclick="onbtn_Atta(\'' + Parames[j].ItemNumber + '\')"><i class="fa fa-map-signs"></i>&nbsp;绑定套料</a></td>');
+
                     tdTitle.appendTo(trow);
                     tdValue.appendTo(trow);
                     if ( OPtype == "CHECK") {
                         $("#" + PARAME_ID).attr("disabled", true);
+               //         $("#" + BTNATTA_ID).attr("disabled", true);
                     }
                     else {
                         $("#" + PARAME_ID).bind("change", onParamChange);
+                        tdAtta.appendTo(trow);
                     }
                 }
             }
@@ -183,6 +186,22 @@
             if (OPtype == "EDIT") {
                 onSaveParameters();
             }
+        }
+
+        function onbtn_Atta(MainItem) {
+            var sWidth = "640px";
+            var sHeight = "480px";
+            
+            dialogOpen({
+                id: "FormCustomerConfig",
+                title: "套料绑定信息维护",
+                url: "../BaseConfig/AttaConfig.aspx?GoodsCode=" + GoodsCode + "&MainItem=" + MainItem,
+                width: sWidth,
+                height: sHeight,
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
         }
 
         function onbtn_RT(event) {

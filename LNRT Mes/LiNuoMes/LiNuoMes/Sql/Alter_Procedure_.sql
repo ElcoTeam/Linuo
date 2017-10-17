@@ -3069,7 +3069,7 @@ AS
 
     --1.查找工序清单, 找到当下的工单, 
 
-    --查找工序, 工单
+    --查找工序, 工单(此处可能产生的记录数多余一个, 但我们只取最后一条记录的值)
     SELECT 
         @WorkOrderNumber  = WorkOrderNumber
        ,@WorkOrderVersion = WorkOrderVersion
@@ -3110,8 +3110,7 @@ AS
               ,@NextWorkOrderNumber  = ''
               ,@NextWorkOrderVersion = 0
               ,@NextWOPlanQty        = 0
-              ,@ActionQty            = 0
-              ,@ApplyQty             = 0;
+              ,@ActionQty            = 0;
     END
     ELSE
     BEGIN

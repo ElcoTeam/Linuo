@@ -1,4 +1,24 @@
 /*
+insert into MFG_WO_MTL_Pull_Attached(goodscode, mainitem, itemnumber, itemdsca, ratioqty)
+values
+('2610300527', '3050000125', '3050000126','',1),
+('2610300527', '3050000125', '3050000127','',1),
+('2610300527', '3050000125', '3050000057','',1),
+('2610300496', '3050000094', '3050000095','',1),
+('2610300496', '3050000094', '3050000096','',1),
+('2610300496', '3050000094', '3050000053','',1);
+
+UPDATE Mes_PLC_Parameters 
+SET ApplModel = 'NA'
+where ApplModel ='mt' and ParamName='LN08.CP08.AlarmBool11' and ItemNumber IN (
+'3050000095',
+'3050000096',
+'3050000053',
+'3050000126',
+'3050000127',
+'3050000057'
+);
+
 select 
 * 
 from 

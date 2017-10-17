@@ -2909,7 +2909,8 @@ AS
     WHERE 
         Mes_PLC_Parameters.PLCID     = Mes_PLC_List.ID
     AND Mes_PLC_List.GoodsCode       = @GoodsCode
-    AND Mes_PLC_Parameters.ParamName = @TagName;
+    AND Mes_PLC_Parameters.ParamName = @TagName
+    AND Mes_PLC_Parameters.ApplModel = 'MT';
 
     --得到本工单已经拉动物料数量(可能是包含了未确认的, 但是已经响应了的数量)
     SELECT 
@@ -3097,8 +3098,6 @@ AS
         RETURN;
     END 
 
-
-
     EXEC [dbo_Mfg_Plc_Trig_MT_Require] @TagName, @ProcessCode, @WorkOrderNumber, @WorkOrderVersion, @WorkOrderStatus OUTPUT, @GoodsCode OUTPUT, @MesPlanQty OUTPUT, @ActionQty OUTPUT, @RequireQty OUTPUT, @ThresholdQty OUTPUT, @ItemNumber OUTPUT, @UOM OUTPUT, @ItemDsca OUTPUT, @WaitingResponse OUTPUT, @BkfMTLFlag OUTPUT, @MubPercent OUTPUT;
 
     --反冲料, 只依据于阈值管理的数量进行物料的数量拉动, 并且其他各种条件均不考虑.
@@ -3178,6 +3177,16 @@ AS
     INSERT INTO MFG_WO_MTL_Pull 
           ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,  ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,       PullUser )
     VALUES( @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty,      @ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty, @PullUser );
+
+    --产生物料拉料动作-绑定的附属料.
+    INSERT INTO MFG_WO_MTL_Pull 
+          ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,        ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,                  PullUser )
+     SELECT @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty * RatioQty,  ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty * RatioQty, @PullUser 
+     FROM MFG_WO_MTL_Pull_Attached
+     WHERE 
+          GoodsCode = @GoodsCode
+      AND MainItem  = @ItemNumber;
+
     --(需要判断当前是否为全局"暂停/正常"标志, 此处涉及到异常恢复情况场景, 比较复杂, 时间关系不考虑)
 GO
 

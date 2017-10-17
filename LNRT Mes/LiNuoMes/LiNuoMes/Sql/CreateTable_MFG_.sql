@@ -247,6 +247,17 @@ CREATE TABLE [dbo].[MFG_WO_MTL_Pull] (
     [Status]             INT             NOT NULL DEFAULT (0)             --状态: -2:删除(拒绝); 0:待响应; 1:待确认; 2:已完成
 );
 
+--产线的物料拉动附属物料表, 用以解决一点触发会同时拉动多种物料的情况(依据比例进行套料发送)
+IF OBJECT_ID('MFG_WO_MTL_Pull_Attached') is not null
+DROP TABLE MFG_WO_MTL_Pull_Attached;
+CREATE TABLE [dbo].[MFG_WO_MTL_Pull_Attached] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [GoodsCode]          VARCHAR  (50)   NOT NULL,                        --产品的物料编码
+    [MainItem]           VARCHAR  (50)   NOT NULL,                        --原料编码-主料
+    [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --原料编码-附属
+    [ItemDsca]           NVARCHAR (50)   NOT NULL,                        --原料描述
+    [RatioQty]           INT             NOT NULL DEFAULT (1)             --用料比例; 主料用量:附属料用量 = 1:RatioQty
+);
 
 --产线的反冲物料料号清单
 IF OBJECT_ID('MFG_WIP_BKF_Item_List') is not null

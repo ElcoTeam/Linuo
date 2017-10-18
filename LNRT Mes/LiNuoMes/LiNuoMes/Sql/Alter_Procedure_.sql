@@ -159,7 +159,7 @@ AS
         MFG_WO_MTL_List
     WHERE
          ItemNumber = @ItemNumber
-     AND Backflush = 'X'
+    -- AND Backflush = 'X'
     ORDER BY ItemNumber
 GO
 
@@ -3207,7 +3207,7 @@ AS
     --产生物料拉料动作-绑定的附属料.
     INSERT INTO MFG_WO_MTL_Pull 
           ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,        ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,                  PullUser )
-     SELECT @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty * RatioQty,  ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty * RatioQty, @PullUser 
+     SELECT @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty * RatioQty,  ItemNumber,  ItemDsca, @ProcessCode, @UOM, @ApplyQty * RatioQty, @PullUser 
      FROM Mes_Mtl_Pull_Item_Attached
      WHERE 
           GoodsCode = @GoodsCode

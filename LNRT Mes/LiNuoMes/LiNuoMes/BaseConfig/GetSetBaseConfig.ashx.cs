@@ -237,6 +237,39 @@ namespace LiNuoMes.BaseConfig
                 context.Response.Flush( );
                 context.Response.Close( );
             }
+            else if (Action == "MES_MTL_PULL_ITEM_ATTACHED")
+            {
+                AttaEntity findItem;
+                findItem = new AttaEntity();
+                findItem.GoodsCode = RequstString("GoodsCode");
+                findItem.MainItem  = RequstString("MainItem");
+                List<AttaEntity> dataEntity;
+                dataEntity = new List<AttaEntity>();
+                dataEntity = GetAttaListObj(dataEntity, findItem);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            else if (Action == "MES_MTL_PULL_ITEM_ATTACHED_ADD")
+            {
+                AttaEntity findItem;
+                findItem = new AttaEntity();
+                findItem.GoodsCode = RequstString("GoodsCode");
+                findItem.MainItem  = RequstString("MainItem");
+                findItem.ItemNumber = RequstString("ItemNumber");
+                findItem.ItemDsca = RequstString("ItemDsca");
+                findItem.RatioQty = RequstString("RatioQty");
+                ResultMsg result = new ResultMsg();
+                result = addAttaDataInDB(findItem, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+            else if (Action == "MES_MTL_PULL_ITEM_ATTACHED_DELETE")
+            {
+                AttaEntity findItem;
+                findItem = new AttaEntity();
+                findItem.ID = RequstString("AttaID");
+                ResultMsg result = new ResultMsg();
+                result = delAttaDataInDB(findItem, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MES_PROC_CONFIG_LIST")
             {
                 ProcessEntity findItem;
@@ -893,6 +926,116 @@ namespace LiNuoMes.BaseConfig
                 }
             }
             return result;
+        }
+
+        public ResultMsg addAttaDataInDB(AttaEntity dataEntity, ResultMsg result)
+        {
+            if (dataEntity.GoodsCode.Length == 0) dataEntity.GoodsCode = "";
+            if (dataEntity.MainItem.Length == 0) dataEntity.MainItem = "";
+            if (dataEntity.ItemNumber.Length == 0) dataEntity.ItemNumber = "";
+            if (dataEntity.ItemDsca.Length == 0) dataEntity.ItemDsca = "";
+            if (dataEntity.RatioQty.Length == 0) dataEntity.RatioQty = "";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    String strSql = string.Format(
+                        @" INSERT INTO Mes_Mtl_Pull_Item_Attached  
+                    (  GoodsCode, MainItem, ItemNumber, ItemDsca, RatioQty ) 
+                       VALUES (
+                        '{0}','{1}',{2},N'{3}',{4} ) ",
+                            dataEntity.GoodsCode,
+                            dataEntity.MainItem,
+                            dataEntity.ItemNumber,
+                            dataEntity.ItemDsca,
+                            dataEntity.RatioQty
+                        );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg    = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        public ResultMsg delAttaDataInDB(AttaEntity dataEntity, ResultMsg result)
+        {
+            if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+                    string strSql = string.Format(" DELETE FROM Mes_Mtl_Pull_Item_Attached WHERE ID = {0}", dataEntity.ID);
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        public List<AttaEntity> GetAttaListObj(List<AttaEntity> dataEntity, AttaEntity findItem)
+        {
+            DataTable dt = new DataTable();
+            string ReturnValue = string.Empty;
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str = string.Format("usp_Mes_Mtl_Pull_Item_Attached '{0}', '{1}' ", findItem.GoodsCode, findItem.MainItem);
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        AttaEntity itemList = new AttaEntity();
+                        itemList.ID            = dt.Rows[i]["ID"].ToString();
+                        itemList.InturnNumber  = (i + 1).ToString();
+                        itemList.GoodsCode     = dt.Rows[i]["GoodsCode"].ToString();
+                        itemList.MainItem      = dt.Rows[i]["MainItem"].ToString();
+                        itemList.ItemNumber    = dt.Rows[i]["ItemNumber"].ToString();
+                        itemList.ItemDsca      = dt.Rows[i]["ItemDsca"].ToString();
+                        itemList.RatioQty      = dt.Rows[i]["RatioQty"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
         }
 
         public List<ProcessEntity> GetProcessListObj(List<ProcessEntity> dataEntity, ProcessEntity findItem)
@@ -1581,6 +1724,7 @@ namespace LiNuoMes.BaseConfig
                             plc_parame.ParamType   = dt1.Rows[j]["ParamType"].ToString();
                             plc_parame.OperateType = dt1.Rows[j]["OperateType"].ToString();
                             plc_parame.ItemNumber  = dt1.Rows[j]["ItemNumber"].ToString();
+                            plc_parame.AttaQty     = dt1.Rows[j]["AttaQty"].ToString();
                             plc_entity.Parames.Add(plc_parame);
                         }
                         dataEntity.Add(plc_entity);
@@ -2421,6 +2565,17 @@ namespace LiNuoMes.BaseConfig
         public string UnitCostTime  { set; get; }
     }
 
+    public class AttaEntity
+    {
+        public string ID            { set; get; }
+        public string InturnNumber  { set; get; }
+        public string GoodsCode     { set; get; }
+        public string MainItem      { set; get; }
+        public string ItemNumber    { set; get; }
+        public string ItemDsca      { set; get; }
+        public string RatioQty      { set; get; }
+    }
+
     public class GoodsMubEntity
     {
         public string ID            { set; get; }
@@ -2477,7 +2632,8 @@ namespace LiNuoMes.BaseConfig
         public string OperateType { set; get; }
         public string ItemNumber  { set; get; }
         public string StatusValue { set; get; }
-        public string StatusTip { set; get; }
+        public string StatusTip   { set; get; }
+        public string AttaQty     { set; get; }
     }
 
     public class PLCParameUPD

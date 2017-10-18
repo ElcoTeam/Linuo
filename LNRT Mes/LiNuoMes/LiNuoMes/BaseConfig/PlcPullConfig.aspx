@@ -104,13 +104,16 @@
                     var BTNATTA_ID = "BTNATTA_" + Parames[j].ID;
                     var tdTitle = $('<td class="formTitle" style="width:50%">' + Parames[j].ParamName  + ' - ' + Parames[j].ParamDsca + ':</td>');
                     var tdValue = $('<td style="width:200px"><input id="' + PARAME_ID + '" type="text" class="form-control" value="' + Parames[j].ItemNumber + '"></td>');
-                    var tdAtta = $('<td style="text-align:left; padding-left:5px"><a id="' + BTNATTA_ID + '" style="height:30px; padding-top:4px" class="btn btn-default" onclick="onbtn_Atta(\'' + Parames[j].ItemNumber + '\')"><i class="fa fa-map-signs"></i>&nbsp;绑定套料</a></td>');
+                    var tdAtta  = $('<td style="text-align:left; padding-left:5px">'
+                        + '<a id="' + BTNATTA_ID + '" style="height:30px; padding-top:4px" class="btn btn-default" '
+                        + 'onclick="onbtn_Atta(\'' + Parames[j].ItemNumber + '\')">'
+                        + '<i class="fa fa-map-signs"></i>&nbsp;绑定套料</a>&nbsp;'
+                        + Parames[j].AttaQty + '</td>');
 
                     tdTitle.appendTo(trow);
                     tdValue.appendTo(trow);
                     if ( OPtype == "CHECK") {
                         $("#" + PARAME_ID).attr("disabled", true);
-               //         $("#" + BTNATTA_ID).attr("disabled", true);
                     }
                     else {
                         $("#" + PARAME_ID).bind("change", onParamChange);
@@ -191,13 +194,14 @@
         function onbtn_Atta(MainItem) {
             var sWidth = "640px";
             var sHeight = "480px";
-            
+            var sUrl = "../BaseConfig/AttaConfig.aspx?GoodsCode=" + GoodsCode + "&MainItem=" + MainItem;
             dialogOpen({
-                id: "FormCustomerConfig",
+                id: "FormAttaConfig",
                 title: "套料绑定信息维护",
-                url: "../BaseConfig/AttaConfig.aspx?GoodsCode=" + GoodsCode + "&MainItem=" + MainItem,
                 width: sWidth,
                 height: sHeight,
+                url: sUrl,
+                btn: ['确认'],
                 callBack: function (iframeId) {
                     top.frames[iframeId].AcceptClick();
                 }

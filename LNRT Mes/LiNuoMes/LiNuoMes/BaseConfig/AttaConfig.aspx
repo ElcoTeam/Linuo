@@ -47,12 +47,10 @@
         //加载表格
         function InitPage() {
             var selectedRowIndex = 0;
-            var $gridTable = $('#gridTable');
-
-            $gridTable.jqGrid({
+            $('#gridTable').jqGrid({
                 url: "../BaseConfig/GetSetBaseConfig.ashx",
                 postData: {
-                    "Action": "MFG_WO_MTL_PULL_ATTACHED_LIST",
+                    "Action": "MES_MTL_PULL_ITEM_ATTACHED",
                     "GoodsCode": GoodsCode,
                     "MainItem": MainItem
                 },
@@ -65,12 +63,13 @@
                     id: "ID"              //此两个参数影响了是否刷新之后高亮选中记录: 需要设定为唯一字段即可,如果设定为0值, 则需要repeatitems为true才可以.
                 },
                 colModel: [
-                    { label: '序号', name: 'ID', index: 'ID', width: 100, align: 'center', sortable: false },
-                    { label: '物料料号', name: 'ItemNumber', index: 'ItemNumber',width: 150, align: 'center', sortable: false },
-                    { label: '物料描述', name: 'ItemDsca',   index: 'ItemDsca',  width: 320, align: 'center', sortable: false },
-                    { label: '用料比例', name: 'RatioQty',   index: 'RatioQty',  width: 50, align: 'center', sortable: false },
+                    { label: 'ID', name: 'ID', index: 'ID', hidden:true },
+                    { label: '序号', name: 'InturnNumber',  index: 'InturnNumber', width: 50,  align: 'center', sortable: false },
+                    { label: '物料料号', name: 'ItemNumber', index: 'ItemNumber',   width: 130, align: 'center', sortable: false },
+                    { label: '物料描述', name: 'ItemDsca',   index: 'ItemDsca',     width: 340, align: 'center', sortable: false },
+                    { label: '用料比例', name: 'RatioQty',   index: 'RatioQty',     width: 80,  align: 'center', sortable: false },
                     {
-                        label: '操 作', width: 110, align: 'center', sortable: false,
+                        label: '操 作', width: 90, align: 'center', sortable: false,
                     formatter: function (cellvalue, options, rowObject) {
                         return '<button onclick=\"btn_Delete(\'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"cursor:pointer;margin-left:5px;padding:.2em .6em .3em;font-size:14px;"><i class="fa fa-times"></i>删除</button>';
                         }
@@ -98,15 +97,27 @@
             }
         }
 
-        function btn_Delete(ItemID) {
-
-            $.ajax({
-
-            });
+        function btn_Delete(AttaID) {
+            if (confirm("请您确认您确实要删除此条记录吗?")) {
+                $.ajax({
+                    url: "../BaseConfig/GetSetBaseConfig.ashx",
+                    data: {
+                        "Action": "MES_MTL_PULL_ITEM_ATTACHED_DELETE",
+                        "AttaID": AttaID
+                    },
+                    type: "post",
+                    datatype: "json",
+                    success: function (data) {
+                        $("#gridTable").trigger("reloadGrid");
+                    },
+                    error: function (msg) {
+                        alert(msg.responseText);
+                    }
+                });
+            }
         }
 
-        function AcceptClick(func) {
-            func();
+        function AcceptClick(iframeId) {
             dialogClose();
             return;
         }
@@ -118,8 +129,9 @@
                 id: "FormCustomerDetail",
                 title: sTitle,
                 url: "../BaseConfig/AttaDetailEdit.aspx?GoodsCode=" + GoodsCode + "&MainItem=" + MainItem,
-                width: "580px",
-                height: "200px",
+                width: "400px",
+                height: "220px",
+               // btn:['确认','关闭'],
                 callBack: function (iframeId) {
                     top.frames[iframeId].AcceptClick($("#gridTable"));
                 }

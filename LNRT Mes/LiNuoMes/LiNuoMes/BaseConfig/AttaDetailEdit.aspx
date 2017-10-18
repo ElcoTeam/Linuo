@@ -43,96 +43,49 @@
 </head>
 <body>
      <script>
-         var CustId = "";
-         var OPtype   = "";
-         var OPaction = "";
+         var GoodsCode = "";
+         var MainItem  = "";
 
          $(function () {
-             CustId = request('CustId');
-             OPtype = request('OPtype');
-
-             if (CustId == undefined) {
-                 CustId = 0;
-             }
-         
-             if (OPtype == undefined) {
-                 OPtype = "CHECK";
-             }
-
-             if (OPtype == "CHECK") {
-                 OPaction = "MES_CUSTOMER_CONFIG_DETAIL";
-             }
-             else if (OPtype == "EDIT") {
-                 OPaction = "MES_CUSTOMER_CONFIG_EDIT";
-             }
-             else if (OPtype == "ADD") {
-                 OPaction = "MES_CUSTOMER_CONFIG_ADD";
-             }
-             else {
-                 return;
-             }
-             InitialPage();             
+             GoodsCode = request('GoodsCode');
+             MainItem  = request('MainItem');
          });
          
-         function InitialPage() {
-             if (OPtype == "CHECK") {
-                 $(".form-control").attr("disabled", true);
-                 $("#btn_upload").attr("disabled", true);
-             }
-             $("#btn_upload").height($("[text]").height());
-             $.ajax({
-                 url: "../BaseConfig/GetSetBaseConfig.ashx",
-                 data: {
-                     "Action": "MES_CUSTOMER_CONFIG_DETAIL",
-                     "CustID": CustId
-                 },
-                 type: "post",
-                 datatype: "json",
-                 success: function (data) {
-                     data = JSON.parse(data);
-                     $("#CustomerName").val(data.CustomerName);
-                     $("#CustomerLogo").val(data.CustomerLogo);
-                 },
-                 error: function (msg) {
-                     alert(msg.responseText);
-                 }
-             });
-         }
-
          //保存表单
          function AcceptClick(grid) {
              
-             if (OPtype == "CHECK")
-             {
-                 dialogClose();
+             var ItemNumber = $("#ItemNumber").val().trim();
+             var ItemDsca   = $("#ItemDsca").val().trim();
+             var RatioQty   = $("#RatioQty").val().trim();
+
+
+             if (ItemNumber.length == 0) {
+                 dialogMsg("请物料料号!", -1);
+                 $("#ItemNumber").focus();
                  return;
              }
 
-             var CustomerName = $("#CustomerName").val().trim();
-             var CustomerLogo = $("#CustomerLogo").val().trim();
-             var UploadedFile = $("#UploadedFile").val().trim();
-
-
-             if (CustomerName.length == 0) {
-                 dialogMsg("请录入客户名称!", -1);
-                 $("#CustomerName").focus();
+             if (ItemDsca.length == 0) {
+                 dialogMsg("请录入物料描述!", -1);
+                 $("#ItemDsca").focus();
                  return;
              }
 
-             if (CustomerLogo.length == 0) {
-                 dialogMsg("请录入客户Logo!", -1);
-                 $("#CustomerLogo").focus();
+             if (RatioQty.length == 0) {
+                 dialogMsg("请录入物料的用料比例!", -1);
+                 $("#RatioQty").focus();
                  return;
              }
 
              $.ajax({
                  url: "../BaseConfig/GetSetBaseConfig.ashx",
                  data: {
-                     Action      : OPaction,
-                     CustID      : CustId,
-                     CustomerName: CustomerName,
-                     CustomerLogo: CustomerLogo,
-                     UploadedFile: UploadedFile
+                     Action: "MES_MTL_PULL_ITEM_ATTACHED_ADD",
+                     GoodsCode: GoodsCode,
+                     MainItem : MainItem,
+                     ItemNumber: ItemNumber,
+                     ItemDsca: ItemDsca,
+                     RatioQty: RatioQty
                  },
                  async: true,
                  type: "post",
@@ -168,39 +121,26 @@
              if (r != null) return unescape(r[2]); return null;
          }
 
-         //上传原始文件
-         function onUpload(keyword) {
-             dialogOpen({
-                id: "UploadifyLogo",
-                title: '上传文件',
-                url: '../BaseConfig/UploadifyLogo.aspx',
-                width: "600px",
-                height: "180px",
-                callBack: function (iframeId) {
-                    top.frames[iframeId].AcceptClick($("#CustomerLogo"), $("#UploadedFile"));
-                }
-            });
-         }
-
 
     </script>
     <div style="margin-left: 10px; margin-top: 20px; margin-right: 10px;">
             <table class="form" id="ruleinfo" style="margin-top:0px;" border="0">
                 <tr>
-                    <th class="formTitle">客户名称<font face="宋体">*</font></th>
+                    <th class="formTitle">物料料号<font face="宋体">*</font></th>
                     <td class="formValue">
-                        <input type="text" class="form-control"  id="CustomerName" isvalid="yes" checkexpession="NotNull" />
+                        <input type="text" class="form-control"  id="ItemNumber" isvalid="yes" checkexpession="NotNull" />
                     </td>
-                     <td></td>
                  </tr>
                 <tr>
-                    <th class="formTitle">客户Logo<font face="宋体">*</font></th>
+                    <th class="formTitle">物料描述<font face="宋体">*</font></th>
                     <td class="formValue">
-                        <input type="text" class="form-control" id="CustomerLogo" isvalid="yes" checkexpession="NotNull" readonly/>
-                        <input type="hidden" id="UploadedFile" value=""/>
+                        <input type="text" class="form-control"  id="ItemDsca" isvalid="yes" checkexpession="NotNull" />
                     </td>
-                    <td style="vertical-align:top">
-                        <a id="btn_upload" class="btn btn-default" onclick="onUpload(event)" style="padding-top:2px"><i class="fa fa-upload"></i>&nbsp;上传</a>
+                </tr>
+                <tr>
+                    <th class="formTitle">用料比例<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input type="text" class="form-control"  id="RatioQty" isvalid="yes" checkexpession="NotNull" />
                     </td>
                 </tr>
                

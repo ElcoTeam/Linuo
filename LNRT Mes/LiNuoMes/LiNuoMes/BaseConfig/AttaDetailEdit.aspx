@@ -48,14 +48,52 @@
 
          $(function () {
              GoodsCode = request('GoodsCode');
-             MainItem  = request('MainItem');
+             MainItem = request('MainItem');
+
+             $('#ItemNumber').bind('keypress', function (event) {
+                 if (event.keyCode == "13") {
+                     getSuggestDsca();
+                 }
+             });
+
+             $('#ItemDsca').bind('keypress', function (event) {
+                 if (event.keyCode == "13") {
+                     $("#RatioQty").focus();
+                 }
+             });
          });
+
+         function getSuggestDsca() {
+             ItemNumber = $("#ItemNumber").val();
+             $.ajax({
+                 url: "../Mfg/GetSetMfg.ashx",
+                 data: {
+                     "Action": "MFG_WIP_BKF_ITEM_SUGGEST_DSCA",
+                     "ItemNumber": ItemNumber
+                 },
+                 type: "post",
+                 datatype: "json",
+                 success: function (data) {
+                     $("#ItemDsca").val(JSON.parse(data).ItemDsca);
+                     if ($("#ItemDsca").val().length > 0) {
+                         $("#RatioQty").focus();
+                     }
+                     else {
+                         $("#ItemDsca").focus();
+                     }
+                 },
+
+                 error: function (msg) {
+                     alert(msg.responseText);
+                 }
+             });
+         }
          
          //保存表单
          function AcceptClick(grid) {
              
-             var ItemNumber = $("#ItemNumber").val().trim();
-             var ItemDsca   = $("#ItemDsca").val().trim();
+             var ItemNumber = $("#ItemNumber").val().trim().toUpperCase();
+             var ItemDsca   = $("#ItemDsca").val().trim().toUpperCase();
              var RatioQty   = $("#RatioQty").val().trim();
 
 
@@ -76,6 +114,12 @@
                  $("#RatioQty").focus();
                  return;
              }
+             if (isNaN(RatioQty)) {
+                 dialogMsg("请输入有效的数字型数据!", -1);
+                 $("#RatioQty").focus();
+                return;
+             }
+
 
              $.ajax({
                  url: "../BaseConfig/GetSetBaseConfig.ashx",

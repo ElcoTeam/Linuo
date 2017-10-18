@@ -117,7 +117,8 @@
             }
         }
 
-        function AcceptClick(iframeId) {
+        function AcceptClick(InitPage) {
+            InitPage();
             dialogClose();
             return;
         }

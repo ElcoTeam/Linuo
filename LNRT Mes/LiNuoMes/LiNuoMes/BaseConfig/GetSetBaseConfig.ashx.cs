@@ -949,7 +949,7 @@ namespace LiNuoMes.BaseConfig
                         @" INSERT INTO Mes_Mtl_Pull_Item_Attached  
                     (  GoodsCode, MainItem, ItemNumber, ItemDsca, RatioQty ) 
                        VALUES (
-                        '{0}','{1}',{2},N'{3}',{4} ) ",
+                        '{0}','{1}','{2}',N'{3}',{4} ) ",
                             dataEntity.GoodsCode,
                             dataEntity.MainItem,
                             dataEntity.ItemNumber,

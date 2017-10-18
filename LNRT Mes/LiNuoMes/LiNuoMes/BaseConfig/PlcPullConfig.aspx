@@ -203,7 +203,7 @@
                 url: sUrl,
                 btn: ['确认'],
                 callBack: function (iframeId) {
-                    top.frames[iframeId].AcceptClick();
+                    top.frames[iframeId].AcceptClick(InitPage);
                 }
             });
         }

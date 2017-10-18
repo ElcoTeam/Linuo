@@ -1,5 +1,18 @@
 /*
-insert into MFG_WO_MTL_Pull_Attached(goodscode, mainitem, itemnumber, itemdsca, ratioqty)
+IF OBJECT_ID('Mes_Mtl_Pull_Item_Attached') is not null
+DROP TABLE Mes_Mtl_Pull_Item_Attached;
+CREATE TABLE [dbo].[Mes_Mtl_Pull_Item_Attached] (
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [GoodsCode]          VARCHAR  (50)   NOT NULL,                        --产品的物料编码
+    [MainItem]           VARCHAR  (50)   NOT NULL,                        --原料编码-主料
+    [ItemNumber]         VARCHAR  (50)   NOT NULL,                        --原料编码-附属
+    [ItemDsca]           NVARCHAR (50)   NOT NULL,                        --原料描述
+    [RatioQty]           NUMERIC  (18, 4)NOT NULL DEFAULT (1)             --用料比例; 主料用量:附属料用量 = 1:RatioQty
+);
+
+
+
+insert into Mes_Mtl_Pull_Item_Attached(goodscode, mainitem, itemnumber, itemdsca, ratioqty)
 values
 ('2610300527', '3050000125', '3050000126','',1),
 ('2610300527', '3050000125', '3050000127','',1),
@@ -8,9 +21,13 @@ values
 ('2610300496', '3050000094', '3050000096','',1),
 ('2610300496', '3050000094', '3050000053','',1);
 
-UPDATE Mes_PLC_Parameters 
-SET ApplModel = 'NA'
-where ApplModel ='mt' and ParamName='LN08.CP08.AlarmBool11' and ItemNumber IN (
+
+DROP TABLE MFG_WO_MTL_Pull_Attached;
+
+DELETE FROM
+Mes_PLC_Parameters 
+WHERE 
+ ParamName='LN08.CP08.AlarmBool11' and ItemNumber IN (
 '3050000095',
 '3050000096',
 '3050000053',

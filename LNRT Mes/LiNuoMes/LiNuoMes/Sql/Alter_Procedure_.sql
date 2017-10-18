@@ -374,6 +374,22 @@ AS
     ORDER BY InturnNumber
 GO
 
+--取得产品编码管理的物料拉动绑定物料(附属物料)清单
+ALTER PROCEDURE  [dbo].[usp_Mes_Mtl_Pull_Item_Attached]
+     @GoodsCode       AS VARCHAR(50)  = '',
+     @MainItem        AS VARCHAR(50)  = ''
+AS
+    SELECT * 
+    FROM 
+        Mes_Mtl_Pull_Item_Attached 
+    where 
+        GoodsCode = @GoodsCode
+    AND MainItem = @MainItem
+    ORDER BY
+        ItemNumber;
+GO
+
+
 --取得下线补单的详细信息.
 ALTER PROCEDURE  [dbo].[usp_Mfg_Wo_List_SubPlan]
       @WorkOrderNumber        AS VARCHAR(50)
@@ -2116,11 +2132,21 @@ GO
 ALTER PROCEDURE [dbo].[usp_Mes_Plc_Pull_Parameters_List]
      @PLCID            AS INT                  --PLCID
 AS
-     SELECT *
-     FROM Mes_PLC_Parameters
-     WHERE PLCID = @PLCID
-      AND ApplModel = 'MT'
-     ORDER BY ParamName
+     SELECT PARA.*, ATTA.AttaQty
+     FROM 
+         Mes_PLC_Parameters PARA
+     LEFT JOIN 
+         (SELECT Mes_Mtl_Pull_Item_Attached.MainItem, SUM(1) AttaQty 
+          FROM Mes_Mtl_Pull_Item_Attached, Mes_PLC_List PLC
+          WHERE 
+               PLC.ID = @PLCID
+           AND Mes_Mtl_Pull_Item_Attached.GoodsCode = PLC.GoodsCode
+          GROUP BY MainItem
+         ) AS ATTA ON ATTA.MainItem = PARA.ItemNumber
+     WHERE 
+          PARA.PLCID = @PLCID
+      AND PARA.ApplModel = 'MT'
+     ORDER BY PARA.ParamName
 GO
 
 
@@ -3182,7 +3208,7 @@ AS
     INSERT INTO MFG_WO_MTL_Pull 
           ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,        ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,                  PullUser )
      SELECT @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty * RatioQty,  ItemNumber, @ItemDsca, @ProcessCode, @UOM, @ApplyQty * RatioQty, @PullUser 
-     FROM MFG_WO_MTL_Pull_Attached
+     FROM Mes_Mtl_Pull_Item_Attached
      WHERE 
           GoodsCode = @GoodsCode
       AND MainItem  = @ItemNumber;

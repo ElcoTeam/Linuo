@@ -28,4 +28,12 @@ namespace LiNuoMes.Model
 
         public List<double> datavalue { set; get; }
     }
+
+    public class ColunmChartWithName
+    {
+        
+        public string name { set; get; }   //横轴名字 
+
+        public double y { set; get; }      //y轴 数值
+    }
 }

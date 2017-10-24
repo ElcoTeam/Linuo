@@ -33,6 +33,7 @@
     <script src="../My97DatePicker/WdatePicker.js"></script>
 
     <script>
+        var currentdate = "";
         $(function () {
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
@@ -130,6 +131,24 @@
                     }
                 });
             })
+
+
+            //编辑生产停止时间
+            $("#btn_TotalTime").click(function () {
+                dialogOpen({
+                    id: "UploadifyForm",
+                    title: '当日保养维护时间统计',
+                    //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    url: './DailyMaintenceTime.aspx?currentdate=' + currentdate,
+                    width: "400px",
+                    height: "200px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].AcceptClick();
+                    }
+                });
+
+            })
+          
         });
 
         //加载表格
@@ -461,6 +480,8 @@
                 $('#lr_btn_querySearch').trigger("click");
             }
         }
+
+
         //设置默认时间选择
         function fnDate() {
             var xhr = null;
@@ -491,7 +512,7 @@
                     if (strDate >= 0 && strDate <= 9) {
                         strDate = "0" + strDate;
                     }
-                    var currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
+                    currentdate = curDate.getFullYear() + seperator1 + month + seperator1 + strDate;
                     $("#PmStartDate").val(currentdate);
                     $("#PmFinishDate").val(currentdate);
                     GetGrid();
@@ -570,7 +591,7 @@
                                          <a id="btn_Add" class="btn btn-default" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建计划外保养</a>  
                                          <a id="btn_FirstLevel" class="btn btn-default"><i class="fa fa-edit"></i>一级保养维护</a>                        
                                          <a id="btn_SecondLevel" class="btn btn-default"><i class="fa fa-edit"></i>二级保养维护</a>
-                                         
+                                         <a id="btn_TotalTime" class="btn btn-default"><i class="fa fa-edit"></i>编辑生产停止时间</a>
                                     </div>
                                 </div>
                          </div>

@@ -65,7 +65,6 @@
 
                 } else {
                     $("#content").removeClass("active")
-
                 }
             });
             

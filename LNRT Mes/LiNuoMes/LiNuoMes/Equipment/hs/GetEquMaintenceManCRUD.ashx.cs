@@ -7,7 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.SessionState;
-
+using LiNuoMes.Model;
 namespace LiNuoMes.Equipment.hs
 {
     /// <summary>
@@ -201,7 +201,38 @@ namespace LiNuoMes.Equipment.hs
                 result = AddSecondLevelProblem(dataEntity, result);
                 context.Response.Write(jsc.Serialize(result));
             }
-           
+
+            #region//获取每日保养用时
+            if (Action == "GetDailyMaintenceTime")
+            {
+                Model.DailyMaintenceTime mb = new Model.DailyMaintenceTime();
+                mb.MaintenceDate = RequstString("CurrentMonth");
+                mb = GetDailyMaintenceTime(mb);
+                context.Response.Write(jsc.Serialize(mb));
+            }
+            #endregion
+            #region //新增每日保养用时
+            if (Action == "DailyMaintenceTime_Add")
+            {
+                Model.DailyMaintenceTime mb = new Model.DailyMaintenceTime();
+                mb.MaintenceDate = RequstString("CurrentTime");
+                mb.TotalTime = RequstString("TotalTime");
+                Model.ResultMsg_DailyMaintenceTime result = new ResultMsg_DailyMaintenceTime();
+                result = DailyMaintenceTimeAdd(mb, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+            #endregion
+            #region //更新每日保养用时
+            if (Action == "DailyMaintenceTime_Edit")
+            {
+                Model.DailyMaintenceTime mb = new Model.DailyMaintenceTime();
+                mb.MaintenceDate = RequstString("CurrentMonth");
+                mb.TotalTime = RequstString("TotalTime");
+                Model.ResultMsg_DailyMaintenceTime result = new Model.ResultMsg_DailyMaintenceTime();
+                result = DailyMaintenceTimeEdit(mb, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+            #endregion
         }
 
         public Equ_PmRecordInfo GetEquPmRecordDetailObj(Equ_PmRecordInfo equinfo, Equ_PmRecordInfo result)
@@ -729,6 +760,134 @@ namespace LiNuoMes.Equipment.hs
                              dataEntity.ReplacePart,
                              dataEntity.ReplaceName,
                              dataEntity.ReplaceCount
+                         );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+
+
+
+        /// <summary>
+        /// 获取当日保养用时
+        /// </summary>
+        /// <param name="monthbudget"></param>
+        /// <returns></returns>
+        public Model.DailyMaintenceTime GetDailyMaintenceTime(Model.DailyMaintenceTime usetime)
+        {
+            DataTable dt = new DataTable();
+            string ReturnValue = string.Empty;
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string str1 = "select TotalTime from Equ_MaintenceUseTime";
+                if (usetime.MaintenceDate != "")
+                {
+                    str1 += "  WHERE MaintenceDate ='" + usetime.MaintenceDate + "' ";
+                }
+
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = str1;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    usetime.TotalTime = dt.Rows[0]["TotalTime"].ToString();
+                }
+                return usetime;
+            }
+        }
+
+        /// <summary>
+        /// 新增当月预算产量
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public Model.ResultMsg_DailyMaintenceTime DailyMaintenceTimeAdd(Model.DailyMaintenceTime dataEntity, Model.ResultMsg_DailyMaintenceTime result)
+        {
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    string strSql = string.Format(
+                         @" INSERT INTO Equ_MaintenceUseTime  
+                        (MaintenceDate,TotalTime, UpdateUser, UpdateTime) VALUES ( '{0}','{1}','{2}',getdate()) ",
+                             dataEntity.MaintenceDate,
+                             dataEntity.TotalTime,
+                             UserName
+                         );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+
+        /// <summary>
+        /// 编辑当月预算产量
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public Model.ResultMsg_DailyMaintenceTime DailyMaintenceTimeEdit(Model.DailyMaintenceTime dataEntity, Model.ResultMsg_DailyMaintenceTime result)
+        {
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    string strSql = string.Format(
+                        @" UPDATE Equ_MaintenceUseTime SET 
+                                                  TotalTime  = '{0}' 
+                                                , UpdateUser   = '{1}'
+                                                , UpdateTime   = getdate()
+                                                  WHERE MaintenceDate = '{2}'
+                                            ",
+                                                    dataEntity.TotalTime,
+                                                    UserName,
+                                                    dataEntity.MaintenceDate
                          );
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandText = strSql;

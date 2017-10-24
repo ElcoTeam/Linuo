@@ -59,7 +59,8 @@
             $gridTable.jqGrid({
                 url: "hs/GetUserInfo.ashx",
                 datatype: "json",
-                height: $('#areascontent').height() -250,
+                height: $('#areascontent').height() - 250,
+                //styleUI: 'Bootstrap',
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     {
@@ -77,6 +78,7 @@
                     },
                 ],
                 viewrecords: true,
+                //altRows: true,
                 rowNum: 30,
                 rownumWidth: 100,
                 rowList: [30, 50, 100],
@@ -92,7 +94,6 @@
                 },
                 gridComplete: function () {
                     $("#" + this.id).setSelection(selectedRowIndex, false);
-                    
                 }
             });
 

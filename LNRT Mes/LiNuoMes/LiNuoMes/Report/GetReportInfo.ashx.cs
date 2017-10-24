@@ -78,10 +78,70 @@ namespace LiNuoMes.Report
             if (Action == "KeyEquOEEReport")
             {
                 List<KeyEquOEEEntity> equOEE = new List<KeyEquOEEEntity>();
-                //equOEE = GetEquAlarmList(equOEE);
-                //context.Response.Write(jsc.Serialize(equOEE));
+                equOEE = GetKeyEquOEEList(equOEE);
+                context.Response.Write(jsc.Serialize(equOEE));
             }
             #endregion
+
+            #region //关键设备OEE 同一设备不同日期的统计图
+            if (Action == "KeyEquOEEChart")
+            {
+                List<KeyEquOEEEntity> equOEE = new List<KeyEquOEEEntity>();
+                equOEE = GetKeyEquOEEList(equOEE);
+                Chart chart = new Chart();
+                List<string> catagory = new List<string>();
+                List<double> datavalue = new List<double>();
+                foreach (KeyEquOEEEntity en in equOEE)
+                {
+                    catagory.Add(en.DATE);
+                    if(!string.IsNullOrEmpty(en.OEE))
+                    {
+                        datavalue.Add(Convert.ToDouble(en.OEE.Substring(0, en.OEE.Length - 1)));
+                    }
+                    else
+                    {
+                        datavalue.Add(0.0);
+                    }
+                }
+                chart.catagory = catagory;
+                chart.datavalue = datavalue;
+                context.Response.Write(jsc.Serialize(chart));
+            }
+            #endregion
+
+            #region //关键设备OEE 不同设备的OEE统计图
+            if (Action == "KeyEquAllOEEChart")
+            {
+                List<KeyEquOEEEntity> equOEE = new List<KeyEquOEEEntity>();
+                equOEE = GetKeyAllEquOEEList(equOEE);
+                List<ColunmChartWithName> columnChart = new List<ColunmChartWithName>();
+
+                foreach (KeyEquOEEEntity en in equOEE)
+                {
+                    if (!string.IsNullOrEmpty(en.OEE))
+                    {
+                        columnChart.Add(new ColunmChartWithName
+                        {
+                            name = en.DeviceName,
+                            y = Convert.ToDouble(en.OEE.Substring(0, en.OEE.Length - 1))
+                        });
+                    }
+                    else
+                    {
+                        columnChart.Add(new ColunmChartWithName
+                        {
+                            name = en.DeviceName,
+                            y = 0.0
+                        });
+                    }
+                   
+                }
+                
+                context.Response.Write(jsc.Serialize(columnChart));
+            }
+            #endregion
+
+
             #region //设备生产工艺
             if (Action == "ProductArtReport")
             {
@@ -2591,6 +2651,133 @@ namespace LiNuoMes.Report
                         }
                        
                         dataEntity.Add(itemList);
+                    }
+
+                }
+            }
+            return dataEntity;
+        }
+
+        /// <summary>
+        /// 关键设备OEE报表
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<KeyEquOEEEntity> GetKeyEquOEEList(List<KeyEquOEEEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            string DeviceCode = RequstString("DeviceName");
+            string StartTime = RequstString("StartTime");
+            string EndTime = RequstString("EndTime");
+            StartTime += " 00:00:00";
+            EndTime += " 23:59:59";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_KeyEquOEE";
+                SqlParameter[] sqlPara = new SqlParameter[3];
+                sqlPara[0] = new SqlParameter("@DeviceCode", DeviceCode);
+                sqlPara[1] = new SqlParameter("@StartTime", StartTime);
+                sqlPara[2] = new SqlParameter("@EndTime", EndTime);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        KeyEquOEEEntity equoee = new KeyEquOEEEntity();
+                        equoee.ID = (i+1).ToString();
+                        equoee.Number = (i + 1).ToString();
+                        equoee.DATE = dt.Rows[i]["DateValue"].ToString();
+                        equoee.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        equoee.Calendar = dt.Rows[i]["Calendar"].ToString();
+                        equoee.StopTime = dt.Rows[i]["StopTime"].ToString();
+                        equoee.LoadTime = dt.Rows[i]["LoadTime"].ToString();
+                        equoee.UtilizationRate = dt.Rows[i]["UtilizationRate"].ToString();
+                        equoee.EquStopTime = dt.Rows[i]["EquStopTime"].ToString();
+                        equoee.RunTime = dt.Rows[i]["RunTime"].ToString();
+                        equoee.TimeUtilizationRate = dt.Rows[i]["TimeUtilizationRate"].ToString();
+                        equoee.TheoryCycle = dt.Rows[i]["TheoryCycle"].ToString();
+                        equoee.ProcessQty = dt.Rows[i]["ProcessQty"].ToString();
+                        equoee.EfficientRate = dt.Rows[i]["EfficientRate"].ToString();
+                        equoee.DefectiveQty = dt.Rows[i]["DefectiveQty"].ToString();
+                        equoee.YieldRate = dt.Rows[i]["YieldRate"].ToString();
+                        equoee.OEE = dt.Rows[i]["OEE"].ToString();
+                        //equoee.OEE = i.ToString();
+                        dataEntity.Add(equoee);
+                    }
+
+                }
+            }
+            return dataEntity;
+        }
+
+
+        /// <summary>
+        /// 所有关键设备柱状图
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <returns></returns>
+        public List<KeyEquOEEEntity> GetKeyAllEquOEEList(List<KeyEquOEEEntity> dataEntity)
+        {
+            DataTable dt = new DataTable();
+            //string DeviceCode = RequstString("DeviceName");
+            string todayTime = RequstString("todayTime");
+            //string EndTime = RequstString("EndTime");
+            //StartTime += " 00:00:00";
+            //EndTime += " 23:59:59";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Report_AllKeyEquOEE";
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                //sqlPara[0] = new SqlParameter("@DeviceCode", DeviceCode);
+                sqlPara[0] = new SqlParameter("@todayTime", todayTime);
+                //sqlPara[2] = new SqlParameter("@EndTime", EndTime);
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        KeyEquOEEEntity equoee = new KeyEquOEEEntity();
+                        equoee.ID = (i + 1).ToString();
+                        equoee.Number = (i + 1).ToString();
+                        equoee.DATE = dt.Rows[i]["DateValue"].ToString();
+                        equoee.DeviceName = dt.Rows[i]["DeviceName"].ToString();
+                        equoee.Calendar = dt.Rows[i]["Calendar"].ToString();
+                        equoee.StopTime = dt.Rows[i]["StopTime"].ToString();
+                        equoee.LoadTime = dt.Rows[i]["LoadTime"].ToString();
+                        equoee.UtilizationRate = dt.Rows[i]["UtilizationRate"].ToString();
+                        equoee.EquStopTime = dt.Rows[i]["EquStopTime"].ToString();
+                        equoee.RunTime = dt.Rows[i]["RunTime"].ToString();
+                        equoee.TimeUtilizationRate = dt.Rows[i]["TimeUtilizationRate"].ToString();
+                        equoee.TheoryCycle = dt.Rows[i]["TheoryCycle"].ToString();
+                        equoee.ProcessQty = dt.Rows[i]["ProcessQty"].ToString();
+                        equoee.EfficientRate = dt.Rows[i]["EfficientRate"].ToString();
+                        equoee.DefectiveQty = dt.Rows[i]["DefectiveQty"].ToString();
+                        equoee.YieldRate = dt.Rows[i]["YieldRate"].ToString();
+                        equoee.OEE = dt.Rows[i]["OEE"].ToString();
+                        //equoee.OEE = i.ToString();
+                        dataEntity.Add(equoee);
                     }
 
                 }

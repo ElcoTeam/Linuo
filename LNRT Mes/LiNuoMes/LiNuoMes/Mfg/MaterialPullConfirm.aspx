@@ -287,7 +287,7 @@
             <div style="float: left; width: 100%;">
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">物料拉动响应</strong></div>
+                        <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">物料拉动确认</strong></div>
                          <div class="lr-layout-tool">
                               
                                    <div class="lr-layout-tool-left">

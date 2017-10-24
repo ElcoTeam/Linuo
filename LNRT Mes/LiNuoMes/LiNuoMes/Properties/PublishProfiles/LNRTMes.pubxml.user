@@ -9,6 +9,12 @@
     <_PublishTargetUrl>C:\Users\Administrator\Desktop\LNRT Mes</_PublishTargetUrl>
   </PropertyGroup>
   <ItemGroup>
+    <File Include="BaseConfig/AttaConfig.aspx">
+      <publishTime>10/18/2017 13:53:40</publishTime>
+    </File>
+    <File Include="BaseConfig/AttaDetailEdit.aspx">
+      <publishTime>10/18/2017 13:53:40</publishTime>
+    </File>
     <File Include="BaseConfig/CustomerConfig.aspx">
       <publishTime>08/31/2017 17:20:08</publishTime>
     </File>
@@ -22,34 +28,43 @@
       <publishTime>08/07/2017 11:17:00</publishTime>
     </File>
     <File Include="BaseConfig/GoodsConfig.aspx">
-      <publishTime>08/31/2017 17:20:08</publishTime>
+      <publishTime>10/11/2017 10:01:04</publishTime>
     </File>
     <File Include="BaseConfig/GoodsConfigDetailEdit.aspx">
       <publishTime>08/23/2017 16:38:28</publishTime>
     </File>
     <File Include="BaseConfig/LineConfig.aspx">
-      <publishTime>08/23/2017 10:57:04</publishTime>
+      <publishTime>09/08/2017 17:06:28</publishTime>
+    </File>
+    <File Include="BaseConfig/MubConfig.aspx">
+      <publishTime>10/11/2017 10:01:04</publishTime>
     </File>
     <File Include="BaseConfig/PLCConfig.aspx">
-      <publishTime>08/23/2017 10:57:04</publishTime>
+      <publishTime>10/11/2017 10:01:04</publishTime>
     </File>
     <File Include="BaseConfig/PlcPullConfig.aspx">
-      <publishTime>08/23/2017 10:57:04</publishTime>
+      <publishTime>10/18/2017 13:53:40</publishTime>
     </File>
     <File Include="BaseConfig/ProcConfig.aspx">
-      <publishTime>08/23/2017 10:57:04</publishTime>
+      <publishTime>09/08/2017 17:06:28</publishTime>
     </File>
     <File Include="BaseConfig/ProcConfigDetailEdit.aspx">
       <publishTime>08/23/2017 16:38:28</publishTime>
     </File>
     <File Include="BaseConfig/ThresholdConfig.aspx">
-      <publishTime>08/23/2017 10:57:04</publishTime>
+      <publishTime>09/14/2017 17:20:29</publishTime>
     </File>
     <File Include="BaseConfig/UploadifyLogo.aspx">
       <publishTime>08/07/2017 11:17:00</publishTime>
     </File>
     <File Include="BaseConfig/UploadifyManu.aspx">
       <publishTime>08/07/2017 11:17:00</publishTime>
+    </File>
+    <File Include="BaseConfig/UploadifyMubExcel.aspx">
+      <publishTime>10/11/2017 10:01:04</publishTime>
+    </File>
+    <File Include="BaseConfig/UploadifyPlcExcel.aspx">
+      <publishTime>10/11/2017 10:01:04</publishTime>
     </File>
     <File Include="bin/Antlr3.Runtime.dll">
       <publishTime>08/07/2017 11:19:27</publishTime>
@@ -59,6 +74,9 @@
     </File>
     <File Include="bin/AspNet.ScriptManager.jQuery.dll">
       <publishTime>08/07/2017 11:19:27</publishTime>
+    </File>
+    <File Include="bin/Aspose.Cells.dll">
+      <publishTime>09/20/2017 14:34:31</publishTime>
     </File>
     <File Include="bin/Aspose.Words.dll">
       <publishTime>08/03/2017 17:01:14</publishTime>
@@ -78,8 +96,11 @@
     <File Include="bin/HtmlAgilityPack.dll">
       <publishTime>08/07/2017 11:18:18</publishTime>
     </File>
+    <File Include="bin/ICSharpCode.SharpZipLib.dll">
+      <publishTime>10/09/2017 09:43:53</publishTime>
+    </File>
     <File Include="bin/LiNuoMes.dll">
-      <publishTime>08/31/2017 17:20:29</publishTime>
+      <publishTime>10/18/2017 13:53:54</publishTime>
     </File>
     <File Include="bin/Microsoft.AspNet.FriendlyUrls.dll">
       <publishTime>08/07/2017 11:19:32</publishTime>
@@ -103,16 +124,16 @@
       <publishTime>08/07/2017 11:19:34</publishTime>
     </File>
     <File Include="bin/NPOI.dll">
-      <publishTime>08/07/2017 11:18:18</publishTime>
+      <publishTime>10/09/2017 09:43:53</publishTime>
     </File>
     <File Include="bin/NPOI.OOXML.dll">
-      <publishTime>08/07/2017 11:18:18</publishTime>
+      <publishTime>10/09/2017 09:43:53</publishTime>
     </File>
     <File Include="bin/NPOI.OpenXml4Net.dll">
-      <publishTime>08/07/2017 11:18:18</publishTime>
+      <publishTime>10/09/2017 09:43:53</publishTime>
     </File>
     <File Include="bin/NPOI.OpenXmlFormats.dll">
-      <publishTime>08/07/2017 11:18:18</publishTime>
+      <publishTime>10/09/2017 09:43:53</publishTime>
     </File>
     <File Include="bin/System.Web.Optimization.dll">
       <publishTime>08/07/2017 11:19:34</publishTime>
@@ -190,7 +211,7 @@
       <publishTime>08/07/2017 11:17:01</publishTime>
     </File>
     <File Include="Content/scripts/bootstrap/bootstrap.css">
-      <publishTime>08/07/2017 11:17:01</publishTime>
+      <publishTime>09/05/2017 13:49:22</publishTime>
     </File>
     <File Include="Content/scripts/bootstrap/bootstrap.min.js">
       <publishTime>08/07/2017 11:17:01</publishTime>
@@ -637,10 +658,10 @@
       <publishTime>08/07/2017 11:17:03</publishTime>
     </File>
     <File Include="Content/scripts/plugins/printTable/jquery.printTable.js">
-      <publishTime>08/29/2017 11:04:54</publishTime>
+      <publishTime>09/07/2017 14:56:09</publishTime>
     </File>
     <File Include="Content/scripts/plugins/printTable/learun-report.css">
-      <publishTime>08/29/2017 10:56:48</publishTime>
+      <publishTime>09/07/2017 11:13:51</publishTime>
     </File>
     <File Include="Content/scripts/plugins/searchSelect/combo.select.css">
       <publishTime>08/07/2017 11:17:03</publishTime>
@@ -721,7 +742,7 @@
       <publishTime>08/07/2017 11:17:04</publishTime>
     </File>
     <File Include="Content/scripts/utils/learun-ui.js">
-      <publishTime>08/22/2017 17:27:07</publishTime>
+      <publishTime>09/06/2017 10:27:26</publishTime>
     </File>
     <File Include="Content/Site.css">
       <publishTime>08/07/2017 11:17:00</publishTime>
@@ -748,16 +769,16 @@
       <publishTime>08/07/2017 11:17:04</publishTime>
     </File>
     <File Include="Content/styles/learun-report.css">
-      <publishTime>08/31/2017 11:20:27</publishTime>
+      <publishTime>09/07/2017 14:44:31</publishTime>
     </File>
     <File Include="Content/styles/learun-ui.css">
-      <publishTime>08/29/2017 11:45:25</publishTime>
+      <publishTime>09/22/2017 11:18:11</publishTime>
     </File>
     <File Include="css/blank_theme.css">
       <publishTime>08/07/2017 11:18:18</publishTime>
     </File>
     <File Include="css/bootstrap.min.css">
-      <publishTime>08/07/2017 11:18:18</publishTime>
+      <publishTime>09/22/2017 11:42:22</publishTime>
     </File>
     <File Include="css/demo.css">
       <publishTime>08/07/2017 11:18:18</publishTime>
@@ -834,17 +855,20 @@
     <File Include="css/zTreeStyle/metro.css">
       <publishTime>08/07/2017 11:18:18</publishTime>
     </File>
+    <File Include="Equipment/DailyMaintenceTime.aspx">
+      <publishTime>10/16/2017 13:29:40</publishTime>
+    </File>
     <File Include="Equipment/EquAlarm.aspx">
-      <publishTime>08/23/2017 10:59:34</publishTime>
+      <publishTime>09/25/2017 10:30:50</publishTime>
     </File>
     <File Include="Equipment/EquAlarmEdit.aspx">
-      <publishTime>08/23/2017 16:38:28</publishTime>
+      <publishTime>09/27/2017 13:53:45</publishTime>
     </File>
     <File Include="Equipment/EquDeviceInfo.aspx">
-      <publishTime>08/23/2017 10:59:34</publishTime>
+      <publishTime>09/23/2017 15:35:07</publishTime>
     </File>
     <File Include="Equipment/EquFirstLevelMaintence.aspx">
-      <publishTime>08/24/2017 14:57:30</publishTime>
+      <publishTime>09/06/2017 14:34:47</publishTime>
     </File>
     <File Include="Equipment/EquFirstLevelManEdit.aspx">
       <publishTime>08/24/2017 17:07:51</publishTime>
@@ -856,28 +880,34 @@
       <publishTime>08/23/2017 16:38:28</publishTime>
     </File>
     <File Include="Equipment/EquMaintenceMan.aspx">
-      <publishTime>08/24/2017 16:15:37</publishTime>
+      <publishTime>10/16/2017 11:45:26</publishTime>
     </File>
     <File Include="Equipment/EquMaintenceManEdit.aspx">
       <publishTime>08/23/2017 16:38:28</publishTime>
     </File>
     <File Include="Equipment/EquMaintencePlan.aspx">
-      <publishTime>08/23/2017 10:59:34</publishTime>
+      <publishTime>09/23/2017 15:53:00</publishTime>
     </File>
     <File Include="Equipment/EquMaintencePlanEdit.aspx">
-      <publishTime>08/23/2017 16:38:28</publishTime>
+      <publishTime>09/27/2017 11:54:36</publishTime>
     </File>
     <File Include="Equipment/EquMaintencePlanMan.aspx">
       <publishTime>08/23/2017 16:38:28</publishTime>
     </File>
     <File Include="Equipment/EquMaintenceStandard.aspx">
-      <publishTime>08/23/2017 10:59:34</publishTime>
+      <publishTime>09/28/2017 11:20:58</publishTime>
     </File>
     <File Include="Equipment/EquMaintenceStandradEdit.aspx">
       <publishTime>08/23/2017 16:38:28</publishTime>
     </File>
+    <File Include="Equipment/EquSecondLevelAdd.aspx">
+      <publishTime>09/15/2017 09:34:40</publishTime>
+    </File>
     <File Include="Equipment/EquSecondLevelMaintence.aspx">
-      <publishTime>08/23/2017 10:59:34</publishTime>
+      <publishTime>09/06/2017 16:24:06</publishTime>
+    </File>
+    <File Include="Equipment/FileSearchDialog.aspx">
+      <publishTime>09/20/2017 16:03:06</publishTime>
     </File>
     <File Include="Equipment/FileSearchInfo.aspx">
       <publishTime>08/07/2017 14:55:52</publishTime>
@@ -911,6 +941,9 @@
     </File>
     <File Include="Equipment/hs/GetEquMaintenceStandardCRUD.ashx">
       <publishTime>08/07/2017 11:17:48</publishTime>
+    </File>
+    <File Include="Equipment/hs/GetMaintenceList.ashx">
+      <publishTime>09/05/2017 15:08:51</publishTime>
     </File>
     <File Include="Equipment/images/Scheme.png">
       <publishTime>08/07/2017 11:17:48</publishTime>
@@ -1054,7 +1087,7 @@
       <publishTime>08/07/2017 11:17:49</publishTime>
     </File>
     <File Include="LineMonitor/LineMonitorMan.aspx">
-      <publishTime>08/31/2017 11:07:12</publishTime>
+      <publishTime>09/07/2017 17:23:13</publishTime>
     </File>
     <File Include="LineMonitor/MaterialPullforline.aspx">
       <publishTime>08/23/2017 10:56:39</publishTime>
@@ -1066,13 +1099,13 @@
       <publishTime>08/07/2017 11:18:13</publishTime>
     </File>
     <File Include="Login/EditPsw.aspx">
-      <publishTime>08/23/2017 16:38:28</publishTime>
+      <publishTime>09/27/2017 10:58:42</publishTime>
     </File>
     <File Include="Login/fMenu.aspx">
       <publishTime>08/07/2017 11:18:13</publishTime>
     </File>
     <File Include="Login/Login.aspx">
-      <publishTime>08/23/2017 13:55:59</publishTime>
+      <publishTime>09/13/2017 10:31:05</publishTime>
     </File>
     <File Include="Login/MesHtml.html">
       <publishTime>04/12/2017 09:39:24</publishTime>
@@ -1087,13 +1120,13 @@
       <publishTime>04/17/2017 16:34:45</publishTime>
     </File>
     <File Include="Mfg/AbnormalControl.aspx">
-      <publishTime>08/31/2017 17:20:09</publishTime>
+      <publishTime>09/14/2017 17:20:29</publishTime>
     </File>
     <File Include="Mfg/AbnormalDetailEdit.aspx">
-      <publishTime>08/31/2017 17:20:09</publishTime>
+      <publishTime>09/14/2017 17:20:29</publishTime>
     </File>
     <File Include="Mfg/AbnormalMtlEdit.aspx">
-      <publishTime>08/23/2017 16:38:29</publishTime>
+      <publishTime>09/14/2017 17:20:29</publishTime>
     </File>
     <File Include="Mfg/ExportGridToExcel.ashx">
       <publishTime>08/07/2017 11:18:13</publishTime>
@@ -1114,40 +1147,55 @@
       <publishTime>08/07/2017 11:18:13</publishTime>
     </File>
     <File Include="Mfg/MaterialBkfConfig.aspx">
-      <publishTime>08/23/2017 10:51:56</publishTime>
+      <publishTime>09/06/2017 11:26:09</publishTime>
     </File>
     <File Include="Mfg/MaterialBkfItemEdit.aspx">
-      <publishTime>08/23/2017 16:38:29</publishTime>
+      <publishTime>09/06/2017 11:26:09</publishTime>
     </File>
     <File Include="Mfg/MaterialPullConfirm.aspx">
-      <publishTime>08/23/2017 10:51:56</publishTime>
+      <publishTime>09/23/2017 14:47:43</publishTime>
+    </File>
+    <File Include="Mfg/MaterialPullMointorEdit.aspx">
+      <publishTime>09/26/2017 11:14:22</publishTime>
+    </File>
+    <File Include="Mfg/MaterialPullMonitor.aspx">
+      <publishTime>10/11/2017 10:01:05</publishTime>
+    </File>
+    <File Include="Mfg/MaterialPullMonitorTrig.aspx">
+      <publishTime>09/26/2017 14:22:57</publishTime>
     </File>
     <File Include="Mfg/MaterialPullResponse.aspx">
-      <publishTime>08/23/2017 10:51:56</publishTime>
+      <publishTime>09/23/2017 15:29:24</publishTime>
+    </File>
+    <File Include="Mfg/MaterialPullResponseEdit.aspx">
+      <publishTime>09/15/2017 10:23:58</publishTime>
+    </File>
+    <File Include="Mfg/MaterialPullResponseNew.aspx">
+      <publishTime>09/22/2017 11:52:34</publishTime>
     </File>
     <File Include="Mfg/PlanControl.aspx">
-      <publishTime>08/25/2017 17:12:09</publishTime>
+      <publishTime>09/26/2017 14:22:57</publishTime>
     </File>
     <File Include="Mfg/PlcChanOperate.aspx">
       <publishTime>08/23/2017 10:51:56</publishTime>
     </File>
     <File Include="Mfg/PlcSendMain.aspx">
-      <publishTime>08/23/2017 10:51:56</publishTime>
+      <publishTime>09/26/2017 11:14:22</publishTime>
     </File>
     <File Include="Mfg/PlcSendOperate.aspx">
-      <publishTime>08/23/2017 10:51:56</publishTime>
+      <publishTime>09/26/2017 11:14:22</publishTime>
     </File>
     <File Include="Mfg/PlcSendSelectProcess.aspx">
       <publishTime>08/23/2017 10:51:56</publishTime>
     </File>
     <File Include="Mfg/ProductRepairDetailEdit.aspx">
-      <publishTime>08/23/2017 16:38:29</publishTime>
+      <publishTime>09/12/2017 11:44:48</publishTime>
     </File>
     <File Include="Mfg/ProductRepairMan.aspx">
-      <publishTime>08/23/2017 10:51:56</publishTime>
+      <publishTime>09/20/2017 17:08:16</publishTime>
     </File>
     <File Include="Mfg/ReportOrderComplete.aspx">
-      <publishTime>08/25/2017 13:50:43</publishTime>
+      <publishTime>09/07/2017 17:09:23</publishTime>
     </File>
     <File Include="Mfg/SapErrorInformation.aspx">
       <publishTime>08/23/2017 16:38:29</publishTime>
@@ -1174,7 +1222,7 @@
       <publishTime>08/31/2017 17:20:09</publishTime>
     </File>
     <File Include="Mfg/WoMtlMVT.aspx">
-      <publishTime>08/31/2017 17:20:09</publishTime>
+      <publishTime>09/07/2017 17:09:23</publishTime>
     </File>
     <File Include="My97DatePicker/calendar.js">
       <publishTime>08/07/2017 11:18:13</publishTime>
@@ -1198,7 +1246,7 @@
       <publishTime>08/07/2017 11:18:13</publishTime>
     </File>
     <File Include="My97DatePicker/skin/WdatePicker.css">
-      <publishTime>08/07/2017 11:18:13</publishTime>
+      <publishTime>09/14/2017 17:02:27</publishTime>
     </File>
     <File Include="My97DatePicker/skin/whyGreen/bg.jpg">
       <publishTime>08/07/2017 11:18:13</publishTime>
@@ -1246,10 +1294,10 @@
       <publishTime>08/07/2017 11:18:13</publishTime>
     </File>
     <File Include="packages.config">
-      <publishTime>08/07/2017 11:19:27</publishTime>
+      <publishTime>10/09/2017 09:43:56</publishTime>
     </File>
     <File Include="PrecompiledApp.config">
-      <publishTime>08/31/2017 17:20:31</publishTime>
+      <publishTime>10/18/2017 13:53:54</publishTime>
     </File>
     <File Include="ProdutionMan/hs/GetQualityStandrad.ashx">
       <publishTime>08/07/2017 11:18:13</publishTime>
@@ -1264,16 +1312,16 @@
       <publishTime>08/23/2017 11:05:13</publishTime>
     </File>
     <File Include="Report/EnergyReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/08/2017 14:08:04</publishTime>
     </File>
     <File Include="Report/EquAlarmDetail.aspx">
-      <publishTime>08/14/2017 15:53:49</publishTime>
+      <publishTime>09/12/2017 16:05:42</publishTime>
     </File>
     <File Include="Report/EquAlarmReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>10/18/2017 11:23:18</publishTime>
     </File>
     <File Include="Report/EquMaintenceReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/25/2017 10:33:23</publishTime>
     </File>
     <File Include="Report/EquTotalReport.aspx">
       <publishTime>08/23/2017 16:38:29</publishTime>
@@ -1285,16 +1333,16 @@
       <publishTime>08/07/2017 11:18:13</publishTime>
     </File>
     <File Include="Report/FirstLevelInspectionReport.aspx">
-      <publishTime>08/31/2017 11:21:02</publishTime>
+      <publishTime>09/19/2017 17:09:40</publishTime>
     </File>
     <File Include="Report/GetReportInfo.ashx">
       <publishTime>08/07/2017 11:18:13</publishTime>
     </File>
     <File Include="Report/KeyEquOEEReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>10/17/2017 16:19:33</publishTime>
     </File>
     <File Include="Report/MaterialPullReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/25/2017 10:37:08</publishTime>
     </File>
     <File Include="Report/MonthBudgetMan.aspx">
       <publishTime>08/23/2017 16:38:29</publishTime>
@@ -1312,22 +1360,115 @@
       <publishTime>08/31/2017 17:19:38</publishTime>
     </File>
     <File Include="Report/ProductArtReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/19/2017 17:07:18</publishTime>
     </File>
     <File Include="Report/ProductionCompareReport.aspx">
       <publishTime>08/23/2017 11:05:13</publishTime>
     </File>
     <File Include="Report/ProductionSourceReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/19/2017 17:16:36</publishTime>
     </File>
     <File Include="Report/ProductionStatisticeReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/12/2017 16:48:03</publishTime>
     </File>
     <File Include="Report/ProductThroughRateReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/22/2017 17:08:33</publishTime>
+    </File>
+    <File Include="Report/SecondLevelInspectionReport.aspx">
+      <publishTime>09/19/2017 17:08:34</publishTime>
     </File>
     <File Include="Report/UserAttendenceReport.aspx">
-      <publishTime>08/23/2017 11:05:13</publishTime>
+      <publishTime>09/21/2017 09:58:31</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.min.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/jquery-1.10.2.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/jquery-1.10.2.min.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/jquery-1.10.2.min.map">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/modernizr-2.6.2.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/respond.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/respond.min.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/DetailsView.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/Focus.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/GridView.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/Menu.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MenuStandards.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjax.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxApplicationServices.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxComponentModel.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxCore.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxGlobalization.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxHistory.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxNetwork.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxSerialization.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxTimer.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxWebForms.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/MSAjax/MicrosoftAjaxWebServices.js">
+      <publishTime>08/07/2017 11:18:13</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/SmartNav.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/TreeView.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/WebForms.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/WebParts.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/WebForms/WebUIValidation.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
+    </File>
+    <File Include="Scripts/_references.js">
+      <publishTime>08/07/2017 11:18:14</publishTime>
     </File>
     <File Include="UserManage/hs/GetAttendenceInfo.ashx">
       <publishTime>08/07/2017 11:18:14</publishTime>
@@ -1348,13 +1489,13 @@
       <publishTime>08/23/2017 16:38:29</publishTime>
     </File>
     <File Include="UserManage/RoleInfo.aspx">
-      <publishTime>08/23/2017 11:03:34</publishTime>
+      <publishTime>09/15/2017 11:51:36</publishTime>
     </File>
     <File Include="UserManage/UserAttendenceEdit.aspx">
-      <publishTime>08/23/2017 16:38:29</publishTime>
+      <publishTime>09/21/2017 09:53:55</publishTime>
     </File>
     <File Include="UserManage/UserAttendenceMan.aspx">
-      <publishTime>08/23/2017 11:03:34</publishTime>
+      <publishTime>09/25/2017 09:54:29</publishTime>
     </File>
     <File Include="UserManage/UserDetailEdit.aspx">
       <publishTime>08/23/2017 16:38:29</publishTime>
@@ -1366,10 +1507,10 @@
       <publishTime>08/23/2017 16:38:29</publishTime>
     </File>
     <File Include="UserManage/UserInfo.aspx">
-      <publishTime>08/23/2017 11:03:34</publishTime>
+      <publishTime>10/18/2017 11:00:47</publishTime>
     </File>
     <File Include="Web.config">
-      <publishTime>08/30/2017 14:54:07</publishTime>
+      <publishTime>10/11/2017 10:02:02</publishTime>
     </File>
     <File Include="WI/BXAZ1.png">
       <publishTime>08/07/2017 11:18:14</publishTime>

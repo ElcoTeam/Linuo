@@ -449,10 +449,10 @@
         }
 
         //导出
-        function btn_export(event) {
-            var title = $("#title").html();
-            ExportJQGridDataToExcel('#gridTable', title);
-        }
+        //function btn_export(event) {
+        //    var title = $("#title").html();
+        //    ExportJQGridDataToExcel('#gridTable', title);
+        //}
 
     </script>
 </head>
@@ -509,7 +509,7 @@
         <div class="toolbar">
             <div class="btn-group">
                 <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
-                <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
+                <%--<a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>--%>
             </div>
          </div>
          </div>

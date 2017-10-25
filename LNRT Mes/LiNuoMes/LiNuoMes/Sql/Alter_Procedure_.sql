@@ -2981,6 +2981,10 @@ AS
     WHERE
         ItemNumber = @ItemNumber; 
 
+    IF @ThresholdQty IS NULL SET @ThresholdQty  = 100;
+    IF @UOM          IS NULL SET @UOM           = 'EA';
+    IF @ItemDsca     IS NULL SET @ItemDsca      = 'MES系统的物料阈值管理尚未维护描述';
+
     SELECT 
         @BkfMTLFlag = COUNT(1) 
     FROM 
@@ -3206,12 +3210,12 @@ AS
 
     --产生物料拉料动作-绑定的附属料.
     INSERT INTO MFG_WO_MTL_Pull 
-          ( WorkOrderNumber,   WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,        ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,                  PullUser )
-     SELECT @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty * RatioQty,  ItemNumber,  ItemDsca, @ProcessCode, @UOM, @ApplyQty * RatioQty, @PullUser 
-     FROM Mes_Mtl_Pull_Item_Attached
-     WHERE 
-          GoodsCode = @GoodsCode
-      AND MainItem  = @ItemNumber;
+          ( WorkOrderNumber,  WorkOrderVersion,  NextWorkOrderNumber,  NextWorkOrderVersion,  NextWOPlanQty,  ActionTotalQty,        ItemNumber,  ItemDsca,  ProcessCode,  UOM,  Qty,                  PullUser )
+    SELECT @WorkOrderNumber, @WorkOrderVersion, @NextWorkOrderNumber, @NextWorkOrderVersion, @NextWOPlanQty, @ActionQty * RatioQty,  ItemNumber,  ItemDsca, @ProcessCode, @UOM, @ApplyQty * RatioQty, @PullUser 
+    FROM Mes_Mtl_Pull_Item_Attached
+    WHERE 
+         GoodsCode = @GoodsCode
+     AND MainItem  = @ItemNumber;
 
     --(需要判断当前是否为全局"暂停/正常"标志, 此处涉及到异常恢复情况场景, 比较复杂, 时间关系不考虑)
 GO

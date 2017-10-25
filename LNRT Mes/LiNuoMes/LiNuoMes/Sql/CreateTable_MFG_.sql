@@ -292,6 +292,7 @@ CREATE TABLE [dbo].[MFG_WIP_BKF_MTL_Record] (
     [ConfirmUser]        NVARCHAR (50)       NULL,                        --确认用户
     [ConfirmQty]         NUMERIC  (18, 4)NOT NULL DEFAULT (0),            --确认数量
     [OTFlag]             INT             NOT NULL DEFAULT (0),            --是否超时: 0:未超时; 1:超时
+    [PrintTime]          DATETIME            NULL,                        --出票时间
     [Status]             INT             NOT NULL DEFAULT (0)             --状态: 0:待响应; 1:待确认; 2:已完成; 3:已出票
 );
 

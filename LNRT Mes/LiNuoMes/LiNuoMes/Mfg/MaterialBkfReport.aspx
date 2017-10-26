@@ -41,6 +41,9 @@
             var user = '<%=Session["UserName"] %>';
             $("#EditPerson").text(user);
 
+            $("#PullTimeStart").val(request('PullTimeStart'));
+            $("#PullTimeEnd").val(request('PullTimeEnd'));
+
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
@@ -64,7 +67,11 @@
             //var panelwidth = $('.gridPanel').width();
             $gridTable.jqGrid({
                 url: "GetMaterialBkfInfo.ashx",
-                postData: { Action: "MaterialBfkReport" },
+                postData: {
+                    Action: "MaterialBfkReport",
+                    PullTimeStart: $("#PullTimeStart").val(),
+                    PullTimeEnd: $("#PullTimeEnd").val()
+                },
                 loadonce: true,
                 datatype: "json",
                 height: $('#areascontent').height() -300,
@@ -92,6 +99,22 @@
 
                 }
             });
+
+            //查询事件
+            $("#btn_Search").click(function () {
+
+                var PullTimeStart = $("#PullTimeStart").val();
+                var PullTimeEnd = $("#PullTimeEnd").val();
+
+                $gridTable.jqGrid('setGridParam', {
+                    postData: {
+                        Action: "MaterialBfkReport",
+                        PullTimeStart: PullTimeStart,
+                        PullTimeEnd: PullTimeEnd
+                    }, page: 1
+                }).trigger('reloadGrid');
+
+            });
         }
 
         //打印
@@ -100,9 +123,7 @@
         //    //    $("#gridPanel").printTable(gridPanel);
         //    //} catch (e) {
         //    //    dialogMsg("Exception thrown: " + e, -1);
-        //    //}
-
-          
+        //    //}        
         //    //console.log(newColumnValue);
         //}
 
@@ -124,39 +145,43 @@
                 }
             }
 
+            var materialid = JSON.stringify(newColumnValue);
+           
             if (newColumnValue.length > 0)
             {
-                ExportJQGridDataToExcel('#gridTable', '反冲材料补货单' + currenttime(), Factory, EditPerson, PrintTime, PickDept, Store);
-                $.ajax({
-                    url: "MaterialBkfReport.aspx/UpdateExportBkf",
-                    data: JSON.stringify({ arr: newColumnValue }),
-                    type: "post",
-                    async: true,
-                    dataType: "json",
-                    contentType: "application/json;charset=utf-8",
-                    success: function (data) {
-                        if (data.d == "success") {
-                            Loading(false);
-                            dialogMsg("导出成功", 1);
-                            window.parent.$('#gridTable').trigger("reloadGrid");
-                            //$.currentIframe().$("#gridTable").trigger("reloadGrid");
-                            dialogClose();
-                        }
-                        else if (data.d == "falut") {
-                            dialogMsg("导出失败", -1);
-                        }
+                ExportJQGridDataToExcel('#gridTable', '反冲材料补货单' + currenttime(), Factory, EditPerson, PrintTime, PickDept, Store, materialid);
+                //dialogClose();
 
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        Loading(false);
-                        dialogMsg(errorThrown, -1);
-                    },
+                //$.ajax({
+                //    url: "MaterialBkfReport.aspx/UpdateExportBkf",
+                //    data: JSON.stringify({ arr: newColumnValue }),
+                //    type: "post",
+                //    async: true,
+                //    dataType: "json",
+                //    contentType: "application/json;charset=utf-8",
+                //    success: function (data) {
+                //        if (data.d == "success") {
+                //            Loading(false);
+                //            dialogMsg("导出成功", 1);
+                //            window.parent.$('#gridTable').trigger("reloadGrid");
+                //            //$.currentIframe().$("#gridTable").trigger("reloadGrid");
+                //            dialogClose();
+                //        }
+                //        else if (data.d == "falut") {
+                //            dialogMsg("导出失败", -1);
+                //        }
 
-                    complete: function () {
-                        //$("#gridTable").trigger("reloadGrid");
-                        Loading(false);
-                    }
-                });
+                //    },
+                //    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //        Loading(false);
+                //        dialogMsg(errorThrown, -1);
+                //    },
+
+                //    complete: function () {
+                //        //$("#gridTable").trigger("reloadGrid");
+                //        Loading(false);
+                //    }
+                //});
             }
             
             else
@@ -232,30 +257,51 @@
 
     <!--主体-->
     <div id="areascontent" style="margin:10px 10px 0px 10px; margin-bottom: 0px; overflow: auto;">
-         
-        <div class="ui-report"> 
-        <div class="titlePanel">
-        <div class="toolbar">
-            <div class="btn-group">
-                <%--<a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>--%>
-                <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
+         <div class="rows" style="margin-top:0.5%; margin-bottom: 0.8%; overflow: hidden;">
+            <div style="float: left; width: 100%;">
+                <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
+                    <div class="panel panel-default">
+                         <div class="lr-layout-tool">
+                            <div class="lr-layout-tool-left">
+                            <div class="lr-layout-tool-item">
+                            <span class="formTitle">申请时间：</span>
+                            <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                            <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
+                            </div>
+                            <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                            <div id="multiple_condition_query" class="lr-query-wrap">
+                                <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                    <i class="fa fa-search"></i>&nbsp;查询
+                                </div>
+                            </div>
+                            </div>
+                            </div>
+                            <div class=" lr-layout-tool-right">
+                            <div class="btn-group">
+                                <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
+                            </div>
+                            </div>
+                         </div>
+                    </div>
+                </div>
             </div>
          </div>
-         </div>
-         <div class="gridPanel" id="gridPanel">
+         <div class="rows" style="margin-top:6.5%; overflow: hidden; ">
+             
+             <div class="gridPanel" id="gridPanel">
              <div class="printArea">
                   <div class="grid-title">
                         <h4 style="text-align:center;">山东力诺瑞特新能源有限公司</h4> 
                         <h4 style="text-align:center;" id="subtitle">反冲材料补货单</h4> 
                    </div>  
                    <div class="grid-subtitle">
-                       工厂:     <label id="Factory"  style="width: 200px;" ></label>
-                       制单人:   <label id="EditPerson"  style="width: 100px;"  ></label>
+                       工厂:     <label id="Factory"  style="width: 450px;" >1111 力若瑞特制造工厂</label>
+                       制单人:   <label id="EditPerson"  style="width: 200px;"  ></label>
                        打印时间: <label id="PrintTime"  style="width: 200px;"  ></label>
                    </div>
                    <div class="grid-subtitle">
-                       领用库位:     <label id="PickDept"  style="width: 200px;" ></label>
-                       发料库位:     <label id="Store"  style="width: 100px;"  ></label>
+                       领用库位:     <label id="PickDept"  style="width: 400px;" >平板现场仓 1206</label>
+                       发料库位:     <label id="Store"  style="width: 250px;"  >1101  原材料仓</label>
                       
                    </div>
                    <table id="gridTable" style="width:100%;"></table>  
@@ -268,6 +314,8 @@
              
          </div>
          </div>
+
+
     </div>
      <style>
          .timeselect {

@@ -54,7 +54,6 @@
 
          });
             
-
          //保存表单
          function AcceptClick() {
 
@@ -66,7 +65,7 @@
              $.ajax({
                  url: "EditPassword.ashx",
                  data: {
-                     Action: "EditPsw" ,
+                     Action: "EditPsw",
                      UserID: UserID,
                      OldPsw: OldPsw,
                      NewPsw: NewPsw
@@ -101,7 +100,7 @@
    
     <div class="reg-box" id="verifyCheck" style="margin-left: 10px; margin-top: 20px; margin-right: 30px;">
             <div class="part1">                	
-                   <div class="item col-xs-12">
+                   <div class="item col-xs-12" style="float: none;">
                        <span class="intelligent-label f-fl"><b class="ftx04">*</b>用户名：</span>    
                        <div class="f-fl item-ifo">
                            <input type="text" maxlength="20" class="txt03 f-r3 required"tabindex="1"  id="adminNo" data-valid="isNonEmpty" data-error="用户名不能为空" readonly/>                        
@@ -111,7 +110,7 @@
                            <label class="focus valid"></label>
                        </div>
                    </div>
-                      <div class="item col-xs-12">
+                      <div class="item col-xs-12" style="float: none;">
                        <span class="intelligent-label f-fl"><b class="ftx04">*</b>旧密码：</span>    
                        <div class="f-fl item-ifo">
                            <input type="password" id="oldpassword" maxlength="20" class="txt03 f-r3required" tabindex="3" style="ime-mode:disabled;" onpaste="return  false"autocomplete="off" data-valid="isNonEmpty" data-error="密码不能为空" />
@@ -124,7 +123,7 @@
                        </div>
                    </div>
 
-                   <div class="item col-xs-12">
+                   <div class="item col-xs-12" style="float: none;">
                        <span class="intelligent-label f-fl"><b class="ftx04">*</b>新密码：</span>    
                        <div class="f-fl item-ifo">
                            <input type="password" id="password" maxlength="20" class="txt03 f-r3required" tabindex="3" style="ime-mode:disabled;" onpaste="return  false"autocomplete="off" data-valid="isNonEmpty||between:6-20||level:2" dataerror="密码不能为空||密码长度6-20位||该密码太简单，有被盗风险，建议字母+数字的合" /> 
@@ -140,7 +139,7 @@
                            </label>    
                        </div>
                    </div>
-                   <div class="item col-xs-12">
+                   <div class="item col-xs-12" style="float: none;">
                        <span class="intelligent-label f-fl"><b class="ftx04">*</b>确认密码：</span>   
                        <div class="f-fl item-ifo">
                            <input type="password" maxlength="20" class="txt03 f-r3 required"tabindex="4" style="ime-mode:disabled;" onpaste="return  false"autocomplete="off" data-valid="isNonEmpty||between:6-16||isRepeat:password"data-error="密码不能为空||密码长度6-16位||两次密码输入不一致" id="rePassword" />

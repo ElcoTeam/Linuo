@@ -231,7 +231,8 @@ namespace LiNuoMes.Mfg
         /// <returns></returns>
         public List<MaterialBfkReport> getMaterialReportList(List<MaterialBfkReport> dataEntity)
         {
-            
+            string StartDate = RequstString("PullTimeStart");
+            string FinishDate = RequstString("PullTimeEnd");
             DataTable dt = new DataTable();
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -240,13 +241,13 @@ namespace LiNuoMes.Mfg
                 cmd.Connection = conn;
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "usp_Mfg_Wip_Bkf_Report_List";
-                //SqlParameter[] sqlPara = new SqlParameter[3];
+                SqlParameter[] sqlPara = new SqlParameter[2];
                 //sqlPara[0] = new SqlParameter("@materialcode", materialcode);
-                //sqlPara[1] = new SqlParameter("@StartTime", StartDate + " 00:00:00");
-                //sqlPara[2] = new SqlParameter("@EndTime", FinishDate + " 23:59:59");
-                //cmd.Parameters.Add(sqlPara[0]);
-                //cmd.Parameters.Add(sqlPara[1]);
-                //cmd.Parameters.Add(sqlPara[2]);
+                sqlPara[0] = new SqlParameter("@StartTime", StartDate + " 00:00:00");
+                sqlPara[1] = new SqlParameter("@EndTime", FinishDate + " 23:59:59");
+                cmd.Parameters.Add(sqlPara[0]);
+                cmd.Parameters.Add(sqlPara[1]);
+          
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
                 Datapter.Fill(dt);
                 if (dt != null)

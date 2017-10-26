@@ -74,14 +74,14 @@
                     {
                         label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 150, align: 'left'
                     },
-                    { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 350, align: 'left' },
+                    { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 300, align: 'left' },
                     { label: '单位', name: 'UOM', index: 'UOM', width: 100, align: 'center', sortable: false },
                     { label: '申请数量', name: 'ApplyQty', index: 'ApplyQty', width: 100, align: 'center' },
                     { label: '申请人', name: 'ApplyUser', index: 'ApplyUser', width: 150, align: 'center', sortable: false },
-                    { label: '申请时间', name: 'ApplyTime', index: 'ApplyTime', width: 320, align: 'center' },
+                    { label: '申请时间', name: 'ApplyTime', index: 'ApplyTime', width: 300, align: 'center' },
                     { label: '响应数量', name: 'ActionQty', index: 'ActionQty', width: 100, align: 'center' },
                     { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 100, align: 'center' },
-                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 320, align: 'center' },
+                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 300, align: 'center' },
                     {
                         label: '发送情况', name: 'Status', index: 'Status', width: 100, align: 'center',
                         formatter: function (cellvalue, options, rowObject) {
@@ -97,6 +97,10 @@
                             else if (cellvalue == -2) {
                                 return '已删除';
                             }
+                            else if (cellvalue == 3) {
+                                return '已打印';
+                            }
+
                         }
                     },
                     {
@@ -139,10 +143,10 @@
                 var materialCode = $("#materialcode").val();
                 var PullTimeStart = $("#PullTimeStart").val();
                 var PullTimeEnd = $("#PullTimeEnd").val();
-              
+               
                 $gridTable.jqGrid('setGridParam', {
                     postData: {
-                        materialcode: materialcode,
+                        materialcode: materialCode,
                         PullTimeStart: PullTimeStart,
                         PullTimeEnd: PullTimeEnd
                     }, page: 1

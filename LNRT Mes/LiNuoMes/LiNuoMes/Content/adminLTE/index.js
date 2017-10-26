@@ -107,7 +107,7 @@
             html+=' <ul class="nav navbar-nav navbar-right"><li><div class="myhome"><div class="xyd"><i class="fa fa-bell-o" aria-hidden="true"></i></div>';
             html+=' <span class="hidden-xs" id="userid"></span>';
             html+=' <img src="/Content/images/head/user2-160x160.jpg" class="user-image" alt="User Image">';
-            html += '<div class="myhome-z bh2"><a class="bh" href="#" id="btn_editpsw"><i class="fa fa-home"></i> 修改密码</a><a class="bh" href="#" id="btn_out"><i class="fa fa-sign-out"></i> 退出登录</a></div>';
+            html += '<div class="myhome-z bh2"><a class="bh" href="#" id="btn_userinfo"><i class="fa fa-user"></i>个人信息</a><a class="bh" href="#" id="btn_editpsw"><i class="fa fa-home"></i> 修改密码</a><a class="bh" href="#" id="btn_out"><i class="fa fa-sign-out"></i> 退出登录</a></div>';
             html+=' </div></li></ul></div></div>';        
             $("#nav").append(html);
             $.ajax({

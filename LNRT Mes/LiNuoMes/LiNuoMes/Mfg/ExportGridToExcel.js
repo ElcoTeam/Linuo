@@ -1,9 +1,9 @@
-﻿function ExportJQGridDataToExcel(tableCtrl, excelFilename, param1, param2, param3, param4, param5) {
+﻿function ExportJQGridDataToExcel(tableCtrl, excelFilename, param1, param2, param3, param4, param5, param6) {
     //  Export the data from our jqGrid into a (real !) Excel .xlsx file.
     //
     //  We'll build up a (very large?) tab-separated string containing the data to be exported, then POST them 
     //  off to a .ashx handler, which creates the Excel file.
-
+   
     var allJQGridData = $(tableCtrl).jqGrid('getGridParam', 'data');
 
     var jqgridRowIDs = $(tableCtrl).getDataIDs();                // Fetch the RowIDs for this grid
@@ -71,7 +71,8 @@
     }
 
     //  Now, we need to POST our Excel Data to our .ashx file *and* redirect to the .ashx file.
-    postAndRedirect("../Mfg/ExportMaterialReportToExcel.ashx?parm1=" + param1 + "&parm2=" + param2 + "&parm3=" + param3 + "&parm4=" + param4 + "&parm5=" + param5 + "&filename=" + excelFilename, { excelData: excelData });
+    postAndRedirect("../Mfg/ExportMaterialReportToExcel.ashx?parm1=" + param1 + "&parm2=" + param2 + "&parm3=" + param3 + "&parm4=" + param4 + "&parm5=" + param5 + "&parm6=" + param6 + "&filename=" + excelFilename, { excelData: excelData });
+    dialogClose();
 }
 
 function removeLastChar(str) {
@@ -98,5 +99,6 @@ function postAndRedirect(url, postData) {
 
     $('body').append(formElement);
     $(formElement).submit();
+    
 }
 

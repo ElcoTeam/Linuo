@@ -31,7 +31,7 @@ namespace LiNuoMes.Mfg
                     transaction = conn.BeginTransaction();
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
-                    string str1 = "update  MFG_WIP_BKF_MTL_Record set Status='2',ConfirmTime=GETDATE(),ConfirmUser='" + HttpContext.Current.Session["UserName"].ToString().ToUpper().Trim() + "' where ID='" + ID.ToString().Trim() + "'";
+                    string str1 = "update  MFG_WIP_BKF_MTL_Record set Status='2',ConfirmTime=GETDATE(),ConfirmUser='" + HttpContext.Current.Session["UserName"].ToString().ToUpper().Trim() + "',ConfirmQty=ActionQty where ID='" + ID.ToString().Trim() + "'";
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandText = str1;
                     cmd.ExecuteNonQuery();

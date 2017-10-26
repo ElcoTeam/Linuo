@@ -98,7 +98,7 @@
             });
 
             //查询事件
-            $("#lr_btn_querySearch").click(function () {
+            $("#spn_Search").click(function () {
                 var StartDate = $("#StartDate").val();
                 var FinishDate = $("#FinishDate").val();
                

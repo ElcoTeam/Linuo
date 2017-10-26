@@ -14,15 +14,18 @@ using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.Web.Script.Serialization;
+using System.Web.SessionState;
 
 namespace LiNuoMes.Mfg
 {
     /// <summary>
     /// ExportMaterialReportToExcel 的摘要说明
     /// </summary>
-    public class ExportMaterialReportToExcel : IHttpHandler
+    public class ExportMaterialReportToExcel : IHttpHandler, IReadOnlySessionState
     {
-
+        JavaScriptSerializer jsc = new JavaScriptSerializer();
+        String[] materialid;
         public void ProcessRequest(HttpContext context)
         {
             string tabData = context.Request["excelData"];
@@ -41,7 +44,9 @@ namespace LiNuoMes.Mfg
             string parm3 = context.Request["parm3"];
             string parm4 = context.Request["parm4"];
             string parm5 = context.Request["parm5"];
-            
+            string parm6 = context.Request["parm6"];
+            materialid = jsc.Deserialize<String[]>(parm6);
+
             if (File.Exists(excelFilename))
                 File.Delete(excelFilename);
 
@@ -434,22 +439,51 @@ namespace LiNuoMes.Mfg
             {
                 Directory.CreateDirectory(uploadPath);
             }
-            FileStream file = new FileStream(uploadPath + fileName + ".xls", FileMode.Create);
-            hssfworkbook.Write(file);
-            file.Close();
-            var basePath = VirtualPathUtility.AppendTrailingSlash(HttpContext.Current.Request.ApplicationPath);
-            //return (basePath + "Temp/" + fileName + ".xls");
-            string fileURL = HttpContext.Current.Server.MapPath((basePath + "Mfg/Temp/" + fileName + ".xls"));//文件路径，可用相对路径
             try
             {
+                FileStream file = new FileStream(uploadPath + fileName + ".xls", FileMode.Create);
+                hssfworkbook.Write(file);
+                file.Close();
+                var basePath = VirtualPathUtility.AppendTrailingSlash    (HttpContext.Current.Request.ApplicationPath);
+                //return (basePath + "Temp/" + fileName + ".xls");
+                string fileURL = HttpContext.Current.Server.MapPath((basePath + "Mfg/Temp/" + fileName + ".xls"));//文件路径，可用相对路径
+            
                 FileInfo fileInfo = new FileInfo(fileURL);
                 Response.Clear();
-                Response.AddHeader("content-disposition", "attachment;filename=" + HttpContext.Current.Server.UrlEncode(fileInfo.Name.ToString()));//文件名
-                Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
-                Response.ContentType = "application/octet-stream";
-                Response.ContentEncoding = System.Text.Encoding.Default;
-                Response.WriteFile(fileURL);
                
+                using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+                {
+                    SqlCommand cmd = new SqlCommand();
+                    SqlTransaction transaction = null;
+                    try
+                    {
+                        conn.Open();
+                        transaction = conn.BeginTransaction();
+                        cmd.Transaction = transaction;
+                        cmd.Connection = conn;
+                        cmd.CommandType = CommandType.Text;
+                        string str1 = string.Empty;
+                        for (int i = 0; i < materialid.Length; i++)
+                        {
+                            str1 = "update  MFG_WIP_BKF_MTL_Record set Status='3',ConfirmTime=GETDATE(),ConfirmUser='" + HttpContext.Current.Session["UserName"].ToString().ToUpper().Trim() + "',PrintTime=GETDATE() where ID=" + materialid[i];
+                            cmd.CommandText = str1;
+                            cmd.ExecuteNonQuery();
+                        }
+                       
+                        Response.AddHeader("content-disposition", "attachment;filename=" + HttpContext.Current.Server.UrlEncode(fileInfo.Name.ToString()));//文件名
+                        Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
+                        Response.ContentType = "application/octet-stream";
+                        Response.ContentEncoding = System.Text.Encoding.Default;
+                        Response.WriteFile(fileURL);
+
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        Response.Write(ex.Message);
+                    }
+                }
             }
             catch (Exception ex)
             {

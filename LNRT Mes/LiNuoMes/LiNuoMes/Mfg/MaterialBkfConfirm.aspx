@@ -96,9 +96,11 @@
                             else if (cellvalue == -2) {
                                 return '已删除';
                             }
+                            else if (cellvalue == 3) {
+                                return '已导出';
+                            }
                         }
                     },
-                   
                     {
                         label: '操作', name: 'Status', index: 'Status', width: 100, align: 'center',
                         formatter: function (cellvalue, options, rowObject) {
@@ -112,7 +114,6 @@
                             }
                         }
                     },
-
                 ],
                
                 viewrecords: true,
@@ -144,7 +145,7 @@
                 $gridTable.jqGrid('setGridParam', {
                     postData: {
                         Action: "MFG_WIP_BKF_CONFIRM_LIST",
-                        materialcode: materialcode,
+                        materialcode: materialCode,
                         PullTimeStart: PullTimeStart,
                         PullTimeEnd: PullTimeEnd
                     }, page: 1
@@ -245,9 +246,9 @@
             dialogOpen({
                 id: "Form",
                 title: '反冲料补货单',
-                url: '../Mfg/MaterialBkfReport.aspx?',
+                url: '../Mfg/MaterialBkfReport.aspx?PullTimeStart=' + $("#PullTimeStart").val() + '&PullTimeEnd=' + $("#PullTimeEnd").val() + '',
                 width: "1200px",
-                height: "1000px",
+                height: "800px",
                 btn: null
             });
 

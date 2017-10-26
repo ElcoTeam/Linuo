@@ -1137,8 +1137,8 @@ AS
                    MFG_WO_MTL_List               MTL
         INNER JOIN MFG_WO_List                   WOL ON WOL.ErpWorkOrderNumber = MTL.WorkOrderNumber AND MTL.WorkOrderVersion    = 0
         INNER JOIN MFG_WIP_Data_Abnormal         ABN ON WOL.ErpWorkOrderNumber = ABN.WorkOrderNumber AND WOL.MesWorkOrderVersion = 0 
+        LEFT  JOIN Mes_Mub_List                  MUB ON MUB.GoodsCode          = WOL.ErpGoodsCode    AND MTL.ItemNumber          = MUB.ItemNumber 
         LEFT  JOIN MFG_WIP_Data_Abnormal_Process ABP ON ABP.abProductId        = ABN.AbnormalProduct AND ABP.ProcessCode         = MUB.ProcessCode
-        LEFT  JOIN Mes_Mub_List                  MUB ON MUB.GoodsCode          = WOL.ErpGoodsCode    AND MTL.ItemNumber          = MUB.ItemNumber
         WHERE 
         --此处逻辑为: 应该根据"根订单"(WorkOrderVersion = 0)计算产品用料. 
         --因为如果根据子订单的话，其用料数据(额外领料单)可能是用户调整过的.           

@@ -28,7 +28,7 @@ namespace LiNuoMes.Mfg
         String[] materialid;
         public void ProcessRequest(HttpContext context)
         {
-            string tabData = context.Request["excelData"];
+            string tabData =  context.Request["excelData"];
 
             //jqgrid table
             DataTable dt = ConvertCsvData(tabData);
@@ -471,11 +471,13 @@ namespace LiNuoMes.Mfg
                         }
                        
                         Response.AddHeader("content-disposition", "attachment;filename=" + HttpContext.Current.Server.UrlEncode(fileInfo.Name.ToString()));//文件名
+                        Response.AppendHeader("content-type", "application/x-msexcel");
                         Response.AddHeader("content-length", fileInfo.Length.ToString());//文件大小
                         Response.ContentType = "application/octet-stream";
                         Response.ContentEncoding = System.Text.Encoding.Default;
                         Response.WriteFile(fileURL);
-
+                        Response.Flush();
+                        Response.Close();
                         transaction.Commit();
                     }
                     catch (Exception ex)
@@ -483,6 +485,7 @@ namespace LiNuoMes.Mfg
                         transaction.Rollback();
                         Response.Write(ex.Message);
                     }
+                    
                 }
             }
             catch (Exception ex)

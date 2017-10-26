@@ -180,6 +180,8 @@ namespace LiNuoMes.Mfg
             string materialcode = RequstString("materialcode");
             string StartDate = RequstString("PullTimeStart");
             string FinishDate = RequstString("PullTimeEnd");
+            string PrintTimeStart = RequstString("PrintTimeStart");
+            string PrintTimeEnd = RequstString("PrintTimeEnd");
             DataTable dt = new DataTable();
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
@@ -188,13 +190,17 @@ namespace LiNuoMes.Mfg
                 cmd.Connection = conn;
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.CommandText = "usp_Mfg_Wip_Bkf_Confirm_List";
-                SqlParameter[] sqlPara = new SqlParameter[3];
+                SqlParameter[] sqlPara = new SqlParameter[5];
                 sqlPara[0] = new SqlParameter("@materialcode", materialcode);
-                sqlPara[1] = new SqlParameter("@StartTime", StartDate + " 00:00:00");
-                sqlPara[2] = new SqlParameter("@EndTime", FinishDate + " 23:59:59");
+                sqlPara[1] = new SqlParameter("@StartTime", StartDate );
+                sqlPara[2] = new SqlParameter("@EndTime", FinishDate );
+                sqlPara[3] = new SqlParameter("@PrintTimeStart", PrintTimeStart );
+                sqlPara[4] = new SqlParameter("@PrintTimeEnd", PrintTimeEnd );
                 cmd.Parameters.Add(sqlPara[0]);
                 cmd.Parameters.Add(sqlPara[1]);
                 cmd.Parameters.Add(sqlPara[2]);
+                cmd.Parameters.Add(sqlPara[3]);
+                cmd.Parameters.Add(sqlPara[4]);
                 SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
                 Datapter.Fill(dt);
                 if (dt != null)
@@ -217,6 +223,7 @@ namespace LiNuoMes.Mfg
                         itemList.ConfirmTime = dt.Rows[i]["ConfirmTime"].ToString();
                         itemList.ConfirmUser = dt.Rows[i]["ConfirmUser"].ToString();
                         itemList.ConfirmQty = dt.Rows[i]["ConfirmQty"].ToString();
+                        itemList.PrintTime = dt.Rows[i]["PrintTime"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }

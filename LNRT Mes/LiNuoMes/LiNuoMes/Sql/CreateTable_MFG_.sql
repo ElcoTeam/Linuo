@@ -1006,6 +1006,19 @@ CREATE TABLE [dbo].[Log_Mfg_PLC_Tag_Trig](
     [TripTime]         DATETIME        NOT NULL DEFAULT GETDATE()         --更新时间
 );
 
+--生产工艺记录表
+IF OBJECT_ID('Mes_ProcessArtList') is not null
+DROP TABLE Mes_ProcessArtList;
+CREATE TABLE [dbo].Mes_ProcessArtList(
+    [ID]                 INT IDENTITY (1, 1) NOT NULL,                    -- (系统自动生成)
+    [ProcessCode]        VARCHAR  (50)   NOT NULL DEFAULT (''),           --工序编号
+    [ArtName]            NVARCHAR (50)       NULL,                        --工艺名称
+    [ArtValue]           VARCHAR  (20)       NULL,                        --工艺值
+    [UpdateUser]         NVARCHAR (50)   NOT NULL DEFAULT (N''),          --更新用户
+    [UpdateTime]         DATETIME        NOT NULL DEFAULT GETDATE(),      --更新时间
+    [Status]             INT             NOT NULL DEFAULT (0)             --订单状态: 0:新增, -1:修改, -2:删除
+);
+
 
 /*
 -- INIT DB DATA

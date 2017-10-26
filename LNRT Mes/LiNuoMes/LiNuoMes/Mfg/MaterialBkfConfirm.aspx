@@ -56,6 +56,9 @@
             var materialcode = $("#materialcode").val();
             var PullTimeStart = $("#PullTimeStart").val();
             var PullTimeEnd = $("#PullTimeEnd").val();
+            var PrintTimeStart = $("#PrintTimeStart").val();
+            var PrintTimeEnd = $("#PrintTimeEnd").val();
+
             $gridTable.jqGrid({
                 url: "GetMaterialBkfInfo.ashx",
                 datatype: "json",
@@ -63,7 +66,9 @@
                     Action: "MFG_WIP_BKF_CONFIRM_LIST",
                     materialcode: materialcode,
                     PullTimeStart: PullTimeStart,
-                    PullTimeEnd: PullTimeEnd
+                    PullTimeEnd: PullTimeEnd,
+                    PrintTimeStart: PrintTimeStart,
+                    PrintTimeEnd: PrintTimeEnd
                 },
                 height: $(window).height() - 300,
                 colModel: [
@@ -72,37 +77,18 @@
                         label: '物料编号', name: 'ItemNumber', index: 'ItemNumber', width: 120, align: 'left'
                     },
                     { label: '物料描述', name: 'ItemDsca', index: 'ItemDsca', width: 250, align: 'left' },
-                    { label: '单位', name: 'UOM', index: 'UOM', width: 100, align: 'center', sortable: false },
+                    { label: '单位', name: 'UOM', index: 'UOM', width: 80, align: 'center', sortable: false },
                     { label: '申请数量', name: 'ApplyQty', index: 'ApplyQty', width: 100, align: 'center' },
                     { label: '申请人', name: 'ApplyUser', index: 'ApplyUser', width: 100, align: 'center', sortable: false },
-                    { label: '申请时间', name: 'ApplyTime', index: 'ApplyTime', width: 220, align: 'center' },
+                    { label: '申请时间', name: 'ApplyTime', index: 'ApplyTime', width: 200, align: 'center' },
                     { label: '响应数量', name: 'ActionQty', index: 'ActionQty', width: 100, align: 'center' },
                     { label: '响应人', name: 'ActionUser', index: 'ActionUser', width: 100, align: 'center' },
-                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 220, align: 'center' },
+                    { label: '响应时间', name: 'ActionTime', index: 'ActionTime', width: 200, align: 'center' },
                     { label: '确认人', name: 'ConfirmUser', index: 'ConfirmUser', width: 100, align: 'center' },
-                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 220, align: 'center' },
+                    { label: '确认时间', name: 'ConfirmTime', index: 'ConfirmTime', width: 200, align: 'center' },
+                    { label: '打印时间', name: 'PrintTime', index: 'PrintTime', width: 200, align: 'center' },
                     {
-                        label: '发送情况', name: 'Status', index: 'Status', width: 100, align: 'center',
-                        formatter: function (cellvalue, options, rowObject) {
-                            if (cellvalue == 0) {
-                                return '待响应';
-                            }
-                            else if (cellvalue == 1) {
-                                return '待确认';
-                            }
-                            else if (cellvalue == 2) {
-                                return '已完成';
-                            }
-                            else if (cellvalue == -2) {
-                                return '已删除';
-                            }
-                            else if (cellvalue == 3) {
-                                return '已导出';
-                            }
-                        }
-                    },
-                    {
-                        label: '操作', name: 'Status', index: 'Status', width: 100, align: 'center',
+                        label: '操作', name: 'Status', index: 'Status', width: 80, align: 'center',
                         formatter: function (cellvalue, options, rowObject) {
                             console.log(rowObject);
                             if (cellvalue == 1) {
@@ -141,13 +127,17 @@
                 var materialCode = $("#materialcode").val();
                 var PullTimeStart = $("#PullTimeStart").val();
                 var PullTimeEnd = $("#PullTimeEnd").val();
-                
+                var PrintTimeStart = $("#PrintTimeStart").val();
+                var PrintTimeEnd = $("#PrintTimeEnd").val();
+
                 $gridTable.jqGrid('setGridParam', {
                     postData: {
                         Action: "MFG_WIP_BKF_CONFIRM_LIST",
                         materialcode: materialCode,
                         PullTimeStart: PullTimeStart,
-                        PullTimeEnd: PullTimeEnd
+                        PullTimeEnd: PullTimeEnd,
+                        PrintTimeStart: PrintTimeStart,
+                        PrintTimeEnd: PrintTimeEnd
                     }, page: 1
                 }).trigger('reloadGrid');
 
@@ -283,6 +273,9 @@
                                   <span class="formTitle">申请时间：</span>
                                   <input id="PullTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PullTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
                                   <input id="PullTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PullTimeStart\')}'})" class="Wdate timeselect" /> 
+                                  <span class="formTitle">打印时间：</span>
+                                  <input id="PrintTimeStart"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'PrintTimeEnd\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                  <input id="PrintTimeEnd"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'PrintTimeStart\')}'})" class="Wdate timeselect" /> 
                                   </div>
                                   <div class="lr-layout-tool-item" id="multiple_condition_query_item">
                                        <div id="multiple_condition_query" class="lr-query-wrap">

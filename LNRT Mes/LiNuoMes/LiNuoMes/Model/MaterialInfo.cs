@@ -64,6 +64,8 @@ namespace LiNuoMes.Model
         public string ConfirmUser { set; get; }
         public string ConfirmTime { set; get; }
         public string ConfirmQty { set; get; }
+        public string PrintTime { set; get; }
+
 
     }
 

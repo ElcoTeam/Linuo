@@ -71,7 +71,9 @@
     }
 
     //  Now, we need to POST our Excel Data to our .ashx file *and* redirect to the .ashx file.
-    postAndRedirect("../Mfg/ExportMaterialReportToExcel.ashx?parm1=" + param1 + "&parm2=" + param2 + "&parm3=" + param3 + "&parm4=" + param4 + "&parm5=" + param5 + "&parm6=" + param6 + "&filename=" + excelFilename, { excelData: excelData });
+    //postAndRedirect("../Mfg/ExportMaterialReportToExcel.ashx?parm1=" + param1 + "&parm2=" + param2 + "&parm3=" + param3 + "&parm4=" + param4 + "&parm5=" + param5 + "&parm6=" + param6 + "&filename=" + excelFilename, { excelData: excelData });
+    
+    window.open("../Mfg/ExportMaterialReportToExcel.ashx?parm1=" + param1 + "&parm2=" + param2 + "&parm3=" + param3 + "&parm4=" + param4 + "&parm5=" + param5 + "&parm6=" + param6 + "&filename=" + excelFilename + "&excelData=" + encodeURIComponent(excelData));
     dialogClose();
 }
 

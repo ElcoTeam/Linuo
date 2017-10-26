@@ -105,7 +105,8 @@
             html+='<span style="font-weight: bold;line-height: 50px;text-shadow: 3px 3px 7px #000;color: #ffffff;"><strong style="font-size: 30px;text-align: center;padding: 3px;margin: 0px;">力诺瑞特平板集热器MES系统</strong></span>';   
             html+='</div><div id="navbar" class="navbar-collapse collapse">';  
             html+=' <ul class="nav navbar-nav navbar-right"><li><div class="myhome"><div class="xyd"><i class="fa fa-bell-o" aria-hidden="true"></i></div>';
-            html+=' <span class="hidden-xs" id="userid"></span>';
+            html += ' <span class="hidden-xs" id="username"></span>';
+            html += ' <span class="hidden-xs" id="userid"  hidden="hidden"></span>';
             html+=' <img src="/Content/images/head/user2-160x160.jpg" class="user-image" alt="User Image">';
             html += '<div class="myhome-z bh2"><a class="bh" href="#" id="btn_userinfo"><i class="fa fa-user"></i>个人信息</a><a class="bh" href="#" id="btn_editpsw"><i class="fa fa-home"></i> 修改密码</a><a class="bh" href="#" id="btn_out"><i class="fa fa-sign-out"></i> 退出登录</a></div>';
             html+=' </div></li></ul></div></div>';        
@@ -116,12 +117,42 @@
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 success: function (data) {
+                    document.getElementById("username").innerText = data.d;
+                },
+                error: function (data) {
+
+                }
+            })
+
+            $.ajax({
+                type: "POST",
+                url: "../../Login/Login.aspx/GetUserID",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
                     document.getElementById("userid").innerText = data.d;
                 },
                 error: function (data) {
 
                 }
             })
+            $("#btn_userinfo").click(function (event) {
+                var userid = document.getElementById("userid").innerText;
+                dialogOpen({
+
+                    id: "Form",
+                    title: '个人信息',
+                    url: '../UserManage/UserProcessCodeEdit.aspx',
+                    data: { UserID: userid },
+                    width: "750px",
+                    height: "400px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].AcceptClick();
+                    }
+                });
+
+            })
+
             $("#btn_editpsw").click(function (event) {
                 dialogOpen({
                     id: "Form",

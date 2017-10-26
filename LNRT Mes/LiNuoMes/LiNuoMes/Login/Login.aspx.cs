@@ -88,5 +88,18 @@ namespace LiNuoMes.Login
                 return "";
             }
         }
+        [WebMethod]
+        public static string GetUserID()
+        {
+            if (HttpContext.Current.Session["UserID"] != null)
+            {
+
+                return HttpContext.Current.Session["UserID"].ToString();
+            }
+            else
+            {
+                return "";
+            }
+        }
     }
 }

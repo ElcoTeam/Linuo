@@ -1,4 +1,14 @@
 /*
+
+select * from Mes_Threshold_List;
+
+insert into Mes_Threshold_List(ProcessCode, ItemNumber, ItemName, UOM, MaxPullQty, MinTrigQty, UpdateUser)
+select TOP 1
+ '1020' , ItemNumber, ItemDsca, UOM, 100 MaxPullQty, 30, ''
+from MFG_WO_MTL_List where ItemNumber='3110000228';
+
+SELECT * FROM Mes_Threshold_List where ItemNumber='3110000228';
+
 IF OBJECT_ID('Mes_Mtl_Pull_Item_Attached') is not null
 DROP TABLE Mes_Mtl_Pull_Item_Attached;
 CREATE TABLE [dbo].[Mes_Mtl_Pull_Item_Attached] (

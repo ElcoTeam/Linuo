@@ -2264,7 +2264,7 @@ AS
     EXEC usp_Mes_getNewSerialNo_Output 'MES2PLC','M2P', 10, @BatchNo OUTPUT;
 
     --开始真正的插入到接口表的操作.
-    --参数派发
+    --此处对于 参数派发(VS) 和 产品变更指令(CS) 都不加区别的进行发送, 然后后续代码再依据不同的命令类型进行调整.
     INSERT INTO Mes_PLC_TransInterface ( BATCHNUM, PLCID, SOURCEID, ParamName, ParamType, ParamValue, OperateCommand, OperateUser,  Status)
                                   SELECT @BatchNo, PLCID, ID,       ParamName, ParamType, CASE WHEN ApplModel = 'VS' THEN ParamValue ELSE '1' END , OperateCommand, @OperateUser, 0
                                   FROM Mes_PLC_Parameters
@@ -2297,15 +2297,15 @@ AS
 
         --计划产量,这里实现的很不好, 需要考虑工单数量,未完工数量,报废数量 
         --目前看来, 这个数量的复杂计算没有必要了, 我们仅仅把计划数量放入即可了, 也许不必[需要重写]
-        INSERT INTO Mes_PLC_TransInterface ( BATCHNUM, PLCID, SOURCEID, ParamName, ParamType, ParamValue, OperateCommand, OperateUser,  Status)
-                                      SELECT @BatchNo, PLCID, ID,       ParamName, ParamType, @PrsPlanQty,OperateCommand, @OperateUser, 0
+        INSERT INTO Mes_PLC_TransInterface ( BATCHNUM, PLCID, SOURCEID, ParamName, ParamType,  ParamValue, OperateCommand,  OperateUser, Status)
+                                      SELECT @BatchNo, PLCID, ID,       ParamName, ParamType, @PrsPlanQty, OperateCommand, @OperateUser, 0
                                       FROM Mes_PLC_Parameters
                                       WHERE PLCID IN ( SELECT PLCID FROM @ListTB)
                                       AND OperateType IN ( 'W', 'RW') 
                                       AND ApplModel = 'QS';
     END
 
-    --发送的是产品变更指令, 因此需要此时设定工位的下一个工单信息, 此处是需要现场的CS信号由1改变为0的触发(存储过程: usp_Mfg_Plc_Trig_CS)相配合来完成.
+    --发送的是产品变更指令, 因此需要此时设定工位的下一个工单信息, 此处是需要现场的CT信号由1改变为0的触发(存储过程: usp_Mfg_Plc_Trig_CT)相配合来完成.
     IF @SenderType = 'CS'
     BEGIN
         UPDATE Mes_Process_List
@@ -2316,7 +2316,7 @@ AS
             Mes_PLC_List         
         WHERE 
             Mes_PLC_List.ProcessCode = Mes_Process_List.ProcessCode 
-        AND Mes_PLC_List.ID IN (SELECT PLCID FROM @ListTB) 
+        AND Mes_PLC_List.ID IN (SELECT PLCID FROM @ListTB)
     END
 
     SELECT @ParamsCount = COUNT(1)
@@ -2423,37 +2423,19 @@ AS
      END
 
     --如果当下的订单的计数是新产生的, 则要更新订单的状态为"生产进行中"
-    IF     @iUbound                              = 0  --说明是原始订单
+    IF     @iUbound = 0                               --说明是原始订单
         OR @iUbound - (@iPlanQty + @iLowerVDQty) = 0  --说明是下线补单
     BEGIN
-        
-        SELECT 
-            @iStatus = MesStatus
-        FROM MFG_WO_List
-        WHERE 
-             ErpWorkOrderNumber  = @WorkOrderNumber
-         AND MesWorkOrderVersion = @iVersion;
-
-        IF @iStatus = 0  
+        IF @CatchError = -1
         BEGIN
-            IF @CatchError = -1
-            BEGIN
-                UPDATE MFG_WO_List 
-                SET 
-                    MesStatus = 2 
-                WHERE 
-                    ErpWorkOrderNumber  = @WorkOrderNumber
-                AND MesWorkOrderVersion = @iVersion
-                AND MesStatus           = 0;
-            END
-            ELSE
-            BEGIN
-                SET @CatchError = 1;
-                SET @RtnMsg     = '您录入的订单状态目前处于“待生产”状态, 其尚未经过“产前调整中”的准备阶段, 请确认是否要直接将其变为“生产进行中”状态!';
-                RETURN;
-            END
-        END
-
+            UPDATE MFG_WO_List 
+            SET 
+                MesStatus = 2 
+            WHERE 
+                ErpWorkOrderNumber  = @WorkOrderNumber
+            AND MesWorkOrderVersion = @iVersion
+            AND(MesStatus = 0 OR MesStatus = 1 );
+        END      
     END
      
     UPDATE MFG_WO_List 
@@ -2840,14 +2822,14 @@ AS
         EXEC [usp_Mfg_Plc_Trig_QT] @TagName, @TagValue, @ProcessCode; RETURN;
     END
 
-    IF @ApplModel = 'CS' --产品变更手动完成触发
+    IF @ApplModel = 'CT' --产品变更完成触发
     BEGIN
-        EXEC [usp_Mfg_Plc_Trig_CS] @TagName, @TagValue, @ProcessCode; RETURN;
+        EXEC [usp_Mfg_Plc_Trig_CT] @TagName, @TagValue, @ProcessCode; RETURN;
     END
 GO
 
--- PLC 触发了 产品变更手动完成触发 动作
-ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_CS]
+-- PLC 触发了 产品变更完成触发 动作
+ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_CT]
       @TagName            AS VARCHAR  (50)       
      ,@TagValue           AS VARCHAR  (50) = ''  
      ,@ProcessCode        AS VARCHAR  (50) = ''  
@@ -3386,25 +3368,26 @@ AS
         SET @FinishQty = @FinishQty + 0;
     END
 
-    ---------- 为了调试存储过程而临时加入的这一段记录中间值, 便于分析.
-    INSERT INTO [dbo].[Log_QT_List] (ProcessCode, WorkOrderNumber, WorkOrderVersion, FinishQty, PlanQty, Comment)
-    VALUES (@pProcessCode, @WorkOrderNumber, @WorkOrderVersion, @FinishQty, @PrsPlanQty, 
-      ''
-    + 'TagName;'   + @TagName  + ';'
-    + 'TagValue;'  + @TagValue + ';'
-    + 'Region;'    + convert(varchar, @AbnormalRegion) + ';'
-    + 'WOStatus;'  + convert(varchar, @WorkOrderStatus) + ';'
-    + 'FinalFlag;' + convert(varchar, @FinalFlag) + ';'
-    + 'StartFlag;' + convert(varchar, @StartFlag) + ';'
-  --  + 'DiscQty1;'  + convert(varchar, @selfDiscardQty1) + ';'
-  --  + 'DiscQty2;'  + convert(varchar, @selfDiscardQty2) + ';'
-  --  + 'DiscQty3;'  + convert(varchar, @selfDiscardQty3) + ';'
-  --  + 'DiscQty4;'  + convert(varchar, @selfDiscardQty4) + ';'
-  --  + 'LeftQty1;'  + convert(varchar, @selfLeftQty1) + ';'
-  --  + 'LeftQty2;'  + convert(varchar, @selfLeftQty2) + ';'
-  --  + 'LeftQty3;'  + convert(varchar, @selfLeftQty3) + ';'
-  --  + 'LeftQty4;'  + convert(varchar, @selfLeftQty4) + ';'
-    );
+  ------------ 为了调试存储过程而临时加入的这一段记录中间值, 便于分析.
+  --  INSERT INTO [dbo].[Log_QT_List] 
+  --         ( ProcessCode,   WorkOrderNumber,  WorkOrderVersion,  FinishQty,  PlanQty,   Comment)
+  --  VALUES (@pProcessCode, @WorkOrderNumber, @WorkOrderVersion, @FinishQty, @PrsPlanQty, 
+  --    ''
+  --  + 'TagName;'   + @TagName  + ';'
+  --  + 'TagValue;'  + @TagValue + ';'
+  --  + 'Region;'    + convert(varchar, @AbnormalRegion) + ';'
+  --  + 'WOStatus;'  + convert(varchar, @WorkOrderStatus) + ';'
+  --  + 'FinalFlag;' + convert(varchar, @FinalFlag) + ';'
+  --  + 'StartFlag;' + convert(varchar, @StartFlag) + ';'
+  ----  + 'DiscQty1;'  + convert(varchar, @selfDiscardQty1) + ';'
+  ----  + 'DiscQty2;'  + convert(varchar, @selfDiscardQty2) + ';'
+  ----  + 'DiscQty3;'  + convert(varchar, @selfDiscardQty3) + ';'
+  ----  + 'DiscQty4;'  + convert(varchar, @selfDiscardQty4) + ';'
+  ----  + 'LeftQty1;'  + convert(varchar, @selfLeftQty1) + ';'
+  ----  + 'LeftQty2;'  + convert(varchar, @selfLeftQty2) + ';'
+  ----  + 'LeftQty3;'  + convert(varchar, @selfLeftQty3) + ';'
+  ----  + 'LeftQty4;'  + convert(varchar, @selfLeftQty4) + ';'
+  --  );
     --++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     SET @PrsPlanQty = @MesPlanQty

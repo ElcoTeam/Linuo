@@ -69,7 +69,7 @@ UPDATE MES_PLC_LIST SET ProcessCode = '2080' where plccode in ('RP02');
 UPDATE MES_PLC_LIST SET ProcessCode = '2090' where plccode in ('CP08','RP02');
 UPDATE MES_PLC_LIST SET ProcessCode = '3010' where plccode in ('RP03');
 UPDATE MES_PLC_LIST SET ProcessCode = '3020' where plccode in ('CP11');
-UPDATE MES_PLC_LIST SET ProcessCode = '3110' where plccode in ('RP04','CP14');
+UPDATE MES_PLC_LIST SET ProcessCode = '3110' where plccode in ('CP14');
 
 UPDATE MES_PLC_Parameters 
 SET 
@@ -84,6 +84,7 @@ UPDATE MES_PLC_Parameters SET OperateCommand = 'WRITE' WHERE OperateType = 'W' O
 UPDATE MES_PLC_Parameters SET ApplModel      = 'QS' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE [参数值说明（ValueInf）] ='随订单变化');
 UPDATE MES_PLC_Parameters SET ApplModel      = 'NA' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE [参数值说明（ValueInf）] ='现在取消不用');
 UPDATE MES_PLC_Parameters SET ApplModel      = 'CS' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '换更产品请求');
+UPDATE MES_PLC_Parameters SET ApplModel      = 'CT' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '换产完成反馈');
 UPDATE MES_PLC_Parameters SET ApplModel      = 'ET' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname = '有功电能');
 UPDATE MES_PLC_Parameters SET ApplModel      = 'QT' WHERE [ParamName] IN (SELECT TAG FROM Mes_PLC_TagList WHERE tagname LIKE '完成数量%');
 

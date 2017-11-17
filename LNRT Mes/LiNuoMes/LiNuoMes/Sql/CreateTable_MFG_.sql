@@ -736,6 +736,7 @@ INSERT INTO Mes_PLC_ApplModel_List
 ('MT',      'Material Trigger'),         --物料拉动触发
 ('QT',      'Qty Trigger'),              --产量计数触发
 ('ET',      'Engergy Trigger'),          --电表计量触发
+('CT',      'Cutover Trigger'),          --换更产品完成触发, 此时把Mes_Process_List的下一个更替到当下工单.
 ('VS',      'Values Send'),              --PLC参数派发(写入OPC: 参数值派发)
 ('CS',      'Cutover Send'),             --PLC参数派发(写入OPC: 换更产品请求)
 ('QS',      'Qty Send'),                 --PLC参数派发(写入OPC: 计划产量)

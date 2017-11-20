@@ -3203,25 +3203,12 @@ AS
     DECLARE @WorkOrderVersion   AS INT;
     DECLARE @WorkOrderStatus    AS INT;
     DECLARE @GoodsCode          AS VARCHAR (50);
-    DECLARE @pProcessCode       AS NVARCHAR(50); --plc   processcode
-    DECLARE @mProcessCode       AS NVARCHAR(50); --param processcode
     DECLARE @TagFinishQty       AS INT;
 
     SET @TagFinishQty = CONVERT(INT, @TagValue);
 
    --共需要3步操作: 
     --1.查找工序清单, 找到当下的工单, 
-
-    --查找工序
-    SELECT 
-        @pProcessCode = Mes_PLC_List.ProcessCode, 
-        @mProcessCode = Mes_PLC_Parameters.ProcessCode
-    FROM 
-        Mes_PLC_Parameters, Mes_PLC_List 
-    WHERE 
-        Mes_PLC_Parameters.PLCID = Mes_PLC_List.ID
-    AND Mes_PLC_Parameters.ParamName = @TagName 
-    AND Mes_PLC_List.GoodsCode = '0000000000';
 
     --如果决定结束工单需要从码垛工位的计数机制来完成, 则需要修改此处的工单号取得方式(仅仅多查看一下TAG标识表的时时值即可得到)
     --而且仅仅需要在@FinalFlag = 1的情况的工位下有此差别, 其它工位可以认为没有差别, 那些记录的数据都是为了记录日志和制作报告而维护着.
@@ -3233,8 +3220,7 @@ AS
         ,@WorkOrderVersion = WorkOrderVersion
         ,@ProcessFinishQty = FinishQty
     FROM Mes_Process_List 
-    WHERE ProcessCode = @pProcessCode; --此处和物料拉动不同, 产量计数是基于PLC为单位的. 
-                                       --现在觉得可以统一都使用PLC参数的ProcessCode, 也便于记忆和理解, 也许适用性更强些.
+    WHERE ProcessCode = @ProcessCode;  --可以统一都使用PLC参数的ProcessCode, 也便于记忆和理解, 也许适用性更强些.
 
 
     --如果订单已经完结, 则找到当下排程的下一个工单
@@ -3268,8 +3254,8 @@ AS
         );
 
     INSERT INTO Mes_Process_Beat_Record 
-           ( ProcessCode,                         WorkOrderNumber,  WorkOrderVersion,  TagName,  DisplayValue, BeatValue)
-    VALUES (ISNULL(@pProcessCode, @mProcessCode),@WorkOrderNumber, @WorkOrderVersion, @TagName, @TagFinishQty,  DATEDIFF(SECOND, @PreValue, GETDATE()));
+           ( ProcessCode,  WorkOrderNumber,  WorkOrderVersion,  TagName,  DisplayValue, BeatValue)
+    VALUES (@ProcessCode, @WorkOrderNumber, @WorkOrderVersion, @TagName, @TagFinishQty,  DATEDIFF(SECOND, @PreValue, GETDATE()));
 
     DECLARE @MesPlanQty       INT = 0; --原始订单计划数量
     DECLARE @PrsPlanQty       INT = 0; --Process计划数量
@@ -3306,7 +3292,7 @@ AS
         ,@StartFlag      = StartFlag
     FROM Mes_Process_List
     WHERE 
-        ProcessCode = @pProcessCode
+        ProcessCode = @ProcessCode
     
     --取得本订单的信息,状态
     SELECT
@@ -3359,8 +3345,8 @@ AS
 
   ------------ 为了调试存储过程而临时加入的这一段记录中间值, 便于分析.
   --  INSERT INTO [dbo].[Log_QT_List] 
-  --         ( ProcessCode,   WorkOrderNumber,  WorkOrderVersion,  FinishQty,  PlanQty,   Comment)
-  --  VALUES (@pProcessCode, @WorkOrderNumber, @WorkOrderVersion, @FinishQty, @PrsPlanQty, 
+  --         ( ProcessCode,  WorkOrderNumber,  WorkOrderVersion,  FinishQty,  PlanQty,   Comment)
+  --  VALUES (@ProcessCode, @WorkOrderNumber, @WorkOrderVersion, @FinishQty, @PrsPlanQty, 
   --    ''
   --  + 'TagName;'   + @TagName  + ';'
   --  + 'TagValue;'  + @TagValue + ';'
@@ -3417,7 +3403,7 @@ AS
          ,ParamName        = @TagName   
          ,ParamValue       = @TagValue 
      WHERE 
-          ProcessCode = @pProcessCode
+          ProcessCode = @ProcessCode
      
      --本工序产出完成
      --工序订单状态的变更, 已经不在此处来完成了, 其是使用CS(产品变更)完成信号的触发来进行和下一个订单翻转完成的机制[2017-09-21]

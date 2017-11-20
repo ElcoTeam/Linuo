@@ -2840,18 +2840,7 @@ AS
         RETURN; 
     END
 
-    DECLARE @pProcessCode   AS VARCHAR (50);
-
     --完成Process记录点的工单切换动作: 正在生产的工单值使用将下一工单的工单值覆盖. 并且将下一工单值置空.
-    SELECT 
-         @pProcessCode = Mes_PLC_List.ProcessCode
-    FROM 
-        Mes_PLC_Parameters, Mes_PLC_List 
-    WHERE 
-        Mes_PLC_Parameters.PLCID = Mes_PLC_List.ID
-    AND Mes_PLC_Parameters.ParamName = @TagName 
-    AND Mes_PLC_List.GoodsCode = '0000000000';
-
     UPDATE Mes_Process_List
     SET 
          WorkOrderNumber      = PLS.NextWorkOrderNumber
@@ -2865,7 +2854,7 @@ AS
     WHERE
          PLS.NextWorkOrderNumber  = WO.ErpWorkOrderNumber  
      AND PLS.NextWorkOrderVersion = WO.MesWorkOrderVersion 
-     AND PLS.ProcessCode          = @pProcessCode;
+     AND PLS.ProcessCode          = @ProcessCode;
 GO
 
 -- PLC 触发了 能源计数 动作

@@ -65,10 +65,12 @@ UPDATE MES_PLC_LIST SET ProcessCode = '2040' where plccode in ('CP05');
 UPDATE MES_PLC_LIST SET ProcessCode = '2050' where plccode in ('CP03');
 UPDATE MES_PLC_LIST SET ProcessCode = '2060' where plccode in ('CP07');
 UPDATE MES_PLC_LIST SET ProcessCode = '2070' where plccode in ('CP10');
-UPDATE MES_PLC_LIST SET ProcessCode = '2080' where plccode in ('RP02');
+UPDATE MES_PLC_LIST SET ProcessCode = '2080' where plccode in ('RP02','CP06');
 UPDATE MES_PLC_LIST SET ProcessCode = '2090' where plccode in ('CP08','RP02');
-UPDATE MES_PLC_LIST SET ProcessCode = '3010' where plccode in ('RP03');
+UPDATE MES_PLC_LIST SET ProcessCode = '3010' where plccode in ('RP03','CP09');
 UPDATE MES_PLC_LIST SET ProcessCode = '3020' where plccode in ('CP11');
+UPDATE MES_PLC_LIST SET ProcessCode = '3050' where plccode in ('CP12', 'CP13');
+UPDATE MES_PLC_LIST SET ProcessCode = '3070' where plccode in ('CP101');
 UPDATE MES_PLC_LIST SET ProcessCode = '3110' where plccode in ('CP14');
 
 UPDATE MES_PLC_Parameters 

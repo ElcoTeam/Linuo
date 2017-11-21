@@ -3035,6 +3035,32 @@ AS
     AND Mfg_WO_List.ID = @WoId;
 GO
 
+--更新Mes_Process_List表的在产工单和待产工单.
+ALTER PROCEDURE  [dbo].usp_Mfg_Process_List_WO_UpdateById
+     @WoId               AS INT = 0
+    ,@ProcId             AS INT = 0
+    ,@OPtype             AS VARCHAR (50) = ''
+    ,@CatchError         AS INT           OUTPUT --系统判断用户操作异常的数量
+    ,@RtnMsg             AS NVARCHAR(100) OUTPUT --返回值
+AS
+    SET @CatchError = 0
+    SET @RtnMsg     = '';
+
+    UPDATE Mes_Process_List
+    SET    
+        WorkOrderNumber      = CASE WHEN @OPtype = 'CURR' OR @OPtype='CURRALL' THEN Mfg_WO_List.ErpWorkOrderNumber  ELSE Mes_Process_List.WorkOrderNumber      END
+       ,WorkOrderVersion     = CASE WHEN @OPtype = 'CURR' OR @OPtype='CURRALL' THEN Mfg_WO_List.MesWorkOrderVersion ELSE Mes_Process_List.WorkOrderVersion     END
+       ,NextWorkOrderNumber  = CASE WHEN @OPtype = 'NEXT' OR @OPtype='NEXTALL' THEN Mfg_WO_List.ErpWorkOrderNumber  ELSE Mes_Process_List.NextWorkOrderNumber  END
+       ,NextWorkOrderVersion = CASE WHEN @OPtype = 'NEXT' OR @OPtype='NEXTALL' THEN Mfg_WO_List.MesWorkOrderVersion ELSE Mes_Process_List.NextWorkOrderVersion END
+
+    FROM 
+        Mfg_WO_List
+    WHERE 
+       (Mes_Process_List.ID = @ProcId OR @OPtype='CURRALL' OR @OPtype='NEXTALL' ) 
+    AND Mfg_WO_List.ID = @WoId;
+GO
+
+
 -- PLC 触发了 物料拉动 动作
 ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_MT]
       @TagName                AS VARCHAR  (50)       

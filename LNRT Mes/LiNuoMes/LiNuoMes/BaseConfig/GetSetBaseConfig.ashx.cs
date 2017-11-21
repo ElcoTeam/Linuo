@@ -1079,14 +1079,18 @@ namespace LiNuoMes.BaseConfig
                     for (int i = 0; i < dt.Rows.Count; i++)
                     {
                         ProcessEntity itemList = new ProcessEntity();
-                        itemList.ID            = dt.Rows[i]["ID"].ToString();
-                        itemList.InturnNumber  = dt.Rows[i]["InturnNumber"].ToString();
-                        itemList.ProcessCode   = dt.Rows[i]["ProcessCode"].ToString();
-                        itemList.ProcessName   = dt.Rows[i]["ProcessName"].ToString();
-                        itemList.ProcessDsca   = dt.Rows[i]["ProcessDsca"].ToString();
-                        itemList.ProcessBeat   = dt.Rows[i]["ProcessBeat"].ToString();
-                        itemList.ProcessManual = dt.Rows[i]["ProcessManual"].ToString();
-                        itemList.ReservedFlag  = dt.Rows[i]["ReservedFlag"].ToString();
+                        itemList.ID                   = dt.Rows[i]["ID"].ToString();
+                        itemList.InturnNumber         = dt.Rows[i]["InturnNumber"].ToString();
+                        itemList.ProcessCode          = dt.Rows[i]["ProcessCode"].ToString();
+                        itemList.ProcessName          = dt.Rows[i]["ProcessName"].ToString();
+                        itemList.ProcessDsca          = dt.Rows[i]["ProcessDsca"].ToString();
+                        itemList.ProcessBeat          = dt.Rows[i]["ProcessBeat"].ToString();
+                        itemList.ProcessManual        = dt.Rows[i]["ProcessManual"].ToString();
+                        itemList.WorkOrderNumber      = dt.Rows[i]["WorkOrderNumber"].ToString();
+                        itemList.WorkOrderVersion     = dt.Rows[i]["WorkOrderVersion"].ToString();
+                        itemList.NextWorkOrderNumber  = dt.Rows[i]["NextWorkOrderNumber"].ToString();
+                        itemList.NextWorkOrderVersion = dt.Rows[i]["NextWorkOrderVersion"].ToString();
+                        itemList.ReservedFlag         = dt.Rows[i]["ReservedFlag"].ToString();
                         dataEntity.Add(itemList);
                     }
                 }
@@ -2540,17 +2544,19 @@ namespace LiNuoMes.BaseConfig
 
     public class ProcessEntity
     {
-        public string ID              { set; get; }
-        public string InturnNumber    { set; get; }
-        public string ProcessCode     { set; get; }
-        public string ProcessName     { set; get; }
-        public string ProcessDsca     { set; get; }
-        public string ProcessBeat     { set; get; }
-        public string ProcessManual   { set; get; }
-        public string UploadedFile    { set; get; }
-        public string ReservedFlag    { set; get; }
-        public string WorkOrderNumber { set; get; }
-        public string WorkOrderVersion{ set; get; }
+        public string ID                  { set; get; }
+        public string InturnNumber        { set; get; }
+        public string ProcessCode         { set; get; }
+        public string ProcessName         { set; get; }
+        public string ProcessDsca         { set; get; }
+        public string ProcessBeat         { set; get; }
+        public string ProcessManual       { set; get; }
+        public string UploadedFile        { set; get; }
+        public string ReservedFlag        { set; get; }
+        public string WorkOrderNumber     { set; get; }
+        public string WorkOrderVersion    { set; get; }
+        public string NextWorkOrderNumber { set; get; }
+        public string NextWorkOrderVersion{ set; get; }
     }
 
     public class GoodsEntity

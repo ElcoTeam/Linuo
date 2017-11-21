@@ -61,7 +61,7 @@
                 url: "GetSetBaseConfig.ashx",
                 postData: { Action: "MES_PROC_CONFIG_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() -220,
+                height: $('#areascontent').height() -170,
                 rowNum: -1,
                 jsonReader: {
                     repeatitems: false,   //此两个参数影响了是否刷新之后高亮选中记录: 如果直接设定为true, 则无论id项设定与否都可以实现高亮选中
@@ -69,31 +69,51 @@
                 },
                 colModel: [
                     { label: 'ID',      name: 'ID', hidden: true },
-                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 100, align: 'center', sortable: false },
-                    { label: '工序编号', name: 'ProcessCode', index: 'ProcessCode', width: 120, align: 'center', sortable: false },
-                    { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 220, align: 'center', sortable: false },
-                    { label: '工序简介', name: 'ProcessDsca', index: 'ProcessDsca', width: 350, align: 'left', sortable: false },
-                    { label: '工序节拍', name: 'ProcessBeat', index: 'ProcessBeat', width: 100, align: 'center', sortable: false },
+                    { label: '序号', name: 'InturnNumber', index: 'InturnNumber', width: 50, align: 'center', sortable: false },
+                    { label: '工序编号', name: 'ProcessCode', index: 'ProcessCode', width: 80, align: 'center', sortable: false },
+                    { label: '工序名称', name: 'ProcessName', index: 'ProcessName', width: 150, align: 'left', sortable: false },
+                    { label: '工序简介', name: 'ProcessDsca', index: 'ProcessDsca', width: 150, align: 'left', sortable: false },
+                    { label: '工序节拍', name: 'ProcessBeat', index: 'ProcessBeat', width: 80, align: 'center', sortable: false },
+                    { label: '在产工单', name: 'WorkOrderNumber', index: 'WorkOrderNumber', width: 100, align: 'center', sortable: false },
+                    {
+                        label: '在产工单类型', name: 'WorkOrderVersion', index: 'WorkOrderVersion', width: 120, align: 'center', sortable: false,
+                        formatter: function (cellvalue, options, rowObject) {
+                            return    cellvalue == "0" ? "正常订单"
+                                    : cellvalue >= "1" ? "下线补单"
+                                    : "";
+                        }
+                    },
+                    { label: '待产工单', name: 'NextWorkOrderNumber', index: 'NextWorkOrderNumber', width: 100, align: 'center', sortable: false },
+                    {
+                        label: '待产工单类型', name: 'NextWorkOrderVersion', index: 'NextWorkOrderVersion', width: 120, align: 'center', sortable: false,
+                        formatter: function (cellvalue, options, rowObject) {
+                            return  cellvalue == "0" ? "正常订单"
+                                  : cellvalue >= "1" ? "下线补单"
+                                  : "";
+                        }
+                    },
                     { label: 'ReservedFlag', name: 'ReservedFlag', hidden: true, sortable: false },
                     {
-                        label: '操作规范', name: 'ProcessManual', index: 'ProcessManual', width: 220, align: 'center', sortable: false,
+                        label: '操作规范', name: 'ProcessManual', index: 'ProcessManual', width: 160, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
                             return '<button onclick=\"btn_ManCheck(     \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-check-square-o"></i>查看</button>'
                                  + '<button onclick=\"btn_ManDownLoad(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-download"></i>下载</button>';
                         }
                     },
                     {
-                        label: '操 作', width: 250, align: 'center', sortable: false,
+                        label: '操 作', width: 300, align: 'center', sortable: false,
                     formatter: function (cellvalue, options, rowObject) {
                         var dFlag = rowObject.ReservedFlag == "1" ? "disabled" : "";
-                            return '<button onclick=\"showdlg(\'CHECK\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-check-square-o"></i>查看</button>'
-                                 + '<button onclick=\"showdlg(\'EDIT\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>修改</button>'
-                   + '<button ' + dFlag + ' onclick=\"btn_delete(\''         + rowObject.ID + '\')\" class=\"btn btn-danger\"  style=\"' + strBtnStyle + '"><i class="fa fa-trash"></i>删除</button>';
-                        }
+                        return  '<button onclick=\"showdlg(\'CHECK\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-check-square-o"></i>查看</button>'
+                              + '<button onclick=\"showdlg(\'EDIT\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>修改</button>'
+                              + '<button onclick=\"setWoDlg(\'CURR\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>在产工单设定</button>'
+                              + '<button onclick=\"setWoDlg(\'NEXT\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>待产工单设定</button>'
+                              + '<button ' + dFlag + ' onclick=\"btn_delete(\''      + rowObject.ID + '\')\" class=\"btn btn-danger\"  style=\"' + strBtnStyle + '"><i class="fa fa-trash"></i>删除</button>';
+                       }
                     },
                 ],
                 shrinkToFit: true,
-                autowidth: true,
+                autowidth: false,
                 scrollrows: true,
                 gridview: true,
                 viewsortcols:[false, false, false],
@@ -167,6 +187,36 @@
                 $("#gridTable").trigger("reloadGrid");
             }
         }
+
+        function setWoDlg(OPtype, ProcId) {
+
+            var sTitle;
+            if (     OPtype == "CURR") {
+                sTitle = "工序在产工单设定";
+            }
+            else if (OPtype == "NEXT") {
+                sTitle = "工序待产工单设定";
+            }
+            else if (OPtype == "CURRALL") {
+                sTitle = "在产工单全部设定";
+                ProcId = "-1";
+            }
+            else if (OPtype == "NEXTALL") {
+                sTitle = "待产工单全部设定";
+                ProcId = "-1";
+            }
+            dialogOpen({
+                id: "Form",
+                title: sTitle,
+                url: "../Mfg/ProcessListWorkOrderEdit.aspx?OPtype=" + OPtype + "&ProcId=" + ProcId,
+                width: "960px",
+                height: "600px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick($("#gridTable"));
+                }
+            });
+        }
+
 
         //编辑信息
         function showdlg(OPtype, ProcId) {
@@ -279,20 +329,19 @@
                         <div class="panel-body" style="text-align:left">
                             <table id="form1" class="form" border="0">
                                 <tr>
-                                    <td class="formTitle" style="width:300px">工序编号：</td>
-                                    <td class="formValue">
+                                    <td class="formTitle" style="width:100px">工序编号：</td>
+                                    <td class="formValue" style="width:200px">
                                             <select class="form-control" id="ProcessCode"></select>
                                     </td>
-                                    <td class="formValue"></td>
-                                </tr>
-                                <tr>
-                                    <td class="formTitle">工序名称：</td>
+                                    <td class="formTitle" style="width:120px">工序名称：</td>
                                     <td class="formValue">
                                         <input type="text" class="form-control" id="ProcessName" placeholder="请输入工序名称">
                                     </td>
                                     <td class="formValue" style="text-align:right">                                            
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>
+                                        <a id="btn_CurrAll" class="btn btn-primary" onclick="setWoDlg('CURRALL', -1)"><i class="fa fa-flag"></i>&nbsp;在产工单全部设定</a>
+                                        <a id="btn_NextAll" class="btn btn-primary" onclick="setWoDlg('NEXTALL', -1)"><i class="fa fa-flag"></i>&nbsp;待产工单全部设定</a>
                                     </td>
                                 </tr>
                             </table>

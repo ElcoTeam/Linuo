@@ -174,7 +174,7 @@
                             <table id="form1" class="form" border="0">
                                 <tr>
                                     <td class="formValue" style="text-align:right">                                            
-                                        <a id="btn_SetAll" class="btn btn-primary" onclick="showdlg('EDITALL', -1)"><i class="fa fa-flag"></i>&nbsp;所有工位统一设定物料拉动订单</a>
+                                        <a id="btn_SetAll" class="btn btn-primary" onclick="showdlg('EDITALL', -1)"><i class="fa fa-flag"></i>&nbsp;物料拉动订单统一设定</a>
                                     </td>
                                 </tr>
                             </table>

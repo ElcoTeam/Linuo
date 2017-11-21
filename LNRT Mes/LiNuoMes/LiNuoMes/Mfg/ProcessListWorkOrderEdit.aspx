@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MaterialPullMointorEdit.aspx.cs" Inherits="LiNuoMes.Mfg.MaterialPullMointorEdit" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ProcessListWorkOrderEdit.aspx.cs" Inherits="LiNuoMes.Mfg.ProcessListWorkOrderEdit" %>
 
 <!DOCTYPE html>
 
@@ -36,7 +36,8 @@
     <script src="../BaseConfig/GetSetBaseConfig.js"></script>
      <script>
          var selectedRowIndex = 0;
-         var ParamId = "";
+         var ProcId = "";
+         var OPtype = "";
          $(function () {
              $('#areascontent').height($(window).height() - 10);
              InitPage();
@@ -105,7 +106,8 @@
         }
 
         function InitData() {
-            ParamId = request('ParamId');
+            ProcId = request('ProcId');
+            OPtype = request('OPtype');
         }
 
         function AcceptClick(grid) {
@@ -117,9 +119,10 @@
             $.ajax({
                 url: "GetSetMfg.ashx",
                 data: {
-                    "Action": "MFG_PLC_PARAM_WO_UPDATE",
-                    "ParamId" : ParamId,
-                    "WoId": selectedRowIndex
+                    "Action": "MFG_PROCESS_LIST_WO_UPDATE",
+                    "WoId": selectedRowIndex,
+                    "ProcId": ProcId,
+                    "OPtype": OPtype
                 },
                 async: true,
                 type: "post",

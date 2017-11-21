@@ -111,6 +111,12 @@ namespace LiNuoMes.Mfg
                 result = setPlcParamWo(result);
                 context.Response.Write(jsc.Serialize(result));
             }
+            else if (Action == "MFG_PROCESS_LIST_WO_UPDATE")
+            {
+                ResultMsg result = new ResultMsg();
+                result = setProcessListWo(result);
+                context.Response.Write(jsc.Serialize(result));
+            }
             else if (Action == "MFG_PLC_TRIG_MT")
             {
                 ResultMsg result = new ResultMsg();
@@ -1928,6 +1934,74 @@ namespace LiNuoMes.Mfg
                         transaction.Rollback();
                         result.result = "failed";
                         result.msg = sqlPara[3].Value.ToString();
+                        cmd.Dispose();
+                        return result;
+                    }
+                    else
+                    {
+                        transaction.Commit();
+                        cmd.Dispose();
+                        result.result = "success";
+                        result.msg = "保存数据成功!";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        public ResultMsg setProcessListWo(ResultMsg result)
+        {
+            String WoId   = RequstString("WoId");
+            String ProcId = RequstString("ProcId");
+            String OPtype = RequstString("OPtype");
+
+            if (WoId.Length   == 0) WoId   = "0";
+            if (ProcId.Length == 0) ProcId = "0";
+            if (OPtype.Length == 0) OPtype = "";
+
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+
+                    SqlParameter[] sqlPara = new SqlParameter[5];
+
+                    sqlPara[0] = new SqlParameter("@WoId", Convert.ToInt32(WoId));
+                    sqlPara[1] = new SqlParameter("@ProcId", Convert.ToInt32(ProcId));
+                    sqlPara[2] = new SqlParameter("@OPtype", OPtype);
+                    sqlPara[3] = new SqlParameter("@CatchError", 0);
+                    sqlPara[4] = new SqlParameter("@RtnMsg", "");
+
+                    sqlPara[3].Direction = ParameterDirection.Output;
+                    sqlPara[4].Direction = ParameterDirection.Output;
+                    sqlPara[4].Size = 100;
+
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mfg_Process_List_WO_UpdateById"; 
+
+                    foreach (SqlParameter para in sqlPara)
+                    {
+                        cmd.Parameters.Add(para);
+                    }
+                    cmd.ExecuteNonQuery();
+
+                    if (sqlPara[3].Value.ToString() != "0")
+                    {
+                        transaction.Rollback();
+                        result.result = "failed";
+                        result.msg = sqlPara[4].Value.ToString();
                         cmd.Dispose();
                         return result;
                     }

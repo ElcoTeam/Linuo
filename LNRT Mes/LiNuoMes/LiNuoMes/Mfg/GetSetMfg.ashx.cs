@@ -448,6 +448,8 @@ namespace LiNuoMes.Mfg
                     dataEntity.DiscardQty = dt.Rows[0]["DiscardQty"].ToString();
                     dataEntity.LeftQty1 = dt.Rows[0]["LeftQty1"].ToString();
                     dataEntity.LeftQty2 = dt.Rows[0]["LeftQty2"].ToString();
+                    dataEntity.LeftQty3 = dt.Rows[0]["LeftQty3"].ToString();
+                    dataEntity.LeftQty4 = dt.Rows[0]["LeftQty4"].ToString();
                     dataEntity.PlanFinishTime = dt.Rows[0]["PlanFinishTime"].ToString();
                     dataEntity.UnitCostTime = dt.Rows[0]["UnitCostTime"].ToString();
                     dataEntity.CostTime = dt.Rows[0]["CostTime"].ToString();

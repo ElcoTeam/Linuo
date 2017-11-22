@@ -86,7 +86,7 @@
                 datatype: "json",
                 success: function (data) {
                     data = JSON.parse(data);
-                    var PlanQty = parseInt( data.DiscardQty) + parseInt(data.LeftQty1) + parseInt(data.LeftQty2);
+                    var PlanQty = parseInt(data.DiscardQty) + parseInt(data.LeftQty1) + parseInt(data.LeftQty2) + parseInt(data.LeftQty3) + parseInt(data.LeftQty4);
 
                     $("#WorkOrderNumber").val(data.WorkOrderNumber);
                     $("#GoodsCode").val(data.GoodsCode);

@@ -61,7 +61,7 @@
                 url: "GetSetBaseConfig.ashx",
                 postData: { Action: "MES_PROC_CONFIG_LIST" },
                 datatype: "json",
-                height: $('#areascontent').height() -170,
+                height: $('#areascontent').height() -190,
                 rowNum: -1,
                 jsonReader: {
                     repeatitems: false,   //此两个参数影响了是否刷新之后高亮选中记录: 如果直接设定为true, 则无论id项设定与否都可以实现高亮选中
@@ -94,26 +94,31 @@
                     },
                     { label: 'ReservedFlag', name: 'ReservedFlag', hidden: true, sortable: false },
                     {
-                        label: '操作规范', name: 'ProcessManual', index: 'ProcessManual', width: 160, align: 'center', sortable: false,
+                        label: '操作规范', width: 160, align: 'center', sortable: false,
                         formatter: function (cellvalue, options, rowObject) {
-                            return '<button onclick=\"btn_ManCheck(     \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-check-square-o"></i>查看</button>'
-                                 + '<button onclick=\"btn_ManDownLoad(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-download"></i>下载</button>';
+                            return '<button onclick=\"btn_ManCheck(     \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-check-square-o"></i>&nbsp;查看</button>'
+                                 + '<button onclick=\"btn_ManDownLoad(  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-download"></i>&nbsp;下载</button>';
                         }
                     },
                     {
-                        label: '操 作', width: 300, align: 'center', sortable: false,
+                        label: '工单设定', width: 270, align: 'center', sortable: false,
+                        formatter: function (cellvalue, options, rowObject) {
+                            return '<button onclick=\"setWoDlg(\'CURR\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-flag"></i>&nbsp;在产工单设定</button>'
+                                 + '<button onclick=\"setWoDlg(\'NEXT\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>&nbsp;待产工单设定</button>';
+                        }
+                    },
+                    {
+                        label: '操 作', width: 240, align: 'center', sortable: false,
                     formatter: function (cellvalue, options, rowObject) {
                         var dFlag = rowObject.ReservedFlag == "1" ? "disabled" : "";
-                        return  '<button onclick=\"showdlg(\'CHECK\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-check-square-o"></i>查看</button>'
-                              + '<button onclick=\"showdlg(\'EDIT\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>修改</button>'
-                              + '<button onclick=\"setWoDlg(\'CURR\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>在产工单设定</button>'
-                              + '<button onclick=\"setWoDlg(\'NEXT\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>待产工单设定</button>'
-                              + '<button ' + dFlag + ' onclick=\"btn_delete(\''      + rowObject.ID + '\')\" class=\"btn btn-danger\"  style=\"' + strBtnStyle + '"><i class="fa fa-trash"></i>删除</button>';
+                        return '<button onclick=\"showdlg(\'CHECK\', \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-check-square-o"></i>&nbsp;查看</button>'
+                              + '<button onclick=\"showdlg(\'EDIT\',  \'' + rowObject.ID + '\')\" class=\"btn btn-success\" style=\"' + strBtnStyle + '"><i class="fa fa-edit"></i>&nbsp;修改</button>'
+                              + '<button ' + dFlag + ' onclick=\"btn_delete(\'' + rowObject.ID + '\')\" class=\"btn btn-danger\"  style=\"' + strBtnStyle + '"><i class="fa fa-trash"></i>&nbsp;删除</button>';
                        }
                     },
                 ],
-                shrinkToFit: true,
-                autowidth: false,
+                shrinkToFit: false,
+                autowidth: true,
                 scrollrows: true,
                 gridview: true,
                 viewsortcols:[false, false, false],
@@ -331,17 +336,17 @@
                                 <tr>
                                     <td class="formTitle" style="width:100px">工序编号：</td>
                                     <td class="formValue" style="width:200px">
-                                            <select class="form-control" id="ProcessCode"></select>
+                                         <select class="form-control" id="ProcessCode"></select>
                                     </td>
                                     <td class="formTitle" style="width:120px">工序名称：</td>
-                                    <td class="formValue">
+                                    <td class="formValue" style="width:200px">
                                         <input type="text" class="form-control" id="ProcessName" placeholder="请输入工序名称">
                                     </td>
                                     <td class="formValue" style="text-align:right">                                            
                                         <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>  
                                         <a id="btn_Add" class="btn btn-primary" onclick="btn_Add(event)"><i class="fa fa-plus"></i>&nbsp;新建</a>
                                         <a id="btn_CurrAll" class="btn btn-primary" onclick="setWoDlg('CURRALL', -1)"><i class="fa fa-flag"></i>&nbsp;在产工单全部设定</a>
-                                        <a id="btn_NextAll" class="btn btn-primary" onclick="setWoDlg('NEXTALL', -1)"><i class="fa fa-flag"></i>&nbsp;待产工单全部设定</a>
+                                        <a id="btn_NextAll" class="btn btn-primary" onclick="setWoDlg('NEXTALL', -1)"><i class="fa fa-edit"></i>&nbsp;待产工单全部设定</a>
                                     </td>
                                 </tr>
                             </table>

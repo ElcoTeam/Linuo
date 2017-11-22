@@ -635,7 +635,7 @@ AS
     --(4).插入新的订单记录到表:Mfg_WO_List
     INSERT INTO Mfg_WO_List
                    ([MesStartPoint], [MesInturnNumber] ,[MesWorkOrderType], [MesWorkOrderVersion], [MesPlanQty] , [MesCreateUser], [MesPlanStartTime] ,[MesPlanFinishTime] ,                                     [MesCostTime] ,              [ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE], [MesUnitCostTime], [MesCustomerID], [MesOrderComment])
-    SELECT          @StartPoint,     -1 ,                1 ,                 @WorkOrderVersion ,   @PlanQty ,     @UserName,        GETDATE() ,         DATEADD(SECOND, MesUnitCostTime * @PlanQty, GETDATE()) , MesUnitCostTime * @PlanQty , [ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE], [MesUnitCostTime], [MesCustomerID], [MesOrderComment]
+    SELECT          @StartPoint,     -1 ,                1 ,                @WorkOrderVersion ,    @PlanQty ,     @UserName,        GETDATE() ,         DATEADD(SECOND, MesUnitCostTime * @PlanQty, GETDATE()) , MesUnitCostTime * @PlanQty , [ErpWorkOrderNumber] ,[ErpGoodsCode] ,[ErpGoodsDsca] ,[ErpPlanQty] ,[ErpPlanCreateTime] ,[ErpPlanStartTime] ,[ErpPlanFinishTime] ,[ErpPlanReleaseTime] ,[ErpWorkGroup] ,[ErpOrderType] ,[ErpOrderStatus] ,[ErpOBJNR] ,[ErpZTYPE], [MesUnitCostTime], [MesCustomerID], [MesOrderComment]
     FROM Mfg_WO_List
     WHERE ID = @WoId;
 

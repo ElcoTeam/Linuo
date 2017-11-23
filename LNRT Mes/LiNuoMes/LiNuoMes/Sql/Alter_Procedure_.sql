@@ -2410,33 +2410,13 @@ AS
         RETURN;
     END
 
-    --取得小于当下订单版本的订单的报废下线总和.
-    SELECT @iLowerVDQty = SUM(MesDiscardQty1 + MesDiscardQty2 + MesDiscardQty3 + MesDiscardQty4)
-    FROM MFG_WO_List
+    UPDATE MFG_WO_List 
+    SET 
+        MesStatus = 2 
     WHERE 
-         ErpWorkOrderNumber  = @WorkOrderNumber
-     AND MesWorkOrderVersion < @iVersion; --此处的条件不可以包含:等于
-
-     IF @iLowerVDQty IS NULL
-     BEGIN
-        SET @iLowerVDQty = 0; --0: 说明是原始订单; >0: 说明是下线补单
-     END
-
-    --如果当下的订单的计数是新产生的, 则要更新订单的状态为"生产进行中"
-    IF     @iUbound = 0                               --说明是原始订单
-        OR @iUbound - (@iPlanQty + @iLowerVDQty) = 0  --说明是下线补单
-    BEGIN
-        IF @CatchError = -1
-        BEGIN
-            UPDATE MFG_WO_List 
-            SET 
-                MesStatus = 2 
-            WHERE 
-                ErpWorkOrderNumber  = @WorkOrderNumber
-            AND MesWorkOrderVersion = @iVersion
-            AND(MesStatus = 0 OR MesStatus = 1 );
-        END      
-    END
+        ErpWorkOrderNumber  = @WorkOrderNumber
+    AND MesWorkOrderVersion = @iVersion
+    AND(MesStatus = 0 OR MesStatus = 1 );
      
     UPDATE MFG_WO_List 
     SET 

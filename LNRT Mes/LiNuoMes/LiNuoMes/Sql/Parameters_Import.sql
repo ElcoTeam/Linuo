@@ -71,7 +71,7 @@ UPDATE MES_PLC_LIST SET ProcessCode = '3010' where plccode in ('RP03','CP09');
 UPDATE MES_PLC_LIST SET ProcessCode = '3020' where plccode in ('CP11');
 UPDATE MES_PLC_LIST SET ProcessCode = '3050' where plccode in ('CP12', 'CP13');
 UPDATE MES_PLC_LIST SET ProcessCode = '3070' where plccode in ('CP101');
-UPDATE MES_PLC_LIST SET ProcessCode = '3110' where plccode in ('CP14');
+UPDATE MES_PLC_LIST SET ProcessCode = '3110' where plccode in ('CP14', 'RP04');
 
 UPDATE MES_PLC_Parameters 
 SET 

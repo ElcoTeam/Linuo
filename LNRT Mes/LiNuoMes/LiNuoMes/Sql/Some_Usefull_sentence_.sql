@@ -1,4 +1,61 @@
 /*
+UPDATE Mes_PLC_Parameters
+SET    
+    Mes_PLC_Parameters.ProcessCode = PLC.ProcessCode
+FROM 
+    Mes_PLC_Parameters,
+    Mes_PLC_List PLC 
+WHERE 
+        Mes_PLC_Parameters.PLCID = PLC.ID
+    AND Mes_PLC_Parameters.ParamName IN
+    (
+        SELECT 
+        PARM.ParamName
+        FROM 
+        Mes_PLC_Parameters PARM
+        WHERE 
+            PARM.ID IN
+        (
+            SELECT 
+                 MIN(Mes_PLC_Parameters.ID) PARAMID        
+            FROM 
+                 Mes_PLC_Parameters, Mes_PLC_List 
+            WHERE 
+                 Mes_PLC_Parameters.PLCID = Mes_PLC_List.ID
+             AND Mes_PLC_List.GoodsCode   = '0000000000'
+             AND Mes_PLC_Parameters.ApplModel ='QS'
+            GROUP BY Mes_PLC_List.ProcessCode
+        )
+    )
+---------------------------
+
+SELECT 
+        Mes_PLC_List.ID PLCID
+        ,Mes_PLC_Parameters.ID PARAMID
+        ,Mes_PLC_Parameters.ApplModel
+        ,Mes_PLC_Parameters.ProcessCode
+        ,Mes_PLC_List.ProcessCode
+        ,Mes_PLC_Parameters.ParamName
+        ,Mes_PLC_Parameters.ParamDsca
+        ,Mes_PLC_List.PLCName
+    FROM 
+        Mes_PLC_Parameters, Mes_PLC_List 
+    WHERE 
+        Mes_PLC_Parameters.PLCID = Mes_PLC_List.ID
+    AND Mes_PLC_List.GoodsCode = '0000000000'
+    AND Mes_PLC_Parameters.ApplModel ='QS'
+ORDER BY Mes_PLC_List.ProcessCode
+----------------------------
+/**/
+select * from Mes_PLC_Parameters where ParamName='LN57.IOBox07.OutputBool08' and plcid in (select id FROM mes_plc_list where plccode='IObox06' and plccabinet='LN57')
+--select * from mes_plc_list where plccode='IObox06' and plccabinet='LN57'
+select * from Mes_PLC_Parameters where plcid in (select id FROM mes_plc_list where plccode='IObox06' and plccabinet='LN57') order by plcid, ParamName
+
+begin tran
+update Mes_PLC_Parameters set plcid=plcid-1, ParamName='LN56.IOBox06.OutputBool08' where ParamName='LN57.IOBox07.OutputBool08' and plcid in (select id FROM mes_plc_list where plccode='IObox06' and plccabinet='LN57')
+delete FROM mes_plc_list where plccode='IObox06' and plccabinet='LN57'
+select * FROM mes_plc_list where  plccabinet='LN57'
+commit;
 
 select * from Mes_Threshold_List;
 

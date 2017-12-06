@@ -2802,7 +2802,9 @@ AS
         EXEC [usp_Mfg_Plc_Trig_QT] @TagName, @TagValue, @ProcessCode; RETURN;
     END
 
-    IF @ApplModel = 'CT' --产品变更完成触发
+    --最初设计是监视条件为: @ApplModel = 'CT', 后期因为硬件现场不能完成原因, 就监视参数派发过程的工单产量也可以上传信号
+    --即 QS信号为 写/读 双向信号.
+    IF @ApplModel = 'QS' --产品变更完成触发 
     BEGIN
         EXEC [usp_Mfg_Plc_Trig_CT] @TagName, @TagValue, @ProcessCode; RETURN;
     END
@@ -2815,7 +2817,7 @@ ALTER PROCEDURE  [dbo].[usp_Mfg_Plc_Trig_CT]
      ,@ProcessCode        AS VARCHAR  (50) = ''  
 AS
     --当MES 给PLC 发送变更请求是 1 触发对话框出现, 操作员如果点击了确认, 则此标记会变为 0 值.
-    IF @TagValue = '1'
+    IF @TagValue <> '0'
     BEGIN
         RETURN; 
     END

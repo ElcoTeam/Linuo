@@ -38,7 +38,6 @@
 
     <script>
         $(function () {
-
             if ($('#areascontent').height() > $(window).height() - 20) {
                 $('#areascontent').css("margin-right", "0px");
             }
@@ -51,7 +50,32 @@
                 }, 200);
             });
             GetGrid();
-            
+            CreateSelect();
+
+            $("#DeviceName").change(function () {
+                $("#ArtName").empty();
+                var optionstring1 = "";
+                var DeviceName = $("#DeviceName").val();
+                $.ajax({
+                    url: "ProductArtReport.aspx/GetArtName",
+                    type: "post",
+                    dataType: "json",
+                    data: "{deviceid:'" + DeviceName + "'}",
+                    async: false,
+                    contentType: "application/json;charset=utf-8",
+                    success: function (data) {
+                        var data1 = eval('(' + data.d + ')');
+                        var i = 0;
+                        for (i in data1) {
+                            optionstring1 += "<option value=\"" + data1[i].ArtName + "\" >" + data1[i].ArtName.trim() + "</option>";
+                        }
+                        $("#ArtName").html("<option value=''>请选择...</option> " + optionstring1);
+                    },
+                    error: function (msg) {
+                        alert("数据访问异常");
+                    }
+                });
+            })
         });
 
         //加载表格
@@ -63,13 +87,14 @@
                 postData: { Action: "ProductArtReport" },
                 loadonce: true,
                 datatype: "local",
-                height: $('#areascontent').height()-280,
+                height: $('#areascontent').height()-200,
                 colModel: [
                     { label: '主键', name: 'ID', hidden: true },
                     { label: '序号', name: 'Number', index: 'Number', width: 50, align: 'center' },
-                    { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 200, align: 'center' },
-                    { label: '生产工艺', name: 'ProductArt', index: 'ProductArt', width: 200, align: 'center' },
-                    { label: '值', name: 'Value', index: 'Value', width: 100, align: 'center' },
+                    { label: '设备名称', name: 'DeviceName', index: 'DeviceName', width: 300, align: 'left' },
+                    { label: '操作者', name: 'UserName', index: 'UserName', width: 200, align: 'left' },
+                    { label: '生产工艺', name: 'ProductArt', index: 'ProductArt', width: 300, align: 'left' },
+                    { label: '值', name: 'Value', index: 'Value', width: 200, align: 'left' },
                     {
                         label: '记录时间', name: 'Time', index: 'Time', width: 250, align: 'center'
                     },
@@ -93,10 +118,9 @@
             //查询事件
             $("#btn_Search").click(function () {
                 var deviceName = $("#DeviceName").val();
-                var ProductArt = $("#ProductArt").val();
+                var ProductArt = $("#ArtName").val();
                 var StartTime = $("#StartTime").val();
                 var EndTime = $("#EndTime").val();
-
                 if (!$('#form1').Validform()) {
                     return false;
                 }
@@ -112,13 +136,31 @@
                     }
                 }).trigger('reloadGrid');
             });
+        }
 
-            //查询回车
-            //$('#orderno').bind('keypress', function (event) {
-            //    if (event.keyCode == "13") {
-            //        $('#btn_Search').trigger("click");
-            //    }
-            //});
+        //构造select
+        function CreateSelect() {
+            $("#DeviceName").empty();
+            var optionstring = "";
+            $.ajax({
+                url: "../Equipment/EquDeviceInfo.aspx/GetDeviceName",
+                type: "post",
+                dataType: "json",
+                data: "{deviceid:''}",
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    var data1 = eval('(' + data.d + ')');
+                    var i = 0;
+                    for (i in data1) {
+                        optionstring += "<option value=\"" + data1[i].DeviceCode + "\" >" + data1[i].DeviceName.trim() + "</option>";
+                    }
+                    $("#DeviceName").html("<option value=''>请选择...</option> " + optionstring);
+                },
+                error: function (msg) {
+                    dialogMsg("数据访问异常", -1);
+                }
+            });
+
         }
         
         //打印
@@ -132,7 +174,7 @@
 
         //导出
         function btn_export(event) {
-            ExportJQGridDataToExcel('#gridTable', '生产工艺报表');
+            ExportJQGridDataToExcel('#gridTable', '设备生产工艺报表');
         }
 
     </script>
@@ -157,45 +199,38 @@
                 <div style="height:20%; border: 1px solid #e6e6e6; background-color: #fff;">
                     <div class="panel panel-default">
                         <div class="panel-heading"><i class="fa fa-bar-chart fa-lg" style="padding-right: 5px;"></i><strong style="font-size:20px;">设备生产工艺报表</strong></div>
-                        <div class="panel-body">
-                            <table id="form1" class="form">
-                                <tr>
-                                    <th class="formTitle">设备名称<font face="宋体">*</font></th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="DeviceName" placeholder="请输入设备名称" isvalid="yes" checkexpession="NotNull">
-                                    </td>
-                                    <th class="formTitle">生产工艺<font face="宋体">*</font></th>
-                                    <td class="formValue">
-                                        <input type="text" class="form-control" id="ProductArt" placeholder="请输入设备名称" isvalid="yes" checkexpession="NotNull">
-                                    </td>
-                                    <th class="formTitle">查询日期</th>
-                                    <td class="formValue" colspan="2">
-                                          <input id="StartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'EndTime\')}'})"  class="Wdate timeselect" />&nbsp;至&nbsp;
-                                          <input id="EndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})"  class="Wdate timeselect" /> 
-                                    </td> 
-                                    <td class="formValue">
-                                        <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>                        
-                                    </td> 
-                                </tr>
-                               
-                                 <tr>
-                                   
-                                </tr>
-                            </table>
-                        </div>
+                        <div class="lr-layout-tool">
+                               <div class="lr-layout-tool-left">
+                                   <div class="lr-layout-tool-item">
+                                       <span class="formTitle">设备名称：</span>
+                                       <select class="form-control" id="DeviceName" style="width: 220px;"></select>
+                                       <span class="formTitle">生产工艺：</span>
+                                       <select class="form-control" id="ArtName" style="width: 220px;"></select>
+                                       <span class="formTitle">查询日期：</span>
+                                       <input id="StartTime"  type="text" onFocus="WdatePicker({maxDate:'#F{$dp.$D(\'EndTime\')}'})" class="Wdate timeselect" />&nbsp;至&nbsp;
+                                       <input id="EndTime"  type="text" onFocus="WdatePicker({minDate:'#F{$dp.$D(\'StartTime\')}'})" class="Wdate timeselect" /> 
+                                   </div>
+                                   <div class="lr-layout-tool-item" id="multiple_condition_query_item">
+                                        <div id="multiple_condition_query" class="lr-query-wrap">
+                                            <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
+                                                <i class="fa fa-search"></i>&nbsp;查询
+                                            </div> 
+                                        </div>
+                                   </div>
+                                </div>
+                                <div class=" lr-layout-tool-right">
+                                     <div class="btn-group">
+                                         <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
+                                         <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
+                                     </div>
+                                 </div>
+                           </div>
                     </div>
                 </div>
             </div>
         </div>
-         <div class="titlePanel">
-         <div class="toolbar">
-            <div class="btn-group">
-                <a id="lr-print" class="btn btn-default" onclick="btn_print(event)"><i class="fa fa-print"></i>&nbsp;打印</a>
-                <a id="lr-export" class="btn btn-default trigger-default" onclick="btn_export(event)"><i class="fa fa-plus"></i>&nbsp;导出</a>
-            </div>
-         </div>
-         </div>
-         <div class="ui-report" style="margin-top:0.5%; overflow: hidden; ">
+
+         <div class="ui-report" style="margin-top:2.5%; overflow: hidden; ">
               <div class="gridPanel" id="gridPanel">
                   <div class="printArea">
                       <table id="gridTable"></table>                      

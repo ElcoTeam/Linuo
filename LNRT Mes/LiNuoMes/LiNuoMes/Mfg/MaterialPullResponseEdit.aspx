@@ -52,6 +52,7 @@
             order = request('order');
             ItemNumber = request('ItemNumber');
             Qty = request('Qty');
+            
             $("#ItemNumber").val(ItemNumber);
             $("#ActionQty").val(Qty);
             $("#ActionQty").select().focus();

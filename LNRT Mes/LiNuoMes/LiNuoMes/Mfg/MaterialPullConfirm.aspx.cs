@@ -21,6 +21,7 @@ namespace LiNuoMes.Mfg
         [WebMethod]
         public static string ConfirmPullInfo(string ID)
         {
+            string ConfirmUser = HttpContext.Current.Session["UserName"].ToString().Trim();
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
             {
                 SqlCommand cmd = new SqlCommand();
@@ -31,9 +32,14 @@ namespace LiNuoMes.Mfg
                     transaction = conn.BeginTransaction();
                     cmd.Transaction = transaction;
                     cmd.Connection = conn;
-                    string str1 = "update  MFG_WO_MTL_Pull set Status='2',ConfirmTime=GETDATE(),ConfirmUser='" + HttpContext.Current.Session["UserName"].ToString().ToUpper().Trim() + "' where ID='" + ID.ToString().Trim() + "'";
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = str1;
+                    SqlParameter[] sqlPara = new SqlParameter[2];
+                    sqlPara[0] = new SqlParameter("@ID", ID);
+                    sqlPara[1] = new SqlParameter("@ConfirmUser", ConfirmUser);
+
+                    cmd.Parameters.Add(sqlPara[0]);
+                    cmd.Parameters.Add(sqlPara[1]);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandText = "usp_Mfg_Material_Pull_Confirm";
                     cmd.ExecuteNonQuery();
                     transaction.Commit();
                     return "success";
@@ -43,7 +49,7 @@ namespace LiNuoMes.Mfg
                     transaction.Rollback();
                     return "falut";
                 }
-
+               
             }
         }
 

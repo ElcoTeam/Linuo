@@ -66,6 +66,7 @@ namespace LiNuoMes.UserManage.hs
                     strJson += "\"" + dt.Rows[j]["UserID"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["UserName"].ToString() + "\",";
                     strJson += "\"" + dt.Rows[j]["RoleName"].ToString() + "\"";
+                    //strJson += "\"" + dt.Rows[j]["RoleName11"].ToString() + "\"";
                     strJson += "]";
                     strJson += "}";
                     if (j != pageSize + index - 1 && j != totalRecord - 1)

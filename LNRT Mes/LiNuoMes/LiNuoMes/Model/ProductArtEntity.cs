@@ -10,6 +10,7 @@ namespace LiNuoMes.Model
         public string ID { set; get; }
         public string Number { set; get; }
         public string DeviceName { set; get; }
+        public string UserName { set; get; }
         public string ProductArt { set; get; }
         public string Value { set; get; }
         public string Time { set; get; }

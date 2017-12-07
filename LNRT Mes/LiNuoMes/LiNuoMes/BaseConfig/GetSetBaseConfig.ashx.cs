@@ -11,7 +11,7 @@ using System.Web.Services;
 using System.Web.SessionState;
 using System.Web.Script.Serialization;
 using LiNuoMes.Common;
-
+using LiNuoMes.Model;
 
 namespace LiNuoMes.BaseConfig
 {
@@ -455,6 +455,66 @@ namespace LiNuoMes.BaseConfig
                 result = GetPLCSendStatusList(result.PlcList, result);
                 context.Response.Write(jsc.Serialize(result));
             }
+
+            //获取生产工艺信息列表
+            else if (Action == "Process_Art_LIST")
+            {
+                ProcessArtInfo processArt = new ProcessArtInfo();
+                processArt.ProcessCode = RequstString("ProcessCode");
+
+                List<ProcessArtInfo> dataEntity;
+                dataEntity = new List<ProcessArtInfo>();
+                dataEntity = GetProcessArtList(dataEntity, processArt);
+                context.Response.Write(jsc.Serialize(dataEntity));
+                
+            }
+
+             //  新增 编辑 生产工艺信息
+            else if (Action == "Process_Art_EDIT" || Action == "Process_Art_ADD")
+            {
+                ProcessArtInfo dataEntity = new ProcessArtInfo();
+                dataEntity.ID = RequstString("ArtId");
+                dataEntity.ProcessCode = RequstString("ProcessCode");
+                dataEntity.ProcessName = RequstString("ProcessName");
+                dataEntity.ArtName = RequstString("ArtName");
+                dataEntity.ArtValue = RequstString("ArtValue");
+
+                ResultMsg_ProcessArtInfo result = new ResultMsg_ProcessArtInfo();
+                {
+                    if (Action == "Process_Art_EDIT")
+                    {
+                        result = editProcessArtData(dataEntity, result);
+                    }
+                    else if (Action == "Process_Art_ADD")
+                    {
+                        result = addProcessArtData(dataEntity, result);
+                    }
+                }
+
+                context.Response.Write(jsc.Serialize(result));
+            }
+
+            /// 生产工艺信息 查看
+            else if (Action == "Process_Art_DETAIL")
+            {
+                ProcessArtInfo findItem;
+                findItem = new ProcessArtInfo();
+                findItem.ID = RequstString("ArtId");
+                ProcessArtInfo dataEntity;
+                dataEntity = new ProcessArtInfo();
+                dataEntity = GetProcessArtDetail(dataEntity, findItem);
+                context.Response.Write(jsc.Serialize(dataEntity));
+            }
+            //生产工艺信息删除
+            else if (Action == "Process_Art_DEL")
+            {
+                ProcessArtInfo dataEntity = new ProcessArtInfo();
+                dataEntity.ID = RequstString("ArtId");
+                ResultMsg_ProcessArtInfo result = new ResultMsg_ProcessArtInfo();
+                result = delProcessArtData(dataEntity, result);
+                context.Response.Write(jsc.Serialize(result));
+            }
+          
             else
             {
                 ResultMsg_Line result = new ResultMsg_Line();
@@ -2521,6 +2581,242 @@ namespace LiNuoMes.BaseConfig
 
             }
             return result;                   
+        }
+
+        /// <summary>
+        /// 生产工艺列表
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="processArt"></param>
+        /// <returns></returns>
+        public List<ProcessArtInfo> GetProcessArtList(List<ProcessArtInfo> dataEntity, ProcessArtInfo processArt)
+        {
+            DataTable dt = new DataTable();
+            string ReturnValue = string.Empty;
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+
+                SqlParameter[] sqlPara = new SqlParameter[1];
+                //sqlPara[0] = new SqlParameter("@ItemNumber", findItem.ItemNumber);
+                sqlPara[0] = new SqlParameter("@ProcessCode", processArt.ProcessCode);
+
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "usp_Mes_Process_Art_List";
+
+                foreach (SqlParameter para in sqlPara)
+                {
+                    cmd.Parameters.Add(para);
+                }
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null)
+                {
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        ProcessArtInfo itemList = new ProcessArtInfo();
+                        itemList.ID =  dt.Rows[i]["ID"].ToString();
+                        itemList.InturnNumber = (i + 1).ToString();
+                        itemList.ProcessCode = dt.Rows[i]["ProcessCode"].ToString();
+                        itemList.ProcessName = dt.Rows[i]["ProcessName"].ToString();
+                        itemList.ArtName = dt.Rows[i]["ArtName"].ToString();
+                        itemList.ArtValue = dt.Rows[i]["ArtValue"].ToString();
+                        itemList.UpdateUser = dt.Rows[i]["UpdateUser"].ToString();
+                        dataEntity.Add(itemList);
+                    }
+                }
+            }
+            return dataEntity;
+        }
+
+        /// <summary>
+        /// 查看 生产工艺信息
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="findItem"></param>
+        /// <returns></returns>
+        public ProcessArtInfo GetProcessArtDetail(ProcessArtInfo dataEntity, ProcessArtInfo findItem)
+        {
+            DataTable dt = new DataTable();
+            string ReturnValue = string.Empty;
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                conn.Open();
+                cmd.Connection = conn;
+                string strSql = " select * from Mes_ProcessArtList a  left join Mes_Process_List b on a.ProcessCode=b.ProcessCode ";
+                string strWhere = "";
+
+                if (findItem.ID != "")
+                {
+                    strWhere = " WHERE a.ID = " + findItem.ID + " ";
+                }
+
+                strSql += strWhere + " order by  a.ProcessCode ";
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = strSql;
+                SqlDataAdapter Datapter = new SqlDataAdapter(cmd);
+                Datapter.Fill(dt);
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    dataEntity.ID = dt.Rows[0]["ID"].ToString();
+                    //dataEntity.InturnNumber = dt.Rows[0]["InturnNumber"].ToString();
+                    dataEntity.ProcessCode = dt.Rows[0]["ProcessCode"].ToString();
+                    dataEntity.ProcessName = dt.Rows[0]["ProcessName"].ToString();
+                    dataEntity.ArtName = dt.Rows[0]["ArtName"].ToString();
+                    dataEntity.ArtValue = dt.Rows[0]["ArtValue"].ToString();
+                   
+                }
+            }
+            return dataEntity;
+        }
+        /// <summary>
+        /// 编辑生产工艺信息
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public ResultMsg_ProcessArtInfo editProcessArtData(ProcessArtInfo dataEntity, ResultMsg_ProcessArtInfo result)
+        {
+            if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
+            if (dataEntity.ProcessCode.Length == 0) dataEntity.ProcessCode = "";
+            if (dataEntity.ProcessName.Length == 0) dataEntity.ProcessName = "";
+            if (dataEntity.ArtName.Length == 0) dataEntity.ArtName = "";
+            if (dataEntity.ArtValue.Length == 0) dataEntity.ArtValue = "";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    string  strSql = string.Format(
+                     @"UPDATE Mes_ProcessArtList 
+                       SET 
+                            ProcessCode   =  '{0}' 
+                           ,ArtName       = N'{1}'
+                           ,ArtValue      =   {2}
+                           ,UpdateUser    = N'{3}'
+                           ,UpdateTime    = GETDATE()
+                            WHERE id = {4}",
+                           dataEntity.ProcessCode,
+                           dataEntity.ArtName,
+                           dataEntity.ArtValue,
+                           UserName,
+                           dataEntity.ID
+                    );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "编辑数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "编辑失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+
+        /// <summary>
+        /// 新增生产工艺信息
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public ResultMsg_ProcessArtInfo addProcessArtData(ProcessArtInfo dataEntity, ResultMsg_ProcessArtInfo result)
+        {
+            if (dataEntity.ProcessCode.Length == 0) dataEntity.ProcessCode = "";
+            //if (dataEntity.ProcessName.Length == 0) dataEntity.ProcessName = "";
+            if (dataEntity.ArtName.Length == 0) dataEntity.ArtName = "";
+            if (dataEntity.ArtValue.Length == 0) dataEntity.ArtValue = "";
+            
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    cmd.Connection = conn;
+                    string strSql = "";
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    strSql = string.Format(
+                         @" INSERT INTO Mes_ProcessArtList  
+                       ( ProcessCode,  ArtName, ArtValue, UpdateUser,UpdateTime) VALUES (
+                       '{0}',N'{1}','{2}',N'{3}',getdate()) ",
+                             dataEntity.ProcessCode,
+                             dataEntity.ArtName,
+                             dataEntity.ArtValue,  
+                             UserName
+                         );
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                   
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 删除生产工艺信息
+        /// </summary>
+        /// <param name="dataEntity"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public ResultMsg_ProcessArtInfo delProcessArtData(ProcessArtInfo dataEntity, ResultMsg_ProcessArtInfo result)
+        {
+            if (dataEntity.ID.Length == 0) dataEntity.ID = "0";
+            using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["ELCO_ConnectionString"].ToString()))
+            {
+                SqlCommand cmd = new SqlCommand();
+                SqlTransaction transaction = null;
+                try
+                {
+                    conn.Open();
+                    transaction = conn.BeginTransaction();
+                    cmd.Transaction = transaction;
+                    cmd.Connection = conn;
+                    string strSql = string.Format(" DELETE FROM Mes_ProcessArtList WHERE  ID = {0}", dataEntity.ID);
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = strSql;
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                    result.result = "success";
+                    result.msg = "保存数据成功!";
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    result.result = "failed";
+                    result.msg = "保存失败! \n" + ex.Message;
+                }
+            }
+            return result;
         }
     }
 

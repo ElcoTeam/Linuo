@@ -136,11 +136,11 @@
                         label: '操作', name: 'Status', index: 'Status', width: 80, align: 'center',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 1) {
-                                console.log(cellvalue);
+                                
                                 return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer;\">确认</span>';
                             }
                             else {
-                                console.log(cellvalue);
+                              
                                 return '';
                             }
                         }

@@ -49,10 +49,9 @@
             $("#btn_Search").click(function () {
                 if (!$("#content").hasClass("active")) {
                     $("#content").addClass("active")
-
+                    //$("#content").focus();
                 } else {
                     $("#content").removeClass("active")
-
                 }
             });
 
@@ -398,7 +397,7 @@
                                             <div class="lr-query-btn" id="btn_Search" style="font-size:10px;">
                                                 <i class="fa fa-search"></i>&nbsp;多条件查询
                                             </div>
-                                            <div class="lr-query-content" style="width:400px;height:150px;" id="content">
+                                            <div class="lr-query-content" style="width:400px;height:150px;" id="content" tabindex="1">
                                                 <div class="lr-query-formcontent" style="display:block"></div>
                                                 <div class="lr-query-arrow">
                                                     <div class="lr-query-inside"></div>

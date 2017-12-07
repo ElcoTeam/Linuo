@@ -10,6 +10,6 @@
 namespace LiNuoMes.BaseConfig {
     
     
-    public partial class ProductArtMan {
+    public partial class ProductArtEdit {
     }
 }

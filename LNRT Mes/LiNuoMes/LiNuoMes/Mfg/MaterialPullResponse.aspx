@@ -136,7 +136,7 @@
                         label: '操作', name: 'Status', index: 'Status', width: 110, align: 'left',
                         formatter: function (cellvalue, options, rowObject) {
                             if (cellvalue == 0) {
-                                return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[4] + '\',\'' + rowObject[9] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\">响应</span>' +
+                                return '<span onclick=\"btn_enabled(\'' + rowObject[0] + '\',\'' + rowObject[1] + '\',\'' + rowObject[7] + '\',\'' + rowObject[9] + '\')\" class=\"label label-success\" style=\"cursor: pointer;\">响应</span>' +
                                        '<span onclick=\"btn_delete(\'' + rowObject[0] + '\')\" class=\"label label-danger\" style=\"cursor: pointer; margin-left:10px;\">删除</span>';
                             }
                             else if (cellvalue == -2) {
@@ -238,6 +238,7 @@
                 ItemNumber = $("#gridTable").jqGridRowValue("ItemNumber");
                 keyQty = $("#gridTable").jqGridRowValue("Qty");
             }
+            
             // 响应数量
             dialogOpen({
                 id: "Form",
@@ -308,7 +309,7 @@
                             data: "{MaterialID:'" + keyValue + "'}",
                             type: "post",
                             dataType: "json",
-                            contentType: "application/json;charset=utf-8",
+                            contentType: "applicartion/json;charset=utf-8",
                             success: function (data) {
                                 if (data.d == "success") {
                                     Loading(false);

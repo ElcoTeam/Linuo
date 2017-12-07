@@ -32,8 +32,12 @@
     <script src="../Content/scripts/utils/learun-ui.js"></script>
     <script src="../Content/scripts/utils/learun-form.js"></script>
     
-
     <script src="../js/pdfobject.js" type="text/javascript"></script>
+    <style>
+     
+          .pdfobject { border: 1px solid #fff; }
+        
+    </style>
     <script>
         $(function () {
             var id = '<%=Session["UserName"] %>';
@@ -82,6 +86,22 @@
             });
         });
 
+        var options = {
+            pdfOpenParams: {
+                pagemode: "none"
+                , navpanes: 0
+                , toolbar: 0
+                , statusbar: 0
+                //   ,view:"FitBH"
+            }
+              , width: "100%"
+              , height: "100%"
+              , page: "1"
+              , fallbackLink: "<p>Please install the PDF Reader First!</p>"
+        };
+
+        var myPDF = PDFObject.embed("./img/TPJG.pdf", "#example1", options);
+
         //构造select
         function CreateSelect() {
             $("#currentgw").empty();
@@ -99,6 +119,7 @@
                         optionstring += "<option value=\"" + data1[i].ProcessCode + "\" >" + data1[i].ProcessName.trim() + "</option>";
                     }
                     $("#currentgw").html(optionstring);
+                    PDFObject.embed("\\BaseConfig\\ProcessManual\\" + data1[0].ProcessCode + '.pdf', "#example1", options);
                     InitalPage($("#currentgw").val());
                 },
                 error: function (msg) {
@@ -110,6 +131,7 @@
 
         function changeline() {
             var value = $("#currentgw").val();
+            PDFObject.embed("\\BaseConfig\\ProcessManual\\" + value + '.pdf', "#example1", options);
             InitalPage(value);
         }
 
@@ -429,29 +451,7 @@
         </div>
  
     </div>
-    <style>
-     
-          .pdfobject { border: 1px solid #fff; }
-        
-    </style>
+  
    
-    <script>
-        var options = {
-            pdfOpenParams: {
-                pagemode: "none"
-                , navpanes: 0
-                , toolbar: 0
-                , statusbar: 0
-                //   ,view:"FitBH"
-            }
-                , width: "100%"
-                , height: "100%"
-                , page: "1"
-                , fallbackLink: "<p>Please install the PDF Reader First!</p>"
-        };
-
-        var myPDF = PDFObject.embed("./img/TPJG.pdf", "#example1", options);
-
-    </script>
 </body>
 </html>

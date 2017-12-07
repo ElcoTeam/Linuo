@@ -101,4 +101,34 @@ PAM.PLCID = PLC.ID
 AND GOODSCODE = '0000000000'
 AND APPLMODEL IN ('CT', 'CS','QT')
 
+
+UPDATE Mes_PLC_Parameters
+SET    
+    Mes_PLC_Parameters.ProcessCode = PLC.ProcessCode
+FROM 
+    Mes_PLC_Parameters,
+    Mes_PLC_List PLC 
+WHERE 
+        Mes_PLC_Parameters.PLCID = PLC.ID
+    AND Mes_PLC_Parameters.ParamName IN
+    (
+        SELECT 
+        PARM.ParamName
+        FROM 
+        Mes_PLC_Parameters PARM
+        WHERE 
+            PARM.ID IN
+        (
+            SELECT 
+                 MIN(Mes_PLC_Parameters.ID) PARAMID        
+            FROM 
+                 Mes_PLC_Parameters, Mes_PLC_List 
+            WHERE 
+                 Mes_PLC_Parameters.PLCID = Mes_PLC_List.ID
+             AND Mes_PLC_List.GoodsCode   = '0000000000'
+             AND Mes_PLC_Parameters.ApplModel ='QS'
+            GROUP BY Mes_PLC_List.ProcessCode
+        )
+    )
+
 */
